@@ -1,20 +1,272 @@
 /**
  * Content model provisioned by `npm run setup`.
- * Edit this file to change what the demo creates in the space.
+ *
+ * Source of truth: docs/plans/2026-10-20-mclaren-schema-design.md, section
+ * "Content model". Each content type's `description` carries the McLaren
+ * component code it maps to where the design lists one.
+ *
+ * The array is in dependency order (types referenced by link validations
+ * come first where the graph allows it). The model contains cycles
+ * (link -> page -> bannerButton -> link, vehicle -> story -> vehicle), so
+ * setup provisions in two passes: create/update every type, then publish
+ * every type.
  */
+
+const LOCALE = 'en-US';
+
+/** A URL-ish string: absolute http(s), root-relative, hash route, mailto or tel. */
+export const URL_PATTERN = '^(https?://[^\\s]+|/[^\\s]*|#/[^\\s]*|mailto:[^\\s]+|tel:[^\\s]+)$';
+
+const urlValidation = {
+  regexp: { pattern: URL_PATTERN },
+  message: 'Must be an absolute http(s) URL, a root-relative path, a #/ route, or a mailto:/tel: link.',
+};
+
+const imageAsset = (id, name, extra = {}) => ({
+  id,
+  name,
+  type: 'Link',
+  linkType: 'Asset',
+  validations: [{ linkMimetypeGroup: ['image'] }],
+  ...extra,
+});
+
+const entryLink = (id, name, contentTypes, extra = {}) => ({
+  id,
+  name,
+  type: 'Link',
+  linkType: 'Entry',
+  validations: [{ linkContentType: contentTypes }],
+  ...extra,
+});
+
+const entryLinks = (id, name, contentTypes, extra = {}) => ({
+  id,
+  name,
+  type: 'Array',
+  items: { type: 'Link', linkType: 'Entry', validations: [{ linkContentType: contentTypes }] },
+  ...extra,
+});
+
+const symbolIn = (id, name, values, extra = {}) => ({
+  id,
+  name,
+  type: 'Symbol',
+  validations: [{ in: values }],
+  ...extra,
+});
+
+const defaultValue = (value) => ({ defaultValue: { [LOCALE]: value } });
+
+const SECTION_TYPES = ['textBlock', 'imageBlock', 'bannerButton', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup'];
+const STORY_SECTION_TYPES = ['textBlock', 'imageBlock', 'ctaGroup'];
+const LINK_TARGET_TYPES = ['page', 'vehicle', 'vehicleCategory', 'story'];
+
 export const CONTENT_TYPES = [
   {
-    id: 'author',
-    name: 'Author',
-    displayField: 'name',
+    id: 'seoMetadata',
+    name: 'SEO metadata',
+    description: 'Search and social metadata attached to a page, vehicle, category or story.',
+    displayField: 'title',
     fields: [
-      { id: 'name', name: 'Name', type: 'Symbol', required: true },
-      { id: 'bio', name: 'Bio', type: 'Text' },
+      { id: 'title', name: 'Title', type: 'Symbol', required: true, validations: [{ size: { max: 120 } }] },
+      { id: 'description', name: 'Description', type: 'Text', validations: [{ size: { max: 320 } }] },
+      imageAsset('ogImage', 'Open Graph image'),
+      { id: 'noIndex', name: 'No index', type: 'Boolean', ...defaultValue(false) },
     ],
   },
   {
-    id: 'blogPost',
-    name: 'Blog post',
+    id: 'link',
+    name: 'Link',
+    description:
+      'A labelled pointer used for navigation and CTAs. Points at an internal entry via target, or at externalUrl when target is empty.',
+    displayField: 'label',
+    fields: [
+      { id: 'label', name: 'Label', type: 'Symbol', required: true, validations: [{ size: { max: 80 } }] },
+      entryLink('target', 'Target', LINK_TARGET_TYPES),
+      { id: 'externalUrl', name: 'External URL', type: 'Symbol', validations: [urlValidation] },
+      symbolIn('style', 'Style', ['primary', 'secondary', 'text'], defaultValue('text')),
+      entryLinks('children', 'Children', ['link']),
+    ],
+  },
+  {
+    id: 'linkGroup',
+    name: 'Link group',
+    description: 'A footer column or sub-navigation group: a heading with an ordered list of links.',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol', required: true },
+      entryLinks('links', 'Links', ['link']),
+    ],
+  },
+  {
+    id: 'bannerButton',
+    name: 'Banner with button',
+    description:
+      'componentCode: c002-banner-button. Full-width banner with eyebrow, heading, body, image and one CTA. Also used as the VLP mso banner.',
+    displayField: 'heading',
+    fields: [
+      { id: 'eyebrow', name: 'Eyebrow', type: 'Symbol' },
+      { id: 'heading', name: 'Heading', type: 'Symbol', required: true },
+      { id: 'body', name: 'Body', type: 'Text' },
+      imageAsset('image', 'Image'),
+      entryLink('cta', 'CTA', ['link']),
+      symbolIn('theme', 'Theme', ['carbon', 'colnbrook', 'white'], defaultValue('carbon')),
+    ],
+  },
+  {
+    id: 'vehicleCategory',
+    name: 'Vehicle category',
+    description:
+      'componentCode: t002-header (intro). A category tab on /current-models: Supercars, Grand Tourers, Hypercars, Motorsport. Vehicles are queried by category, not curated.',
+    displayField: 'name',
+    fields: [
+      { id: 'name', name: 'Name', type: 'Symbol', required: true },
+      {
+        id: 'slug',
+        name: 'Slug',
+        type: 'Symbol',
+        required: true,
+        validations: [{ unique: true }, { regexp: { pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' } }],
+      },
+      { id: 'intro', name: 'Intro', type: 'Text' },
+      { id: 'order', name: 'Order', type: 'Integer' },
+      imageAsset('heroImage', 'Hero image'),
+      entryLink('featuredBanner', 'Featured banner', ['bannerButton']),
+      entryLink('seo', 'SEO', ['seoMetadata']),
+    ],
+  },
+  {
+    id: 'specification',
+    name: 'Specification',
+    description:
+      'componentCode: x003-specs. One labelled figure (Top speed 332 km/h). Featured specifications render as tiles; a vehicle should feature at most three.',
+    displayField: 'label',
+    fields: [
+      { id: 'label', name: 'Label', type: 'Symbol', required: true },
+      { id: 'value', name: 'Value', type: 'Symbol', required: true },
+      { id: 'unit', name: 'Unit', type: 'Symbol' },
+      symbolIn('group', 'Group', ['performance', 'powertrain', 'dimensions', 'weight'], { required: true }),
+      { id: 'featured', name: 'Featured', type: 'Boolean', ...defaultValue(false) },
+      { id: 'order', name: 'Order', type: 'Integer' },
+    ],
+  },
+  {
+    id: 'featureHighlight',
+    name: 'Feature highlight',
+    description:
+      'componentCode: in-detail. One highlight in the Exterior / Interior tabs; the area field decides which tab it appears in.',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'body', name: 'Body', type: 'Text' },
+      symbolIn('area', 'Area', ['exterior', 'interior'], { required: true }),
+      { id: 'tag', name: 'Tag', type: 'Symbol' },
+      imageAsset('image', 'Image'),
+    ],
+  },
+  {
+    id: 'mediaSlide',
+    name: 'Media slide',
+    description: 'componentCode: c060-full-bleed-carousel. One slide of the VLP overview carousel: heading, body and media.',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol', required: true },
+      { id: 'body', name: 'Body', type: 'Text' },
+      {
+        id: 'media',
+        name: 'Media',
+        type: 'Link',
+        linkType: 'Asset',
+        required: true,
+        validations: [{ linkMimetypeGroup: ['image', 'video'] }],
+      },
+    ],
+  },
+  {
+    id: 'lineageEntry',
+    name: 'Lineage entry',
+    description: 'componentCode: P001EvolutionLineage. A year-stamped predecessor in the VLP lineage timeline.',
+    displayField: 'title',
+    fields: [
+      { id: 'year', name: 'Year', type: 'Integer', required: true, validations: [{ range: { min: 1960, max: 2100 } }] },
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'body', name: 'Body', type: 'Text' },
+      imageAsset('image', 'Image'),
+      entryLink('vehicle', 'Vehicle', ['vehicle']),
+    ],
+  },
+  {
+    id: 'faqItem',
+    name: 'FAQ item',
+    description: 'A question and rich-text answer shown as a disclosure at the end of a vehicle page.',
+    displayField: 'question',
+    fields: [
+      { id: 'question', name: 'Question', type: 'Symbol', required: true },
+      { id: 'answer', name: 'Answer', type: 'RichText' },
+    ],
+  },
+  {
+    id: 'textBlock',
+    name: 'Text block',
+    description:
+      'componentCode: t001-text (variant text), t002-header (variant header). Rich text section with optional heading and theme.',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol' },
+      { id: 'body', name: 'Body', type: 'RichText', required: true },
+      symbolIn('variant', 'Variant', ['text', 'header'], defaultValue('text')),
+      symbolIn('theme', 'Theme', ['white', 'mist', 'carbon'], defaultValue('white')),
+    ],
+  },
+  {
+    id: 'imageBlock',
+    name: 'Image block',
+    description: 'componentCode: m020-image. A single image section with optional caption, contained or full width.',
+    displayField: 'caption',
+    fields: [
+      imageAsset('image', 'Image', { required: true }),
+      { id: 'caption', name: 'Caption', type: 'Symbol' },
+      symbolIn('layout', 'Layout', ['contained', 'full'], defaultValue('contained')),
+    ],
+  },
+  {
+    id: 'card',
+    name: 'Card',
+    description: 'An experience or generic promo card: title, body, image and one CTA.',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      { id: 'body', name: 'Body', type: 'Text' },
+      imageAsset('image', 'Image'),
+      entryLink('cta', 'CTA', ['link']),
+    ],
+  },
+  {
+    id: 'cardGrid',
+    name: 'Card grid',
+    description: 'A grid of cards with an optional heading (Experiences: Winter Ball, Arctic Experience).',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol' },
+      entryLinks('cards', 'Cards', ['card'], { required: true }),
+    ],
+  },
+  {
+    id: 'ctaGroup',
+    name: 'CTA group',
+    description: 'The "Continue your journey" group of links at the end of a page.',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol', ...defaultValue('Continue your journey') },
+      entryLinks('links', 'Links', ['link'], { required: true }),
+    ],
+  },
+  {
+    id: 'story',
+    name: 'Story',
+    description:
+      'componentCode: h001-hero. An editorial post under /post/<slug> with kicker, standfirst, sections and related vehicles.',
     displayField: 'title',
     fields: [
       { id: 'title', name: 'Title', type: 'Symbol', required: true },
@@ -23,55 +275,147 @@ export const CONTENT_TYPES = [
         name: 'Slug',
         type: 'Symbol',
         required: true,
-        validations: [{ unique: true }],
+        validations: [{ unique: true }, { regexp: { pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' } }],
       },
-      { id: 'body', name: 'Body', type: 'Text' },
-      { id: 'publishDate', name: 'Publish date', type: 'Date' },
+      { id: 'kicker', name: 'Kicker', type: 'Symbol' },
+      { id: 'publishDate', name: 'Publish date', type: 'Date', required: true },
+      { id: 'standfirst', name: 'Standfirst', type: 'Text' },
+      imageAsset('heroImage', 'Hero image', { required: true }),
+      imageAsset('cardImage', 'Card image'),
+      entryLinks('sections', 'Sections', STORY_SECTION_TYPES),
+      entryLinks('relatedVehicles', 'Related vehicles', ['vehicle']),
+      entryLink('seo', 'SEO', ['seoMetadata']),
+    ],
+  },
+  {
+    id: 'vehicle',
+    name: 'Vehicle',
+    description:
+      'componentCode: h010-vlp-hero, product-sub-nav, t006-statement, c060-full-bleed-carousel, in-detail, x003-specs, mso, P001EvolutionLineage, relevant-content-section. One entry per model variant; renders the vehicle landing page.',
+    displayField: 'name',
+    fields: [
+      { id: 'name', name: 'Name', type: 'Symbol', required: true },
       {
-        id: 'author',
-        name: 'Author',
-        type: 'Link',
-        linkType: 'Entry',
-        validations: [{ linkContentType: ['author'] }],
+        id: 'slug',
+        name: 'Slug',
+        type: 'Symbol',
+        required: true,
+        validations: [{ unique: true }, { regexp: { pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' } }],
       },
+      entryLink('category', 'Category', ['vehicleCategory'], { required: true }),
+      symbolIn('status', 'Status', ['current', 'legacy', 'motorsport'], { required: true }),
+      symbolIn('bodyStyle', 'Body style', ['coupe', 'spider', 'gt', 'race']),
+      { id: 'order', name: 'Order', type: 'Integer' },
+      entryLink('parentModel', 'Parent model', ['vehicle']),
+      { id: 'shortDescription', name: 'Short description', type: 'Text', validations: [{ size: { max: 200 } }] },
+      { id: 'tagline', name: 'Tagline', type: 'Symbol' },
+      { id: 'statement', name: 'Statement', type: 'Text' },
+      imageAsset('heroImage', 'Hero image', { required: true }),
+      imageAsset('cardImage', 'Card image'),
+      { id: 'filmUrl', name: 'Film URL', type: 'Symbol', validations: [urlValidation] },
+      { id: 'configureUrl', name: 'Configure URL', type: 'Symbol', validations: [urlValidation] },
+      { id: 'enquiryUrl', name: 'Enquiry URL', type: 'Symbol', validations: [urlValidation] },
+      { id: 'downloads', name: 'Downloads', type: 'Array', items: { type: 'Link', linkType: 'Asset', validations: [] } },
+      entryLinks('overviewSlides', 'Overview slides', ['mediaSlide']),
+      entryLinks('highlights', 'Highlights', ['featureHighlight']),
+      entryLinks('specifications', 'Specifications', ['specification']),
+      { id: 'performanceHeading', name: 'Performance heading', type: 'Symbol' },
+      { id: 'performanceBody', name: 'Performance body', type: 'Text' },
+      { id: 'lineageIntro', name: 'Lineage intro', type: 'Text' },
+      entryLinks('lineage', 'Lineage', ['lineageEntry']),
+      entryLink('msoBanner', 'MSO banner', ['bannerButton']),
+      entryLinks('relatedStories', 'Related stories', ['story']),
+      entryLinks('faqs', 'FAQs', ['faqItem']),
+      {
+        id: 'yearIntroduced',
+        name: 'Year introduced',
+        type: 'Integer',
+        validations: [{ range: { min: 1960, max: 2100 } }],
+      },
+      entryLink('seo', 'SEO', ['seoMetadata']),
+    ],
+  },
+  {
+    id: 'vehicleGrid',
+    name: 'Vehicle grid',
+    description: 'componentCode: P110ProductCards. A curated grid of vehicle product cards (category pages query instead).',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol' },
+      entryLinks('vehicles', 'Vehicles', ['vehicle'], { required: true }),
+    ],
+  },
+  {
+    id: 'storyGrid',
+    name: 'Story grid',
+    description:
+      'componentCode: relevant-content-section. Related story cards; an empty list means the latest three by publishDate.',
+    displayField: 'heading',
+    fields: [
+      { id: 'heading', name: 'Heading', type: 'Symbol', ...defaultValue('Stories') },
+      entryLinks('stories', 'Stories', ['story']),
+    ],
+  },
+  {
+    id: 'page',
+    name: 'Page',
+    description:
+      'componentCode: h001-hero, n010-sub-navigation. Modular page for everything that is not a vehicle, category or story. Nested slugs use / (ownership/roadside-assistance).',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      {
+        id: 'slug',
+        name: 'Slug',
+        type: 'Symbol',
+        required: true,
+        validations: [{ unique: true }, { regexp: { pattern: '^[a-z0-9]+(-[a-z0-9]+)*(/[a-z0-9]+(-[a-z0-9]+)*)*$' } }],
+      },
+      { id: 'kicker', name: 'Kicker', type: 'Symbol' },
+      imageAsset('heroImage', 'Hero image'),
+      symbolIn('heroStyle', 'Hero style', ['full', 'compact'], defaultValue('compact')),
+      entryLink('parent', 'Parent', ['page']),
+      { id: 'order', name: 'Order', type: 'Integer' },
+      entryLinks('sections', 'Sections', SECTION_TYPES),
+      entryLink('seo', 'SEO', ['seoMetadata']),
+    ],
+  },
+  {
+    id: 'retailer',
+    name: 'Retailer',
+    description: 'A retailer location for the query-driven /retailers list, with a Location field for the map link.',
+    displayField: 'name',
+    fields: [
+      { id: 'name', name: 'Name', type: 'Symbol', required: true },
+      { id: 'city', name: 'City', type: 'Symbol', required: true },
+      { id: 'country', name: 'Country', type: 'Symbol', required: true },
+      { id: 'address', name: 'Address', type: 'Text' },
+      { id: 'phone', name: 'Phone', type: 'Symbol' },
+      { id: 'website', name: 'Website', type: 'Symbol', validations: [urlValidation] },
+      { id: 'location', name: 'Location', type: 'Location' },
+    ],
+  },
+  {
+    id: 'siteSettings',
+    name: 'Site settings',
+    description:
+      'Singleton (entry id: site). Site name, main navigation, footer groups, social and legal links, retailer link and home page.',
+    displayField: 'siteName',
+    fields: [
+      { id: 'siteName', name: 'Site name', type: 'Symbol', required: true },
+      { id: 'locale', name: 'Locale', type: 'Symbol', ...defaultValue('gl_en') },
+      entryLinks('mainNavigation', 'Main navigation', ['link']),
+      entryLinks('footerGroups', 'Footer groups', ['linkGroup']),
+      entryLinks('socialLinks', 'Social links', ['link']),
+      { id: 'newsletterText', name: 'Newsletter text', type: 'Text' },
+      entryLink('retailerLink', 'Retailer link', ['link']),
+      entryLinks('legalLinks', 'Legal links', ['link']),
+      entryLink('homePage', 'Home page', ['page']),
     ],
   },
 ];
 
-/**
- * Sample entries, keyed by a stable entry ID so re-running setup updates
- * rather than duplicates. `links` names fields that reference other
- * sample entries by their ID.
- */
-export const ENTRIES = [
-  {
-    id: 'demo-author-ada',
-    contentType: 'author',
-    fields: {
-      name: 'Ada Lovelace',
-      bio: 'Mathematician and the first computer programmer.',
-    },
-  },
-  {
-    id: 'demo-post-hello',
-    contentType: 'blogPost',
-    fields: {
-      title: 'Hello, Contentful',
-      slug: 'hello-contentful',
-      body: 'This entry was created by the contentful-demo setup script.',
-      publishDate: '2026-10-20T00:00:00Z',
-    },
-    links: { author: 'demo-author-ada' },
-  },
-  {
-    id: 'demo-post-modeling',
-    contentType: 'blogPost',
-    fields: {
-      title: 'Modeling content with the Management API',
-      slug: 'modeling-content-with-the-management-api',
-      body: 'Content types and entries are both just JSON. This post links to an author entry.',
-      publishDate: '2026-10-21T00:00:00Z',
-    },
-    links: { author: 'demo-author-ada' },
-  },
-];
+/** Looks up a content type definition by ID. */
+export function getContentType(id) {
+  return CONTENT_TYPES.find((type) => type.id === id);
+}
