@@ -26,9 +26,10 @@ const mounts = {
 };
 
 const config = window.CONTENTFUL_CONFIG;
-const state = { siteSettings: null, categories: [], requestId: 0 };
+const state = { siteSettings: null, categories: [], requestId: 0, headSet: false };
 
 function setHead({ title, description } = {}) {
+  state.headSet = true;
   const siteName = state.siteSettings?.fields?.siteName || 'McLaren';
   if (title !== undefined) {
     document.title = title && title !== siteName ? `${title} | ${siteName}` : siteName;
@@ -143,9 +144,9 @@ async function handleRoute(route, cda) {
       return;
     }
     const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
-    const titleBefore = document.title;
+    state.headSet = false;
     showMain(renderer(data, buildContext(cda, route)));
-    if (document.title === titleBefore) setHead({ title: fallbackTitle(view, data) });
+    if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
   } catch (error) {

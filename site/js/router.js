@@ -173,7 +173,7 @@ export async function loadRoute(route, cda) {
     case 'story': {
       const entry = await cda.getBySlug('story', params.slug, 4);
       if (!entry) return { view: 'notFound', data: { route } };
-      const latestStories = needsLatestStories(entry) ? await cda.getStories(3) : [];
+      const latestStories = await cda.getStories(4);
       return { view: 'story', data: { entry, latestStories } };
     }
     case 'retailers': {
