@@ -1,12 +1,21 @@
 # contentful-demo
 
-Small Node.js project that talks to the Contentful space
-[za8ljzyomqr0](https://app.contentful.com/spaces/za8ljzyomqr0/home). It
-verifies credentials, provisions a content model, and seeds sample entries.
+A McLaren-style automotive demo built on Contentful. The Node.js scripts
+provision a content model and seed content into the space
+[za8ljzyomqr0](https://app.contentful.com/spaces/za8ljzyomqr0/home). A
+dependency-free static front end reads the published content through the
+Delivery API and is hosted on GitHub Pages at
+<https://judgedicewt.github.io/contentful-demo/>.
+
+The content model and page inventory mirror the information architecture of
+[mclaren.com/cars/gl_en](https://www.mclaren.com/cars/gl_en). The design
+document in `docs/plans/2026-10-20-mclaren-schema-design.md` maps each
+McLaren page component to a content type and lists every seeded page. The
+delivery plan is in `docs/plans/2026-10-20-mclaren-schema.md`.
 
 ## Prerequisites
 
-- Node.js 18 or later.
+- Node.js 22 or later.
 - A Contentful Management API token and a Delivery API token for the space.
 
 ## Configuration
@@ -18,57 +27,95 @@ process environment take precedence over `.env`.
 | --- | --- |
 | `CONTENTFUL_SPACE_ID` | Space to operate on. Defaults to `za8ljzyomqr0` in `.env`. |
 | `CONTENTFUL_ENVIRONMENT` | Environment within the space. Defaults to `master` in `.env`. |
-| `CONTENTFUL_MANAGEMENT_TOKEN` | Used by `setup` to create and publish content. |
-| `CONTENTFUL_DELIVERY_TOKEN` | Used by `check` and `fetch` to read published content. |
+| `CONTENTFUL_MANAGEMENT_TOKEN` | Used by `setup` and `teardown:blog` to write content. |
+| `CONTENTFUL_DELIVERY_TOKEN` | Used by `check`, `fetch`, `verify`, and the front end to read published content. |
 | `CONTENTFUL_PREVIEW_TOKEN` | Optional. Reserved for reading draft content. |
 
-To change the non-secret defaults, edit `.env`. Don't put tokens in `.env`
-if the file is committed. `.env` is listed in `.gitignore`; `.env.example`
-documents the expected shape.
+To change the non-secret defaults, edit `.env`. Don't put tokens in `.env`.
+`.env` is listed in `.gitignore`, and `.env.example` documents the expected
+shape.
 
 ## Scripts
 
 ```sh
 npm install
-npm run check    # Verifies env vars and that both APIs accept the tokens.
-npm run setup    # Creates or updates the content model and sample entries.
-npm run fetch    # Reads the blog posts back through the Delivery API.
-npm run dev      # Generates site/config.js and serves the front end on :4173.
+npm run check          # Verifies env vars and that both APIs accept the tokens.
+npm run setup          # Creates or updates the content model, assets, and entries.
+npm run verify         # Compares the published space against the seed data.
+npm run fetch          # Lists the published vehicles through the Delivery API.
+npm run placeholders   # Regenerates the SVG placeholder images.
+npm run teardown:blog  # Removes the original blogPost and author demo content.
+npm run dev            # Generates site/config.js and serves the front end on :4173.
+npm test               # Runs the unit tests.
 ```
 
-`setup` is idempotent. Content types and entries use fixed IDs, so running it
-again updates and republishes them instead of creating duplicates.
+`setup` accepts a few flags:
 
-## What `setup` creates
+```sh
+node scripts/setup.js --dry-run              # Validate seeds and print the plan without writing.
+node scripts/setup.js --types-only           # Create or update content types only.
+node scripts/setup.js --only=vehicles,pages  # Provision selected seed groups.
+```
 
-Content types:
+`setup` is idempotent. Content types, assets, and entries use fixed IDs, so
+running it again updates and republishes them instead of creating duplicates.
+It validates every seed against the content model before it writes anything,
+publishes entries in two passes so circular links resolve, and retries on
+rate limits.
 
-- `author` with `name` and `bio`.
-- `blogPost` with `title`, a unique `slug`, `body`, `publishDate`, and an
-  `author` link restricted to `author` entries.
+## Content model
 
-Entries:
+`src/content-model.js` defines 22 content types in dependency order. Each
+description names the McLaren component it stands in for.
 
-- One author, `demo-author-ada`.
-- Two blog posts, `demo-post-hello` and `demo-post-modeling`, both linked to
-  that author.
+| Group | Content types |
+| --- | --- |
+| Site | `siteSettings`, `seoMetadata`, `link`, `linkGroup`, `bannerButton` |
+| Vehicles | `vehicle`, `vehicleCategory`, `specification`, `featureHighlight`, `mediaSlide`, `lineageEntry`, `faqItem` |
+| Sections | `textBlock`, `imageBlock`, `media`, `card`, `cardGrid`, `ctaGroup`, `vehicleGrid`, `storyGrid` |
+| Pages | `page`, `story`, `retailer` |
 
-The model lives in `src/content-model.js`. Edit it and re-run `npm run setup`
-to change what gets provisioned.
+A `vehicle` carries its hero, strapline, specifications, highlights, carousel
+slides, lineage, FAQs, and SEO metadata, and links to a `vehicleCategory`. A
+`page` is a slug plus an ordered list of sections drawn from the section
+types, which is how home, legacy, ownership, experiences, and MSO pages are
+composed. Field validations restrict link targets, enforce unique slugs, and
+constrain enumerated values such as body style and status.
 
-## Running behind an HTTPS proxy
+## Seed content
 
-`contentful-management` bundles its own axios, which at 1.15.x doesn't tunnel
-HTTPS through a proxy correctly and fails with `405 Method Not Allowed`.
-`src/clients.js` works around this by passing the installed top-level axios
-HTTP adapter to the management client. Keep `axios` at 1.16.1 or later.
+`src/seed/` holds the seed data as plain objects grouped by type. `setup`
+creates:
+
+- 11 vehicles across 4 categories (Supercars, Grand Tourers, Hypercars, and
+  Motorsport): Artura, Artura Spider, 750S, 750S Spider,
+  GTS, and W1 as current models; Artura GT4 as a race car; and
+  720S, 765LT, P1, and F1 as legacy models.
+- 8 composed pages: home, legacy, legacy/2010s, legacy/1990s, ownership,
+  ownership/roadside-assistance, experiences, and mso.
+- 4 stories, 6 retailers, and one `siteSettings` singleton that drives the
+  header navigation and footer.
+- 86 SVG placeholder images under `assets/placeholders/`, generated by
+  `npm run placeholders` from `src/placeholders/manifest.js`.
 
 ## Front end
 
-`site/` is a dependency-free static page that lists the blog posts and shows
-each one, reading published content from the Delivery API in the browser.
-It uses hash routing (`#/` and `#/post/<slug>`), so it needs no server-side
-rewrites.
+`site/` is a static ES-module app with no build step. It uses hash routing so
+GitHub Pages needs no rewrites. Routes mirror McLaren's paths:
+
+| Route | View |
+| --- | --- |
+| `#/` | Home page |
+| `#/<vehicle-slug>` | Vehicle page, for example `#/750s` |
+| `#/current-models/<category-slug>` | Category listing |
+| `#/post/<story-slug>` | Story |
+| `#/retailers` | Retailer finder |
+| `#/<page-slug>` or `#/<parent>/<child>` | Composed page, for example `#/legacy/2010s` |
+
+`site/js/cda.js` wraps the Delivery API and resolves links. `site/js/router.js`
+matches routes and loads data. `site/js/render/` holds one renderer per view
+and one per section type. `site/js/dom.js` provides a tagged template that
+escapes interpolated values.
 
 The page reads its settings from `site/config.js`, which is generated and not
 committed. Run `npm run dev` to generate it from your environment and serve
@@ -91,3 +138,17 @@ every push to `main`. One-time setup in the GitHub repository:
 3. Push to `main` or run the workflow manually from the **Actions** tab.
 
 The site is then served at `https://<owner>.github.io/<repo>/`.
+
+## Running behind an HTTPS proxy
+
+`contentful-management` bundles its own axios, which at 1.15.x doesn't tunnel
+HTTPS through a proxy correctly and fails with `405 Method Not Allowed`.
+`src/clients.js` works around this by passing the installed top-level axios
+HTTP adapter to the management client. Keep `axios` at 1.16.1 or later.
+
+## Tests
+
+`npm test` runs the `node --test` suites in `test/`. They cover seed
+validation and the provisioning request layer, placeholder generation, the
+Delivery API client and link resolver, rich text rendering, routing, and the
+view renderers. The tests use fixtures and make no network calls.

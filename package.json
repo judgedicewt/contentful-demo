@@ -2,7 +2,7 @@
   "name": "contentful-demo",
   "version": "0.1.0",
   "private": true,
-  "description": "Demo project for the Contentful space za8ljzyomqr0: verifies credentials, provisions a content model, and seeds sample entries.",
+  "description": "McLaren-style automotive demo on Contentful: provisions the content model, seeds vehicles and pages, and serves a static front end.",
   "type": "module",
   "engines": {
     "node": ">=18"

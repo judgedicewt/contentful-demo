@@ -1,6 +1,6 @@
 /**
- * Reads published blog posts back through the Delivery API and prints them,
- * resolving the linked author. Useful for confirming `npm run setup` worked.
+ * Reads published vehicles back through the Delivery API and prints them
+ * grouped by category. Useful for confirming `npm run setup` worked.
  */
 import { createDeliveryClient } from '../src/clients.js';
 import { loadConfig } from '../src/config.js';
@@ -13,13 +13,26 @@ if (config.missing.length > 0) {
 
 const client = createDeliveryClient(config);
 
-const posts = await client.getEntries({ content_type: 'blogPost', order: 'fields.publishDate', include: 1 });
-console.log(`${posts.total} blog post(s)\n`);
-for (const post of posts.items) {
-  const { title, slug, publishDate, author } = post.fields;
-  console.log(`${title}`);
-  console.log(`  slug:    ${slug}`);
-  console.log(`  date:    ${publishDate ?? '(none)'}`);
-  console.log(`  author:  ${author?.fields?.name ?? '(none)'}`);
+const result = await client.getEntries({
+  content_type: 'vehicle',
+  order: 'fields.category.sys.id,fields.yearIntroduced',
+  include: 1,
+  limit: 100,
+});
+console.log(`${result.total} vehicle(s)\n`);
+
+const byCategory = new Map();
+for (const vehicle of result.items) {
+  const category = vehicle.fields.category?.fields?.name ?? '(no category)';
+  if (!byCategory.has(category)) byCategory.set(category, []);
+  byCategory.get(category).push(vehicle);
+}
+
+for (const [category, vehicles] of byCategory) {
+  console.log(category);
+  for (const vehicle of vehicles) {
+    const { name, slug, status, yearIntroduced } = vehicle.fields;
+    console.log(`  ${name}  (#/${slug}, ${status ?? 'unknown'}, ${yearIntroduced ?? '?'})`);
+  }
   console.log('');
 }
