@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="Artura hero placeholder">
+<title>Artura hero (placeholder)</title>
+<defs>
+<linearGradient id="g-img-artura-hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141414"/><stop offset="1" stop-color="#222222"/></linearGradient>
+<pattern id="t-img-artura-hero" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#ffffff" stroke-width="1" stroke-opacity="0.05"/></pattern>
+</defs>
+<rect width="1920" height="1080" fill="url(#g-img-artura-hero)"/>
+<rect width="1920" height="1080" fill="url(#t-img-artura-hero)"/>
+<line x1="0" y1="720.7" x2="1920" y2="720.7" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<g transform="translate(272.7 280.8) scale(1.3745)"><ellipse cx="500" cy="322" rx="470" ry="9" fill="#000000" opacity="0.28"/><path d="M22 244C22 226 40 216 84 211L236 200C280 170 340 140 410 132C440 128 480 128 508 134C570 148 630 170 690 182L930 196C956 200 966 226 950 246L942 258L880 264L130 264L50 260Z" fill="#d9d9d9"/><path d="M750 158L948 172L948 182L750 170Z M898 180L910 180L918 198L906 198Z" fill="#d9d9d9"/><path d="M600 214L648 204L648 248L620 248Z" fill="#141414"/><path d="M56 222L114 214L124 226L70 232Z" fill="#141414"/><circle cx="200" cy="270" r="62" fill="#141414"/><circle cx="200" cy="270" r="50" fill="#d9d9d9"/><circle cx="200" cy="270" r="29" fill="#141414"/><circle cx="200" cy="270" r="12" fill="#d9d9d9"/><circle cx="800" cy="270" r="62" fill="#141414"/><circle cx="800" cy="270" r="50" fill="#d9d9d9"/><circle cx="800" cy="270" r="29" fill="#141414"/><circle cx="800" cy="270" r="12" fill="#d9d9d9"/></g>
+<g font-family="system-ui, sans-serif" fill="#f4f4f4">
+<rect x="173" y="844" width="50" height="4" fill="#ff8000"/>
+<text x="173" y="884" font-size="21" letter-spacing="4.6" fill="#9c9c9c">HERO · 1920 × 1080</text>
+<text x="173" y="959" font-size="56" font-weight="600" letter-spacing="5.6">ARTURA HERO</text>
+<rect x="1529" y="121" width="218" height="46" rx="23" fill="none" stroke="#9c9c9c" stroke-width="1.5"/>
+<text x="1638" y="151" font-size="21" letter-spacing="3.8" text-anchor="middle" fill="#9c9c9c">PLACEHOLDER</text>
+</g>
+</svg>

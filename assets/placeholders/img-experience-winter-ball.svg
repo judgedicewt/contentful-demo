@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="Winter Ball experience placeholder">
+<title>Winter Ball experience (placeholder)</title>
+<defs>
+<linearGradient id="g-img-experience-winter-ball" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1626"/><stop offset="1" stop-color="#17243a"/></linearGradient>
+<pattern id="t-img-experience-winter-ball" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#ffffff" stroke-width="1" stroke-opacity="0.05"/></pattern>
+</defs>
+<rect width="1200" height="900" fill="url(#g-img-experience-winter-ball)"/>
+<rect width="1200" height="900" fill="url(#t-img-experience-winter-ball)"/>
+<line x1="0" y1="575.5" x2="1200" y2="575.5" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1"/>
+<g transform="translate(108 260.6) scale(0.984)"><circle cx="500" cy="165" r="150" fill="none" stroke="#cfd8e4" stroke-width="3" opacity="0.55"/><circle cx="540" cy="165" r="110" fill="none" stroke="#cfd8e4" stroke-width="3" opacity="0.35"/><circle cx="580" cy="165" r="70" fill="none" stroke="#cfd8e4" stroke-width="3" opacity="0.2"/></g>
+<g font-family="system-ui, sans-serif" fill="#f1f4f8">
+<rect x="108" y="727" width="42" height="3" fill="#ff8000"/>
+<text x="108" y="761" font-size="18" letter-spacing="4" fill="#8d9db3">CARD · 1200 × 900</text>
+<text x="108" y="824" font-size="47" font-weight="600" letter-spacing="4.7">WINTER BALL EXPERIENCE</text>
+<rect x="906" y="76" width="186" height="40" rx="20" fill="none" stroke="#8d9db3" stroke-width="1.5"/>
+<text x="999" y="102" font-size="18" letter-spacing="3.2" text-anchor="middle" fill="#8d9db3">PLACEHOLDER</text>
+</g>
+</svg>

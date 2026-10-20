@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-label="Artura Spider MSO placeholder">
+<title>Artura Spider MSO (placeholder)</title>
+<defs>
+<linearGradient id="g-img-artura-spider-mso" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff8000"/><stop offset="1" stop-color="#ff962b"/></linearGradient>
+<pattern id="t-img-artura-spider-mso" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#000000" stroke-width="1" stroke-opacity="0.05"/></pattern>
+</defs>
+<rect width="1600" height="1000" fill="url(#g-img-artura-spider-mso)"/>
+<rect width="1600" height="1000" fill="url(#t-img-artura-spider-mso)"/>
+<line x1="0" y1="667.3" x2="1600" y2="667.3" stroke="#000000" stroke-opacity="0.12" stroke-width="1"/>
+<g transform="translate(163.6 260) scale(1.2727)"><ellipse cx="500" cy="322" rx="470" ry="9" fill="#3a1a00" opacity="0.28"/><path d="M22 244C22 226 40 216 84 211L236 200C280 170 330 146 396 136L414 136L426 176L500 178C522 178 536 160 560 160L590 160C640 162 680 176 710 184L930 196C956 200 966 226 950 246L942 258L880 264L130 264L50 260Z" fill="#161616"/><path d="M750 158L948 172L948 182L750 170Z M898 180L910 180L918 198L906 198Z" fill="#161616"/><path d="M600 214L648 204L648 248L620 248Z" fill="#ff8000"/><path d="M56 222L114 214L124 226L70 232Z" fill="#ff8000"/><circle cx="200" cy="270" r="62" fill="#ff8000"/><circle cx="200" cy="270" r="50" fill="#161616"/><circle cx="200" cy="270" r="29" fill="#ff8000"/><circle cx="200" cy="270" r="12" fill="#161616"/><circle cx="800" cy="270" r="62" fill="#ff8000"/><circle cx="800" cy="270" r="50" fill="#161616"/><circle cx="800" cy="270" r="29" fill="#ff8000"/><circle cx="800" cy="270" r="12" fill="#161616"/></g>
+<g font-family="system-ui, sans-serif" fill="#161616">
+<rect x="144" y="791" width="47" height="4" fill="#161616"/>
+<text x="144" y="829" font-size="20" letter-spacing="4.4" fill="#5f2e00">DETAIL · 1600 × 1000</text>
+<text x="144" y="899" font-size="52" font-weight="600" letter-spacing="5.2">ARTURA SPIDER MSO</text>
+<rect x="1248" y="101" width="208" height="44" rx="22" fill="none" stroke="#5f2e00" stroke-width="1.5"/>
+<text x="1352" y="130" font-size="20" letter-spacing="3.6" text-anchor="middle" fill="#5f2e00">PLACEHOLDER</text>
+</g>
+</svg>

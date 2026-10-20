@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900" role="img" aria-label="Artura card placeholder">
+<title>Artura card (placeholder)</title>
+<defs>
+<linearGradient id="g-img-artura-card" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6dadd"/><stop offset="1" stop-color="#e7eaec"/></linearGradient>
+<pattern id="t-img-artura-card" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#000000" stroke-width="1" stroke-opacity="0.07"/></pattern>
+</defs>
+<rect width="1200" height="900" fill="url(#g-img-artura-card)"/>
+<rect width="1200" height="900" fill="url(#t-img-artura-card)"/>
+<line x1="0" y1="575.5" x2="1200" y2="575.5" stroke="#000000" stroke-opacity="0.12" stroke-width="1"/>
+<g transform="translate(108 260.6) scale(0.984)"><ellipse cx="500" cy="322" rx="470" ry="9" fill="#000000" opacity="0.28"/><path d="M22 244C22 226 40 216 84 211L236 200C280 170 340 140 410 132C440 128 480 128 508 134C570 148 630 170 690 182L930 196C956 200 966 226 950 246L942 258L880 264L130 264L50 260Z" fill="#1a1a1a"/><path d="M750 158L948 172L948 182L750 170Z M898 180L910 180L918 198L906 198Z" fill="#1a1a1a"/><path d="M600 214L648 204L648 248L620 248Z" fill="#d6dadd"/><path d="M56 222L114 214L124 226L70 232Z" fill="#d6dadd"/><circle cx="200" cy="270" r="62" fill="#d6dadd"/><circle cx="200" cy="270" r="50" fill="#1a1a1a"/><circle cx="200" cy="270" r="29" fill="#d6dadd"/><circle cx="200" cy="270" r="12" fill="#1a1a1a"/><circle cx="800" cy="270" r="62" fill="#d6dadd"/><circle cx="800" cy="270" r="50" fill="#1a1a1a"/><circle cx="800" cy="270" r="29" fill="#d6dadd"/><circle cx="800" cy="270" r="12" fill="#1a1a1a"/></g>
+<g font-family="system-ui, sans-serif" fill="#141414">
+<rect x="108" y="727" width="42" height="3" fill="#ff8000"/>
+<text x="108" y="761" font-size="18" letter-spacing="4" fill="#5c636a">CARD · 1200 × 900</text>
+<text x="108" y="824" font-size="47" font-weight="600" letter-spacing="4.7">ARTURA CARD</text>
+<rect x="906" y="76" width="186" height="40" rx="20" fill="none" stroke="#5c636a" stroke-width="1.5"/>
+<text x="999" y="102" font-size="18" letter-spacing="3.2" text-anchor="middle" fill="#5c636a">PLACEHOLDER</text>
+</g>
+</svg>
