@@ -59,6 +59,13 @@ function closeMenus() {
 
 function bindShell() {
   document.addEventListener('click', (event) => {
+    // The skip link must not touch the hash (the router would treat `#main` as a page).
+    if (event.target.closest('.skip-link')) {
+      event.preventDefault();
+      if (!mounts.main.hasAttribute('tabindex')) mounts.main.setAttribute('tabindex', '-1');
+      mounts.main.focus();
+      return;
+    }
     const navToggle = event.target.closest('[data-nav-toggle]');
     if (navToggle) {
       const open = !document.body.classList.contains('nav-open');
@@ -67,6 +74,8 @@ function bindShell() {
       if (!open) closeMenus();
       return;
     }
+    // Tapping a nav link to the current route fires no hashchange, so close here.
+    if (event.target.closest('.site-nav a')) closeMenus();
     const dropdownToggle = event.target.closest('[data-dropdown-toggle]');
     if (dropdownToggle) {
       const item = dropdownToggle.closest('.has-dropdown');
@@ -93,7 +102,17 @@ function bindShell() {
     }
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMenus();
+    if (event.key !== 'Escape') return;
+    // Return focus to the toggle that owns the open dropdown (or the mobile menu button).
+    const openItem = document.querySelector('.has-dropdown.is-open');
+    const menuOpen = document.body.classList.contains('nav-open');
+    const toggle = openItem
+      ? openItem.querySelector('[data-dropdown-toggle]')
+      : menuOpen
+        ? document.querySelector('[data-nav-toggle]')
+        : null;
+    closeMenus();
+    toggle?.focus();
   });
   window.addEventListener('hashchange', closeMenus);
 }
@@ -133,6 +152,8 @@ function fallbackTitle(view, data) {
 }
 
 async function handleRoute(route, cda) {
+  // In-page anchors are not routes: keep the current view.
+  if (route.name === 'ignore') return;
   const requestId = (state.requestId += 1);
   const isCurrent = () => requestId === state.requestId;
   showMain(renderLoading());
@@ -182,7 +203,8 @@ async function boot() {
 
   const dispatch = (route) => handleRoute(route, cda);
   onRouteChange(dispatch);
-  dispatch(matchRoute(window.location.hash || '#/'));
+  const initial = matchRoute(window.location.hash || '#/');
+  dispatch(initial.name === 'ignore' ? matchRoute('#/') : initial);
 }
 
 boot().catch((error) => {

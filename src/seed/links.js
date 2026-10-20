@@ -66,7 +66,6 @@ const entries = [
   group('group-footer-more', 'More links', ['link-footer-careers', 'link-footer-media', 'link-footer-group']),
   group('group-footer-useful', 'Useful links', ['link-footer-retailers', 'link-footer-roadside', 'link-footer-experiences']),
   group('group-footer-contact', 'Contact us', ['link-footer-contact', 'link-footer-enquire']),
-  group('group-footer-follow', 'Follow us', SOCIAL.map(([slug]) => `link-social-${slug}`)),
 
   // Social
   ...SOCIAL.map(([slug, label, url]) => link(`link-social-${slug}`, label, { url })),

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { CONTENT_TYPES } from '../src/content-model.js';
-import { assetFields, sameAssetMetadata } from '../src/provision/assets.js';
+import { assetFields, provisionAssets, sameAssetMetadata } from '../src/provision/assets.js';
 import { normaliseContentType, sameContentType } from '../src/provision/content-types.js';
 import { sameFields } from '../src/provision/entries.js';
-import { isNotFound, isRateLimited, rateLimitResetSeconds } from '../src/provision/errors.js';
+import { isNetworkError, isNotFound, isRateLimited, isRetryable, isServerError, rateLimitResetSeconds } from '../src/provision/errors.js';
 import { buildEntryFields } from '../src/provision/fields.js';
 import { createRequester, isPublished } from '../src/provision/requests.js';
 import { selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
@@ -218,6 +218,53 @@ test('requester retries 429 up to five attempts and serialises calls', async () 
   assert.deepEqual(order, ['a', 'b']);
 });
 
+test('error helpers classify 5xx and network failures as retryable', () => {
+  assert.ok(isServerError(sdkError(500)));
+  assert.ok(isServerError(sdkError(503)));
+  assert.ok(!isServerError(sdkError(404)));
+  const reset = Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
+  const timeout = Object.assign(new Error('timeout'), { code: 'ETIMEDOUT' });
+  const hangUp = new Error('socket hang up');
+  assert.ok(isNetworkError(reset));
+  assert.ok(isNetworkError(timeout));
+  assert.ok(isNetworkError(hangUp));
+  assert.ok(!isNetworkError(sdkError(404)));
+  assert.ok(!isNetworkError(new Error('plain')));
+  assert.ok(isRetryable(sdkError(429)) && isRetryable(sdkError(502)) && isRetryable(reset));
+  assert.ok(!isRetryable(sdkError(404)) && !isRetryable(sdkError(422)) && !isRetryable(new Error('plain')));
+});
+
+test('requester retries 5xx and network errors with the same cap and backoff', async () => {
+  const waits = [];
+  const request = createRequester({ sleep: async (ms) => waits.push(ms), log: () => {} });
+  let calls = 0;
+  const value = await request('flaky', async () => {
+    calls += 1;
+    if (calls === 1) throw sdkError(503);
+    if (calls === 2) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
+    if (calls === 3) throw new Error('socket hang up');
+    return 'ok';
+  });
+  assert.equal(value, 'ok');
+  assert.equal(calls, 4);
+  assert.deepEqual(waits, [2000, 2000, 2000]);
+
+  let always = 0;
+  await assert.rejects(request('down', async () => { always += 1; throw sdkError(500); }), /500/);
+  assert.equal(always, 5);
+
+  let timeouts = 0;
+  await assert.rejects(
+    request('slow', async () => { timeouts += 1; throw Object.assign(new Error('timeout of 1000ms'), { code: 'ETIMEDOUT' }); }),
+    /timeout/,
+  );
+  assert.equal(timeouts, 5);
+
+  let client = 0;
+  await assert.rejects(request('bad', async () => { client += 1; throw sdkError(422); }), /422/);
+  assert.equal(client, 1);
+});
+
 test('isPublished follows the Contentful version convention', () => {
   assert.ok(isPublished({ sys: { version: 4, publishedVersion: 3 } }));
   assert.ok(!isPublished({ sys: { version: 5, publishedVersion: 3 } }));
@@ -250,9 +297,52 @@ test('sameFields and sameAssetMetadata decide when a write can be skipped', () =
   const seed = { id: 'img', title: 'T', description: 'D', file: 'assets/placeholders/img.svg', contentType: 'image/svg+xml' };
   const fields = assetFields(seed, 'img.svg', 'upload-1');
   assert.equal(fields.file['en-US'].uploadFrom.sys.id, 'upload-1');
-  const stored = { fields: { title: { 'en-US': 'T' }, description: { 'en-US': 'D' }, file: { 'en-US': { fileName: 'img.svg', contentType: 'image/svg+xml', url: '//images.ctfassets.net/x/img.svg' } } } };
-  assert.ok(sameAssetMetadata(stored, seed));
-  assert.ok(!sameAssetMetadata(stored, { ...seed, title: 'Other' }));
+  const stored = { fields: { title: { 'en-US': 'T' }, description: { 'en-US': 'D' }, file: { 'en-US': { fileName: 'img.svg', contentType: 'image/svg+xml', url: '//images.ctfassets.net/x/img.svg', details: { size: 1234 } } } } };
+  assert.ok(sameAssetMetadata(stored, seed, 'img.svg', 1234));
+  assert.ok(!sameAssetMetadata(stored, { ...seed, title: 'Other' }, 'img.svg', 1234));
+  // changed bytes (or unknown length) force a re-upload
+  assert.ok(!sameAssetMetadata(stored, seed, 'img.svg', 1235));
+  assert.ok(!sameAssetMetadata(stored, seed, 'img.svg'));
   delete stored.fields.file['en-US'].url;
-  assert.ok(!sameAssetMetadata(stored, seed));
+  assert.ok(!sameAssetMetadata(stored, seed, 'img.svg', 1234));
+});
+
+test('provisionAssets skips an unchanged asset but re-uploads when the byte size differs', async () => {
+  const seed = { id: 'img', title: 'T', description: 'D', file: 'assets/placeholders/img.svg', contentType: 'image/svg+xml' };
+  const makeStored = (size) => ({
+    sys: { version: 2, publishedVersion: 1 },
+    fields: {
+      title: { 'en-US': 'T' },
+      description: { 'en-US': 'D' },
+      file: { 'en-US': { fileName: 'img.svg', contentType: 'image/svg+xml', url: '//x/img.svg', details: { size } } },
+    },
+  });
+  const run = async (storedSize) => {
+    const uploads = [];
+    const stored = makeStored(storedSize);
+    stored.update = async () => stored;
+    stored.processForAllLocales = async () => {
+      stored.fields.file['en-US'].url = '//x/img.svg';
+      return stored;
+    };
+    stored.publish = async () => ({ ...stored, sys: { version: 4, publishedVersion: 3 } });
+    const environment = {
+      getAsset: async () => stored,
+      createUpload: async ({ file }) => { uploads.push(file.length); return { sys: { id: 'up-1' } }; },
+    };
+    const summary = await provisionAssets(environment, [seed], {
+      log: () => {},
+      readFile: () => Buffer.from('12345'),
+      request: (label, fn) => fn(),
+      sleep: async () => {},
+    });
+    return { summary, uploads };
+  };
+  const same = await run(5);
+  assert.equal(same.summary.unchanged, 1);
+  assert.deepEqual(same.uploads, []);
+  const changed = await run(9);
+  assert.equal(changed.summary.unchanged, 0);
+  assert.equal(changed.summary.updated, 1);
+  assert.deepEqual(changed.uploads, [5]);
 });

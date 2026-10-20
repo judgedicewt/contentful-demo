@@ -9,7 +9,7 @@
  * asset pointing its file at the upload (`uploadFrom`), trigger processing
  * for all locales, wait until the processed file has a URL, then publish.
  * An asset that is already published with the same title, description,
- * file name and content type is reported as `unchanged` and not re-uploaded.
+ * file name, content type and byte size is reported as `unchanged` and not re-uploaded.
  */
 import { readFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
@@ -36,13 +36,14 @@ export async function provisionAssets(environment, assetSeeds, options = {}) {
       if (!isNotFound(error)) throw error;
     }
 
-    if (asset && isPublished(asset) && sameAssetMetadata(asset, seed, fileName)) {
+    const bytes = readFile(resolve(rootDir, seed.file));
+
+    if (asset && isPublished(asset) && sameAssetMetadata(asset, seed, fileName, bytes.length)) {
       summary.unchanged += 1;
       log(`  unchanged asset/${seed.id} (v${asset.sys.publishedVersion})`);
       continue;
     }
 
-    const bytes = readFile(resolve(rootDir, seed.file));
     const upload = await request(`upload ${seed.file}`, () => environment.createUpload({ file: bytes }));
     const fields = assetFields(seed, fileName, upload.sys.id);
 
@@ -81,10 +82,17 @@ export function assetFields(seed, fileName, uploadId) {
   return fields;
 }
 
-export function sameAssetMetadata(asset, seed, fileName = basename(seed.file)) {
+/**
+ * True when the stored asset already matches the seed. `byteLength` is the
+ * size of the local file; it is compared with the stored `file.details.size`
+ * so changed bytes are re-uploaded even when the metadata is identical.
+ */
+export function sameAssetMetadata(asset, seed, fileName = basename(seed.file), byteLength) {
   const file = asset.fields?.file?.[LOCALE];
   return Boolean(
     file?.url &&
+      byteLength !== undefined &&
+      file.details?.size === byteLength &&
       file.fileName === fileName &&
       file.contentType === seed.contentType &&
       asset.fields?.title?.[LOCALE] === seed.title &&

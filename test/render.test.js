@@ -5,7 +5,7 @@ import { html, raw, escapeHtml } from '../site/js/dom.js';
 import { renderRichText } from '../site/js/richtext.js';
 import { routeFor, linkHref } from '../site/js/router.js';
 import { assetUrl } from '../site/js/cda.js';
-import { renderBreadcrumbs } from '../site/js/shell.js';
+import { renderBreadcrumbs, renderHeader, renderFooter } from '../site/js/shell.js';
 import { registry } from '../site/js/render/index.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
@@ -53,7 +53,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 test('registry exposes every view and section key', () => {
   for (const key of [
-    'vehicle', 'vehicleCategory', 'page', 'home', 'story', 'retailers', 'notFound',
+    'vehicle', 'vehicleCategory', 'page', 'home', 'story', 'retailers', 'notFound', 'placeholder',
     'textBlock', 'imageBlock', 'bannerButton', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup',
   ]) {
     assert.equal(typeof registry[key], 'function', key);
@@ -71,7 +71,7 @@ test('vehicle: hero, sub-nav, statement and head', () => {
   assert.match(out, /Less mass, more intent/);
   const heroImg = out.match(/<img[^>]*hero__image[^>]*>/)[0];
   assert.match(heroImg, /w=1920/);
-  assert.match(heroImg, /alt="750S hero artwork"/);
+  assert.match(heroImg, /alt=""/, 'the h1 already names the car, so the hero image is decorative');
   assert.match(heroImg, /width="1600" height="900"|width="1920" height="1080"/);
   assert.doesNotMatch(heroImg, /loading="lazy"/);
   // sub-nav
@@ -92,8 +92,9 @@ test('vehicle: breadcrumbs for a current model', () => {
   const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
   assert.match(out, /aria-label="Breadcrumb"/);
   assert.match(out, /<a href="#\/">Home<\/a>/);
-  assert.match(out, /<a href="#\/current-models\/supercars">Current models<\/a>/);
+  assert.match(out, /<a href="#\/current-models">Current models<\/a>/);
   assert.match(out, /<a href="#\/current-models\/supercars">Supercars<\/a>/);
+  assert.doesNotMatch(out, /<a href="#\/current-models\/supercars">Current models<\/a>/);
   assert.match(out, /<li class="breadcrumbs__item" aria-current="page">750S<\/li>/);
 });
 
@@ -122,6 +123,12 @@ test('vehicle: exterior and interior tabs are radio driven and list highlights b
   assert.match(out, /<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-exterior" checked>/);
   assert.match(out, /<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-interior">/);
   assert.match(out, /<label class="tabs__tab tabs__tab--exterior" for="detail-tab-exterior">Exterior<\/label>/);
+  // radios and labels sit inside one labelled radiogroup
+  const group = out.match(/<div class="tabs__group" role="radiogroup" aria-label="In detail">[\s\S]*?<\/label>\s*<\/div>\s*<\/div>/)[0];
+  assert.match(group, /id="detail-tab-exterior"/);
+  assert.match(group, /id="detail-tab-interior"/);
+  assert.match(group, /for="detail-tab-interior"/);
+  assert.doesNotMatch(group, /tabs__panel/);
   const exterior = out.match(/tabs__panel--exterior[\s\S]*?<\/ul>\s*<\/div>/)[0];
   const interior = out.match(/tabs__panel--interior[\s\S]*?<\/ul>\s*<\/div>/)[0];
   assert.match(exterior, /Carved by air/);
@@ -308,6 +315,18 @@ test('sections: text blocks, image blocks and banners carry their content', () =
   assert.match(out, /<span class="eyebrow">MSO<\/span>/);
 });
 
+test('sections: a text block with an empty body omits the richtext wrapper', () => {
+  const { ctx } = makeCtx();
+  const empty = { nodeType: 'document', data: {}, content: [] };
+  const block = (fields) => ({ sys: { id: 'tb', contentType: { sys: { id: 'textBlock' } } }, fields });
+  const headingOnly = String(registry.textBlock(block({ heading: 'Only a heading', body: empty }), ctx));
+  assert.match(headingOnly, /Only a heading/);
+  assert.doesNotMatch(headingOnly, /richtext/);
+  const header = String(registry.textBlock(block({ heading: 'Header', variant: 'header', body: empty }), ctx));
+  assert.doesNotMatch(header, /richtext/);
+  assert.equal(String(registry.textBlock(block({ body: empty }), ctx)), '');
+});
+
 test('sections: card grid, vehicle grid and cta group', () => {
   const { out } = renderView('page', pageData);
   assert.match(out, /grid-cards grid-cards--two/);
@@ -416,6 +435,61 @@ test('notFound: friendly message with links home and to supercars', () => {
   assert.doesNotMatch(String(registry.notFound({}, makeCtx().ctx)), BAD);
 });
 
+test('placeholder: configure with a resolved vehicle', () => {
+  const route = { name: 'placeholder', params: { path: 'configure/750s', kind: 'configure', slug: '750s' } };
+  const { out, heads } = renderView('placeholder', { route, vehicle: vehicles.full });
+  assert.match(out, /<span class="eyebrow">Placeholder<\/span>/);
+  assert.match(out, /<h1[^>]*>Configure your 750S<\/h1>/);
+  assert.match(out, /placeholder route in the demo/);
+  assert.match(out, /configurator, lead form, or legal page/);
+  assert.match(out, /theme-carbon/);
+  assert.match(out, /href="#\/"[^>]*>Back home</);
+  assert.match(out, /href="#\/750s"[^>]*>Back to 750S</);
+  assert.match(out, /<a href="#\/">Home<\/a>/);
+  assert.match(out, /<li class="breadcrumbs__item" aria-current="page">Configure your 750S<\/li>/);
+  assert.deepEqual(heads, [{ title: 'Configure your 750S', description: '' }]);
+});
+
+test('placeholder: titles per kind, with and without a vehicle', () => {
+  const titleOf = (params, vehicle = null) =>
+    renderView('placeholder', { route: { name: 'placeholder', params }, vehicle }).heads[0].title;
+  assert.equal(titleOf({ kind: 'configure', slug: 'nope', path: 'configure/nope' }), 'Configurator');
+  assert.equal(titleOf({ kind: 'configure', slug: null, path: 'configure' }), 'Configurator');
+  assert.equal(titleOf({ kind: 'enquire', slug: '750s', path: 'enquire/750s' }, vehicles.full), 'Enquire about 750S');
+  assert.equal(titleOf({ kind: 'enquire', slug: null, path: 'enquire' }), 'Enquire');
+  assert.equal(titleOf({ kind: 'contact', slug: null, path: 'contact' }), 'Contact McLaren');
+  assert.equal(titleOf({ kind: 'legal', slug: 'privacy', path: 'legal/privacy' }), 'Legal: privacy');
+  assert.equal(titleOf({ kind: 'legal', slug: null, path: 'legal' }), 'Legal');
+  assert.equal(titleOf({ kind: 'placeholder', slug: 'careers', path: 'placeholder/careers' }), 'Coming soon');
+  assert.equal(titleOf({ kind: 'mcl-6gt', slug: null, path: 'mcl-6gt' }), 'Coming soon');
+  const { out } = renderView('placeholder', { route: { name: 'placeholder', params: { kind: 'contact', slug: null, path: 'contact' } }, vehicle: null });
+  assert.doesNotMatch(out, /Back to /, 'no vehicle, no back-to-vehicle button');
+});
+
+test('placeholder: slug and vehicle name are escaped', () => {
+  const evil = '<script>alert(1)</script>';
+  const out = renderView('placeholder', { route: { name: 'placeholder', params: { kind: 'legal', slug: evil, path: `legal/${evil}` } } }).out;
+  assert.doesNotMatch(out, /<script/i);
+  const vehicle = clone(vehicles.full);
+  vehicle.fields.name = evil;
+  const configured = renderView('placeholder', { route: { name: 'placeholder', params: { kind: 'configure', slug: 'x', path: 'configure/x' } }, vehicle }).out;
+  assert.doesNotMatch(configured, /<script/i);
+});
+
+test('shell: a javascript: externalUrl never reaches an href', () => {
+  const link = (label, externalUrl) => ({ sys: { id: label, contentType: { sys: { id: 'link' } } }, fields: { label, externalUrl } });
+  const evil = 'javascript:alert(1)';
+  const settings = clone(site.siteSettings);
+  settings.fields.mainNavigation = [link('Nav', evil), { ...link('Parent', undefined), fields: { label: 'Parent', children: [link('Child', evil)] } }];
+  settings.fields.retailerLink = link('Retailer', evil);
+  settings.fields.socialLinks = [link('Social', evil)];
+  settings.fields.legalLinks = [link('Legal', evil)];
+  const header = String(renderHeader(settings, []));
+  const footer = String(renderFooter(settings));
+  assert.doesNotMatch(header + footer, /javascript:/i);
+  assert.match(header, /href="#" class="site-nav__retailer"/);
+});
+
 // ---------------------------------------------------------------------------
 // safety
 // ---------------------------------------------------------------------------
@@ -472,6 +546,7 @@ test('every template returns HTML that coerces to a string', () => {
     registry.story(storyData, ctx),
     registry.retailers(retailersData, ctx),
     registry.notFound({ route: { name: 'notFound', params: {} } }, ctx),
+    registry.placeholder({ route: { name: 'placeholder', params: { kind: 'contact', slug: null, path: 'contact' } }, vehicle: null }, ctx),
   ];
   for (const out of outputs) {
     assert.equal(typeof String(out), 'string');

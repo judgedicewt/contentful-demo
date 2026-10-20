@@ -36,6 +36,28 @@ export function isRateLimited(error) {
   return parseError(error).status === 429;
 }
 
+const TRANSIENT_CODES = new Set(['ECONNRESET', 'ETIMEDOUT', 'ECONNABORTED', 'EPIPE', 'EAI_AGAIN']);
+const TRANSIENT_MESSAGE = /ECONNRESET|ETIMEDOUT|ECONNABORTED|EAI_AGAIN|socket hang up/i;
+
+/** True for server errors (HTTP 5xx). */
+export function isServerError(error) {
+  const { status } = parseError(error);
+  return typeof status === 'number' && status >= 500 && status <= 599;
+}
+
+/** True for a transport failure that never produced an HTTP response. */
+export function isNetworkError(error) {
+  if (parseError(error).status) return false;
+  const code = error?.code ?? error?.cause?.code;
+  if (code && TRANSIENT_CODES.has(code)) return true;
+  return TRANSIENT_MESSAGE.test(String(error?.message ?? ''));
+}
+
+/** True when retrying the same request may succeed: 429, 5xx, or a dropped connection. */
+export function isRetryable(error) {
+  return isRateLimited(error) || isServerError(error) || isNetworkError(error);
+}
+
 /**
  * Seconds to wait before retrying a rate-limited request. Reads the
  * `X-Contentful-RateLimit-Reset` header when the error exposes response

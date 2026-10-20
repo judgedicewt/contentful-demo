@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { safeUrl } from '../site/js/dom.js';
 import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref } from '../site/js/router.js';
 
 const entry = (type, fields = {}, id = `${type}-1`) => ({
@@ -70,6 +71,39 @@ test('matchRoute: strips query strings, decodes segments, rejects deep paths', (
   assert.deepEqual(segmentsOf('#/a//b/'), ['a', 'b']);
 });
 
+test('matchRoute: in-page anchors such as the skip link are ignored, not 404s', () => {
+  for (const hash of ['#main', '#content', '#section-2', '#main?x=1']) {
+    assert.deepEqual(matchRoute(hash), { name: 'ignore', params: {} }, hash);
+  }
+  // empty, bare # and real routes are untouched
+  assert.equal(matchRoute('#').name, 'home');
+  assert.equal(matchRoute('').name, 'home');
+  assert.equal(matchRoute('#/main').name, 'page');
+});
+
+test('matchRoute: placeholder destinations at any depth', () => {
+  assert.deepEqual(matchRoute('#/configure/750s'), { name: 'placeholder', params: { path: 'configure/750s', kind: 'configure', slug: '750s' } });
+  assert.deepEqual(matchRoute('#/enquire/artura-spider'), { name: 'placeholder', params: { path: 'enquire/artura-spider', kind: 'enquire', slug: 'artura-spider' } });
+  assert.deepEqual(matchRoute('#/enquire'), { name: 'placeholder', params: { path: 'enquire', kind: 'enquire', slug: null } });
+  assert.deepEqual(matchRoute('#/contact'), { name: 'placeholder', params: { path: 'contact', kind: 'contact', slug: null } });
+  assert.deepEqual(matchRoute('#/legal/privacy'), { name: 'placeholder', params: { path: 'legal/privacy', kind: 'legal', slug: 'privacy' } });
+  assert.deepEqual(matchRoute('#/placeholder/winter-ball'), { name: 'placeholder', params: { path: 'placeholder/winter-ball', kind: 'placeholder', slug: 'winter-ball' } });
+  assert.deepEqual(matchRoute('#/mcl-6gt'), { name: 'placeholder', params: { path: 'mcl-6gt', kind: 'mcl-6gt', slug: null } });
+  const deep = matchRoute('#/configure/750s/extra/segments');
+  assert.equal(deep.name, 'placeholder');
+  assert.equal(deep.params.path, 'configure/750s/extra/segments');
+  assert.equal(deep.params.slug, '750s');
+  assert.equal(matchRoute('#/legal/a/b/c').name, 'placeholder');
+});
+
+test('matchRoute: segments are lowercased', () => {
+  assert.deepEqual(matchRoute('#/W1'), { name: 'page', params: { slug: 'w1' } });
+  assert.deepEqual(matchRoute('#/Legacy/2010S'), { name: 'page', params: { slug: 'legacy/2010s' } });
+  assert.deepEqual(matchRoute('#/Post/W1-Designed-By-Air'), { name: 'story', params: { slug: 'w1-designed-by-air' } });
+  assert.deepEqual(matchRoute('#/Current-Models/Supercars'), { name: 'category', params: { slug: 'supercars' } });
+  assert.equal(matchRoute('#/Configure/750S').params.slug, '750s');
+});
+
 test('routeFor builds hashes per content type', () => {
   assert.equal(routeFor(entry('vehicle', { slug: '750s' })), '#/750s');
   assert.equal(routeFor(entry('vehicleCategory', { slug: 'supercars' })), '#/current-models/supercars');
@@ -88,18 +122,32 @@ test('linkHref resolves targets, external URLs, and missing data', () => {
   // unresolved target (null) falls back to the external URL
   assert.equal(linkHref(entry('link', { label: 'x', target: null, externalUrl: 'https://example.com' })), 'https://example.com');
   assert.equal(linkHref(entry('link', { label: 'Nothing' })), '#');
+  assert.equal(linkHref(entry('link', { label: 'Mail', externalUrl: 'mailto:hello@example.com' })), 'mailto:hello@example.com');
   assert.equal(linkHref(null), '#');
   assert.equal(linkHref('#/retailers'), '#/retailers');
   assert.equal(isExternalHref('https://example.com'), true);
   assert.equal(isExternalHref('#/750s'), false);
 });
 
+test('linkHref never returns an unsafe URL', () => {
+  assert.equal(linkHref(entry('link', { label: 'x', externalUrl: 'javascript:alert(1)' })), '#');
+  assert.equal(linkHref(entry('link', { label: 'x', externalUrl: '  JaVaScRiPt:alert(1)' })), '#');
+  assert.equal(linkHref(entry('link', { label: 'x', externalUrl: 'data:text/html,<script>1</script>' })), '#');
+  assert.equal(linkHref('javascript:alert(1)'), '#');
+  assert.equal(safeUrl('vbscript:x'), '#');
+  assert.equal(safeUrl(''), '#');
+  assert.equal(safeUrl('https://example.com/a'), 'https://example.com/a');
+});
+
 function fakeCda(store) {
   const calls = [];
+  const includes = [];
   return {
     calls,
-    async getBySlug(type, slug) {
+    includes,
+    async getBySlug(type, slug, include) {
       calls.push(['getBySlug', type, slug]);
+      includes.push([type, slug, include]);
       return store[type]?.[slug] || null;
     },
     async getVehiclesInCategory(id) {
@@ -196,4 +244,80 @@ test('loadRoute: home, category, story, retailers, redirect, notFound', async ()
   assert.equal(missing.data.route.params.slug, 'does-not-exist');
   const missingCategory = await loadRoute(matchRoute('#/current-models/nope'), cda);
   assert.equal(missingCategory.view, 'notFound');
+});
+
+test('loadRoute: ignore does nothing and fetches nothing', async () => {
+  const cda = fakeCda({});
+  const result = await loadRoute(matchRoute('#main'), cda);
+  assert.equal(result.view, 'ignore');
+  assert.deepEqual(cda.calls, []);
+});
+
+test('loadRoute: placeholder resolves the vehicle for configure and enquire only', async () => {
+  const gts = entry('vehicle', { slug: 'gts', name: 'GTS' }, 'v-gts');
+  const cda = fakeCda({ vehicle: { gts } });
+
+  const configure = await loadRoute(matchRoute('#/configure/gts'), cda);
+  assert.equal(configure.view, 'placeholder');
+  assert.equal(configure.data.vehicle, gts);
+  assert.equal(configure.data.route.params.kind, 'configure');
+  assert.deepEqual(cda.includes[0], ['vehicle', 'gts', 1]);
+
+  const enquire = await loadRoute(matchRoute('#/enquire/gts'), cda);
+  assert.equal(enquire.data.vehicle, gts);
+
+  const unknown = await loadRoute(matchRoute('#/configure/unknown'), cda);
+  assert.equal(unknown.view, 'placeholder');
+  assert.equal(unknown.data.vehicle, null);
+
+  const before = cda.calls.length;
+  for (const hash of ['#/enquire', '#/contact', '#/legal/privacy', '#/placeholder/gts', '#/mcl-6gt']) {
+    const result = await loadRoute(matchRoute(hash), cda);
+    assert.equal(result.view, 'placeholder', hash);
+    assert.equal(result.data.vehicle, null, hash);
+  }
+  assert.equal(cda.calls.length, before, 'no fetches for kinds without a vehicle');
+});
+
+test('loadRoute: categories load with include depth 3 so featuredBanner.cta.target resolves', async () => {
+  const supercars = entry('vehicleCategory', { slug: 'supercars' }, 'cat-supercars');
+  const cda = fakeCda({ vehicleCategory: { supercars } });
+  await loadRoute(matchRoute('#/current-models/supercars'), cda);
+  assert.deepEqual(cda.includes[0], ['vehicleCategory', 'supercars', 3]);
+});
+
+test('every seeded internal href resolves to a real route or a placeholder', async () => {
+  const { SEED_GROUPS } = await import('../src/seed/index.js');
+  const entries = SEED_GROUPS.flatMap((group) => group.entries);
+  const slugs = (type) => new Set(entries.filter((e) => e.contentType === type).map((e) => e.fields.slug));
+  const known = {
+    page: new Set([...slugs('page'), ...slugs('vehicle')]),
+    story: slugs('story'),
+    category: slugs('vehicleCategory'),
+  };
+  let checked = 0;
+  const walk = (value, where) => {
+    if (typeof value === 'string' && value.startsWith('#/')) {
+      checked += 1;
+      const route = matchRoute(value);
+      assert.notEqual(route.name, 'notFound', `${where}: ${value}`);
+      if (known[route.name]) assert.ok(known[route.name].has(route.params.slug), `${where}: ${value} is not a seeded ${route.name}`);
+    } else if (Array.isArray(value)) value.forEach((v, i) => walk(v, `${where}[${i}]`));
+    else if (value && typeof value === 'object') for (const [k, v] of Object.entries(value)) walk(v, `${where}.${k}`);
+  };
+  for (const entry of entries) walk(entry.fields, entry.id);
+  assert.ok(checked > 20, `expected to check many seeded hrefs, got ${checked}`);
+});
+
+test('the footer lists "Follow us" once: social links come from socialLinks, not a footer group', async () => {
+  const { SEED_GROUPS } = await import('../src/seed/index.js');
+  const entries = SEED_GROUPS.flatMap((group) => group.entries);
+  const site = entries.find((e) => e.contentType === 'siteSettings');
+  assert.ok(site.links.socialLinks.length > 0);
+  assert.ok(!site.links.footerGroups.includes('group-footer-follow'));
+  assert.ok(!entries.some((e) => e.id === 'group-footer-follow'));
+  const headings = entries.filter((e) => e.id?.startsWith('group-footer-')).map((e) => e.fields.heading);
+  assert.ok(!headings.includes('Follow us'));
+  // every footer group reference still resolves to a seeded entry
+  for (const id of site.links.footerGroups) assert.ok(entries.some((e) => e.id === id), id);
 });

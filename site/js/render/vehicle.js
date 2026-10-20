@@ -33,7 +33,7 @@ function breadcrumbs(ctx, entry) {
     { label: 'Home', href: '#/' },
     legacy
       ? { label: 'Legacy', href: '#/legacy' }
-      : { label: 'Current models', href: '#/current-models/supercars' },
+      : { label: 'Current models', href: '#/current-models' },
   ];
   if (isEntry(f.category)) trail.push({ label: f.category.fields.name, href: ctx.routeFor(f.category) });
   trail.push({ label: f.name });
@@ -44,7 +44,7 @@ function hero(ctx, entry) {
   const f = entry.fields;
   return html`
     <section class="hero hero--full hero--vehicle theme-carbon" aria-labelledby="vehicle-title">
-      ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true })}</div>` : ''}
+      ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true, alt: '' })}</div>` : ''}
       <div class="hero__content container">
         ${isEntry(f.category) ? html`<span class="eyebrow">${f.category.fields.name}</span>` : ''}
         <h1 id="vehicle-title" class="hero__title">${f.name}</h1>
@@ -189,12 +189,14 @@ function inDetail(ctx, entry) {
       <div class="container">
         <h2 class="section__title">In detail</h2>
         <div class="tabs">
-          ${areas.map(
-            (area, index) =>
-              html`<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-${area.key}"${index === 0 ? raw(' checked') : ''}>`,
-          )}
-          <div class="tabs__list">
-            ${areas.map((area) => html`<label class="tabs__tab tabs__tab--${area.key}" for="detail-tab-${area.key}">${area.title}</label>`)}
+          <div class="tabs__group" role="radiogroup" aria-label="In detail">
+            ${areas.map(
+              (area, index) =>
+                html`<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-${area.key}"${index === 0 ? raw(' checked') : ''}>`,
+            )}
+            <div class="tabs__list">
+              ${areas.map((area) => html`<label class="tabs__tab tabs__tab--${area.key}" for="detail-tab-${area.key}">${area.title}</label>`)}
+            </div>
           </div>
           ${areas.map(panel)}
         </div>

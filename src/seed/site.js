@@ -10,7 +10,7 @@ const entries = [
     },
     links: {
       mainNavigation: ['link-nav-models', 'link-nav-mso', 'link-nav-ownership', 'link-nav-experiences', 'link-nav-legacy'],
-      footerGroups: ['group-footer-more', 'group-footer-useful', 'group-footer-contact', 'group-footer-follow'],
+      footerGroups: ['group-footer-more', 'group-footer-useful', 'group-footer-contact'],
       socialLinks: ['link-social-instagram', 'link-social-youtube', 'link-social-linkedin', 'link-social-facebook'],
       retailerLink: 'link-retailer',
       legalLinks: ['link-legal-privacy', 'link-legal-terms', 'link-legal-cookies'],

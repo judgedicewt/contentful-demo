@@ -110,8 +110,9 @@ test('asset seeds mirror the manifest', () => {
     assert.equal(seed.title, entry.label);
     assert.equal(seed.file, `assets/placeholders/${entry.id}.svg`);
     assert.equal(seed.contentType, 'image/svg+xml');
-    assert.match(seed.description, /placeholder/i);
-    assert.ok(seed.description.includes(entry.label));
+    // short alt text: just the label, no boilerplate sentence
+    assert.equal(seed.description, entry.label);
+    assert.ok(seed.description.length < 60);
   }
   assert.equal(ASSET_GROUP.name, 'assets');
   assert.equal(ASSET_GROUP.assets, ASSET_SEEDS);

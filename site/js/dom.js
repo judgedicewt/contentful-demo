@@ -58,6 +58,13 @@ export function join(fragments, separator = '') {
   return new SafeHtml(fragments.map(toHtml).join(toHtml(separator)));
 }
 
+/** Allows only navigable URL schemes (http(s), mailto, tel, hash and path links); anything else becomes `#`. */
+export function safeUrl(value) {
+  const url = String(value ?? '').trim();
+  if (!url) return '#';
+  return /^(https?:|mailto:|tel:|#|\/)/i.test(url) ? url : '#';
+}
+
 /** Builds an attribute string from an object; falsy values are omitted. */
 export function attrs(map) {
   const parts = [];

@@ -2,7 +2,8 @@
  * Render registry. `registry[key](data, ctx)` returns HTML (a SafeHtml from
  * `html`); app.js coerces it with `String()` and assigns it to <main>.
  *
- * View keys: vehicle, vehicleCategory, page, home, story, retailers, notFound.
+ * View keys: vehicle, vehicleCategory, page, home, story, retailers, placeholder,
+ * notFound.
  * Section keys (content type IDs, called as `(sectionEntry, ctx)`):
  * textBlock, imageBlock, bannerButton, cardGrid, vehicleGrid, storyGrid,
  * ctaGroup.
@@ -18,6 +19,7 @@ import { render as home } from './home.js';
 import { render as story } from './story.js';
 import { render as retailers } from './retailers.js';
 import { render as notFound } from './notFound.js';
+import { render as placeholder } from './placeholder.js';
 import { SECTION_RENDERERS } from './sections.js';
 
 export const registry = {
@@ -28,5 +30,6 @@ export const registry = {
   story,
   retailers,
   notFound,
+  placeholder,
   ...SECTION_RENDERERS,
 };

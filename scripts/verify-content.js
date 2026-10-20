@@ -1,10 +1,12 @@
 /**
  * Verifies the published space against the page inventory in
  * docs/plans/2026-10-20-mclaren-schema-design.md using the Delivery API.
- * Exits non-zero when anything is missing or malformed.
+ * Exits non-zero when anything is missing or malformed. Also checks that every
+ * internal `#/...` href in published content resolves to a route that exists.
  */
 import { loadConfig } from '../src/config.js';
 import { SEED_GROUPS } from '../src/seed/index.js';
+import { matchRoute } from '../site/js/router.js';
 
 const config = loadConfig();
 if (config.missing.length > 0) {
@@ -15,6 +17,11 @@ if (config.missing.length > 0) {
 const base = `https://cdn.contentful.com/spaces/${config.spaceId}/environments/${config.environmentId}`;
 const problems = [];
 const rows = [];
+/** Every published entry seen in any response, by id, for the internal link check. */
+const seenEntries = new Map();
+const remember = (entries) => {
+  for (const e of entries ?? []) if (e?.sys?.id && e.fields) seenEntries.set(e.sys.id, e);
+};
 
 async function cda(params) {
   const url = new URL(`${base}/entries`);
@@ -34,6 +41,8 @@ async function all(params) {
     items.push(...page.items);
     includes.Entry.push(...(page.includes?.Entry ?? []));
     includes.Asset.push(...(page.includes?.Asset ?? []));
+    remember(page.items);
+    remember(page.includes?.Entry);
     skip += page.items.length;
     if (skip >= page.total || page.items.length === 0) return { items, includes, total: page.total };
   }
@@ -58,6 +67,19 @@ function findDanglingLinks(payload) {
   return dangling;
 }
 
+/** Collects `{ path, value }` for every string starting with `#/` in an entry's fields. */
+function collectInternalHrefs(entry) {
+  const found = [];
+  const walk = (value, path) => {
+    if (typeof value === 'string') {
+      if (value.startsWith('#/')) found.push({ path, value });
+    } else if (Array.isArray(value)) value.forEach((v, i) => walk(v, `${path}[${i}]`));
+    else if (value && typeof value === 'object' && !value.sys) for (const [k, v] of Object.entries(value)) walk(v, `${path}.${k}`);
+  };
+  for (const [k, v] of Object.entries(entry.fields ?? {})) walk(v, `${entry.sys.id}.${k}`);
+  return found;
+}
+
 const expected = {
   vehicle: SEED_GROUPS.find((g) => g.name === 'vehicles').entries.map((e) => e.fields.slug),
   vehicleCategory: SEED_GROUPS.find((g) => g.name === 'categories').entries.map((e) => e.fields.slug),
@@ -65,9 +87,12 @@ const expected = {
   story: SEED_GROUPS.find((g) => g.name === 'stories').entries.filter((e) => e.contentType === 'story').map((e) => e.fields.slug),
 };
 
+const publishedSlugs = {};
+
 for (const [contentType, slugs] of Object.entries(expected)) {
   const payload = await all({ content_type: contentType, include: 4 });
   const bySlug = new Map(payload.items.map((e) => [e.fields.slug, e]));
+  publishedSlugs[contentType] = new Set(bySlug.keys());
   const seen = new Set();
   for (const e of payload.items) {
     if (seen.has(e.fields.slug)) problem(`${contentType}/${e.fields.slug}`, 'duplicate slug');
@@ -97,8 +122,31 @@ for (const [contentType, slugs] of Object.entries(expected)) {
 const site = await cda({ content_type: 'siteSettings', include: 2, limit: 1 });
 if (site.total !== 1) problem('siteSettings', `expected 1 entry, found ${site.total}`);
 else if (!(site.items[0].fields.mainNavigation?.length > 0)) problem('siteSettings', 'mainNavigation is empty');
+remember(site.items);
+remember(site.includes?.Entry);
 const retailers = await cda({ content_type: 'retailer', limit: 1 });
 if (retailers.total < 1) problem('retailer', 'no retailers published');
+
+// Internal links: every `#/...` string in published content must resolve to a
+// route, and slug-based routes must point at something that is published.
+await all({ content_type: 'link', include: 0 });
+const slugSets = {
+  page: new Set([...(publishedSlugs.page ?? []), ...(publishedSlugs.vehicle ?? [])]),
+  vehicle: publishedSlugs.vehicle ?? new Set(),
+  story: publishedSlugs.story ?? new Set(),
+  category: publishedSlugs.vehicleCategory ?? new Set(),
+};
+let internalLinks = 0;
+for (const entry of seenEntries.values()) {
+  for (const { path, value } of collectInternalHrefs(entry)) {
+    internalLinks += 1;
+    const route = matchRoute(value);
+    if (route.name === 'notFound') problem(`link ${path}`, `${value} resolves to the 404 view`);
+    else if (slugSets[route.name] && !slugSets[route.name].has(route.params.slug)) {
+      problem(`link ${path}`, `${value} points at ${route.name} "${route.params.slug}", which is not published`);
+    }
+  }
+}
 
 // Cross-type slug uniqueness (routes share one namespace).
 const slugOwners = new Map();
@@ -111,7 +159,7 @@ for (const [type, slugs] of Object.entries(expected)) for (const s of slugs) {
 const width = Math.max(...rows.map((r) => r[1].length));
 console.log(`${'type'.padEnd(16)} ${'slug'.padEnd(width)} status`);
 for (const [t, s, st] of rows) console.log(`${t.padEnd(16)} ${s.padEnd(width)} ${st}`);
-console.log(`\n${rows.length} routes checked, ${site.total} siteSettings, ${retailers.total} retailers`);
+console.log(`\n${rows.length} routes checked, ${site.total} siteSettings, ${retailers.total} retailers, ${internalLinks} internal links checked`);
 if (problems.length) {
   console.error(`\n${problems.length} problem(s):`);
   for (const p of problems) console.error(`  - ${p}`);

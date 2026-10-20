@@ -783,8 +783,7 @@ body.nav-open .site-nav {
     display: none;
   }
 
-  .has-dropdown.is-open .dropdown,
-  .has-dropdown:focus-within .dropdown {
+  .has-dropdown.is-open .dropdown {
     display: block;
   }
 
@@ -1469,20 +1468,21 @@ body.nav-open .site-nav {
   display: none;
 }
 
-#detail-tab-exterior:checked ~ .tabs__list .tabs__tab--exterior,
-#detail-tab-interior:checked ~ .tabs__list .tabs__tab--interior {
+/* the radios sit in a radiogroup wrapper, so state is read with :has() */
+.tabs:has(#detail-tab-exterior:checked) .tabs__tab--exterior,
+.tabs:has(#detail-tab-interior:checked) .tabs__tab--interior {
   color: var(--fg);
   border-bottom-color: var(--papaya);
 }
 
-#detail-tab-exterior:focus-visible ~ .tabs__list .tabs__tab--exterior,
-#detail-tab-interior:focus-visible ~ .tabs__list .tabs__tab--interior {
+.tabs:has(#detail-tab-exterior:focus-visible) .tabs__tab--exterior,
+.tabs:has(#detail-tab-interior:focus-visible) .tabs__tab--interior {
   outline: 2px solid var(--focus);
   outline-offset: -2px;
 }
 
-#detail-tab-exterior:checked ~ .tabs__panel--exterior,
-#detail-tab-interior:checked ~ .tabs__panel--interior {
+.tabs:has(#detail-tab-exterior:checked) .tabs__panel--exterior,
+.tabs:has(#detail-tab-interior:checked) .tabs__panel--interior {
   display: block;
 }
 
@@ -2053,6 +2053,12 @@ body.nav-open .site-nav {
   margin-left: 0;
 }
 
+.placeholder-view {
+  display: flex;
+  align-items: center;
+  min-height: 50vh;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .carousel__track {
     scroll-behavior: auto;
@@ -2073,17 +2079,20 @@ body.nav-open .site-nav {
 
 .category-header .container--narrow,
 .retailers-header .container--narrow,
+.placeholder-view .container--narrow,
 .not-found .container--narrow {
   max-width: var(--container);
 }
 
 .category-header .container--narrow > *,
 .retailers-header .container--narrow > *,
+.placeholder-view .container--narrow > *,
 .not-found .container--narrow > * {
   max-width: 46rem;
 }
 
 .category-header .btn-group,
+.placeholder-view .btn-group,
 .not-found .btn-group {
   max-width: none;
 }

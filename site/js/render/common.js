@@ -2,7 +2,7 @@
  * Shared helpers for the render modules. Pure functions that return HTML via
  * the escaping `html` tag; nothing here touches `document` or `window`.
  */
-import { html, raw } from '../dom.js';
+import { html, raw, safeUrl } from '../dom.js';
 import { isExternalHref, contentTypeOf } from '../router.js';
 
 /** True for a resolved entry or asset (links that did not resolve are null). */
@@ -26,12 +26,8 @@ export function sortByOrder(list) {
   return items;
 }
 
-/** Allows only navigable URL schemes; anything else becomes `#`. */
-export function safeUrl(value) {
-  const url = String(value ?? '').trim();
-  if (!url) return '#';
-  return /^(https?:|mailto:|tel:|#|\/)/i.test(url) ? url : '#';
-}
+// safeUrl lives in dom.js so the router can use it too; re-exported for existing imports.
+export { safeUrl };
 
 /** Extra anchor attributes for off-site links. */
 export function externalAttrs(href) {
@@ -86,7 +82,9 @@ export function imageTag(ctx, asset, { w = 1200, className = '', eager = false, 
 /** Rich text field → trusted HTML (the renderer escapes all text). */
 export function richText(ctx, document) {
   if (!document) return '';
-  return raw(ctx.renderRichText(document, { assetUrl: ctx.assetUrl, entryHref: ctx.routeFor }));
+  const out = String(ctx.renderRichText(document, { assetUrl: ctx.assetUrl, entryHref: ctx.routeFor }) ?? '');
+  // an empty document renders to '' (or whitespace): callers test truthiness to skip their wrapper
+  return out.trim() ? raw(out) : '';
 }
 
 /** Plain `Text` field → paragraphs (blank line) with `<br>` for single newlines. */
