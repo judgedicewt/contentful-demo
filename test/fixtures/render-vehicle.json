@@ -1,0 +1,1195 @@
+{
+  "full": {
+    "sys": {
+      "id": "vehicle-750s",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "vehicle"
+        }
+      }
+    },
+    "fields": {
+      "name": "750S",
+      "slug": "750s",
+      "category": {
+        "sys": {
+          "id": "cat-supercars",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "vehicleCategory"
+            }
+          }
+        },
+        "fields": {
+          "name": "Supercars",
+          "slug": "supercars",
+          "intro": "Carbon structure. Twin-turbo power.\n\nBuilt to be driven.",
+          "order": 1
+        }
+      },
+      "status": "current",
+      "bodyStyle": "coupe",
+      "order": 3,
+      "shortDescription": "A lightweight V8 supercar.",
+      "tagline": "Less mass, more intent",
+      "statement": "The 750S is built around one idea: remove everything the car does not need.",
+      "heroImage": {
+        "sys": {
+          "id": "img-750s-hero",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "750S hero",
+          "description": "750S hero artwork",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-750s-hero/img-750s-hero.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1600,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "cardImage": {
+        "sys": {
+          "id": "img-750s-card",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "750S card",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-750s-card/img-750s-card.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1200,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "filmUrl": "https://example.com/films/750s",
+      "configureUrl": "#/configure/750s",
+      "enquiryUrl": "#/enquire/750s",
+      "downloads": [
+        {
+          "sys": {
+            "id": "dl-brochure",
+            "type": "Asset"
+          },
+          "fields": {
+            "title": "750S brochure",
+            "file": {
+              "url": "https://images.ctfassets.net/demo/dl-brochure/dl-brochure.jpg",
+              "contentType": "application/pdf",
+              "details": {
+                "size": 1000,
+                "image": {
+                  "width": 1200,
+                  "height": 900
+                }
+              }
+            }
+          }
+        }
+      ],
+      "overviewSlides": [
+        {
+          "sys": {
+            "id": "slide-1",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "mediaSlide"
+              }
+            }
+          },
+          "fields": {
+            "heading": "Slide heading 1",
+            "body": "Slide body 1.",
+            "media": {
+              "sys": {
+                "id": "slide-1",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "Slide 1",
+                "description": "Slide 1 artwork",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/slide-1/slide-1.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1600,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "slide-2",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "mediaSlide"
+              }
+            }
+          },
+          "fields": {
+            "heading": "Slide heading 2",
+            "body": "Slide body 2.",
+            "media": {
+              "sys": {
+                "id": "slide-2",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "Slide 2",
+                "description": "Slide 2 artwork",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/slide-2/slide-2.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1600,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "highlights": [
+        {
+          "sys": {
+            "id": "hl-750s-1",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "featureHighlight"
+              }
+            }
+          },
+          "fields": {
+            "title": "Carved by air",
+            "body": "Air passes through the body.",
+            "area": "exterior",
+            "tag": "Dihedral doors",
+            "image": {
+              "sys": {
+                "id": "hl-750s-1",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "Carved by air image",
+                "description": "Carved by air detail",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/hl-750s-1/hl-750s-1.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 900,
+                      "height": 1200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "hl-750s-2",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "featureHighlight"
+              }
+            }
+          },
+          "fields": {
+            "title": "Active rear wing",
+            "body": "The wing changes angle with speed.",
+            "area": "exterior",
+            "tag": "Aerodynamics",
+            "image": {
+              "sys": {
+                "id": "hl-750s-2",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "Active rear wing image",
+                "description": "Active rear wing detail",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/hl-750s-2/hl-750s-2.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 900,
+                      "height": 1200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "hl-750s-3",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "featureHighlight"
+              }
+            }
+          },
+          "fields": {
+            "title": "Focus on the drive",
+            "body": "The display folds away.",
+            "area": "interior",
+            "tag": "Driver display",
+            "image": {
+              "sys": {
+                "id": "hl-750s-3",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "Focus on the drive image",
+                "description": "Focus on the drive detail",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/hl-750s-3/hl-750s-3.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 900,
+                      "height": 1200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "specifications": [
+        {
+          "sys": {
+            "id": "spec-750s-top-speed",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Top speed",
+            "value": "332",
+            "unit": "km/h",
+            "group": "performance",
+            "featured": true,
+            "order": 1
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-torque",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Torque",
+            "value": "800",
+            "unit": "Nm",
+            "group": "powertrain",
+            "featured": true,
+            "order": 2
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-power",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Power",
+            "value": "750",
+            "unit": "PS",
+            "group": "powertrain",
+            "featured": true,
+            "order": 3
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-0-100",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "0-100 km/h",
+            "value": "2.8",
+            "unit": "s",
+            "group": "performance",
+            "featured": false,
+            "order": 4
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-engine",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Engine",
+            "value": "4.0L twin-turbo V8",
+            "group": "powertrain",
+            "featured": false,
+            "order": 5
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-dry-weight",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Dry weight",
+            "value": "1277",
+            "unit": "kg",
+            "group": "weight",
+            "featured": false,
+            "order": 6
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-750s-length",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Length",
+            "value": "4569",
+            "unit": "mm",
+            "group": "dimensions",
+            "featured": false,
+            "order": 7
+          }
+        }
+      ],
+      "performanceHeading": "750 PS, 332 km/h",
+      "performanceBody": "Revised turbochargers sharpen the response.",
+      "lineageIntro": "The 750S continues the Super Series.",
+      "lineage": [
+        {
+          "sys": {
+            "id": "lin-1",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "lineageEntry"
+              }
+            }
+          },
+          "fields": {
+            "year": 2020,
+            "title": "765LT",
+            "body": "A Longtail.",
+            "image": {
+              "sys": {
+                "id": "lin-1",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "765LT",
+                "description": "765LT portrait",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/lin-1/lin-1.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 900,
+                      "height": 1200
+                    }
+                  }
+                }
+              }
+            },
+            "vehicle": {
+              "sys": {
+                "id": "vehicle-765lt",
+                "type": "Entry",
+                "contentType": {
+                  "sys": {
+                    "type": "Link",
+                    "linkType": "ContentType",
+                    "id": "vehicle"
+                  }
+                }
+              },
+              "fields": {
+                "name": "765LT",
+                "slug": "765lt",
+                "status": "legacy"
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "lin-2",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "lineageEntry"
+              }
+            }
+          },
+          "fields": {
+            "year": 1992,
+            "title": "F1",
+            "body": "The reference.",
+            "vehicle": {
+              "sys": {
+                "id": "vehicle-f1",
+                "type": "Entry",
+                "contentType": {
+                  "sys": {
+                    "type": "Link",
+                    "linkType": "ContentType",
+                    "id": "vehicle"
+                  }
+                }
+              },
+              "fields": {
+                "name": "F1",
+                "slug": "f1",
+                "status": "legacy",
+                "category": {
+                  "sys": {
+                    "id": "cat-ultimate",
+                    "type": "Entry",
+                    "contentType": {
+                      "sys": {
+                        "type": "Link",
+                        "linkType": "ContentType",
+                        "id": "vehicleCategory"
+                      }
+                    }
+                  },
+                  "fields": {
+                    "name": "Hypercars",
+                    "slug": "ultimate",
+                    "intro": "The most advanced road cars.",
+                    "order": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "lin-3",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "lineageEntry"
+              }
+            }
+          },
+          "fields": {
+            "year": 1970,
+            "title": "M6GT"
+          }
+        }
+      ],
+      "msoBanner": {
+        "sys": {
+          "id": "banner-mso",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "bannerButton"
+            }
+          }
+        },
+        "fields": {
+          "eyebrow": "McLaren Special Operations",
+          "heading": "Make it yours",
+          "body": "Bespoke colour, materials and detail.",
+          "image": {
+            "sys": {
+              "id": "img-mso",
+              "type": "Asset"
+            },
+            "fields": {
+              "title": "MSO banner",
+              "description": "MSO banner artwork",
+              "file": {
+                "url": "https://images.ctfassets.net/demo/img-mso/img-mso.jpg",
+                "contentType": "image/jpeg",
+                "details": {
+                  "size": 1000,
+                  "image": {
+                    "width": 1600,
+                    "height": 900
+                  }
+                }
+              }
+            }
+          },
+          "cta": {
+            "sys": {
+              "id": "link-mso",
+              "type": "Entry",
+              "contentType": {
+                "sys": {
+                  "type": "Link",
+                  "linkType": "ContentType",
+                  "id": "link"
+                }
+              }
+            },
+            "fields": {
+              "label": "Customise with MSO",
+              "externalUrl": "https://example.com/mso",
+              "style": "primary"
+            }
+          },
+          "theme": "carbon"
+        }
+      },
+      "relatedStories": [
+        {
+          "sys": {
+            "id": "story-a",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "story"
+              }
+            }
+          },
+          "fields": {
+            "title": "750S: five key facts",
+            "slug": "750s-five-key-facts",
+            "kicker": "Engineering",
+            "publishDate": "2026-02-12",
+            "standfirst": "Standfirst for 750S: five key facts.",
+            "heroImage": {
+              "sys": {
+                "id": "story-a-hero",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "750S: five key facts hero",
+                "description": "Hero for 750S: five key facts",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/story-a-hero/story-a-hero.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1600,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            },
+            "cardImage": {
+              "sys": {
+                "id": "story-a-card",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "750S: five key facts card",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/story-a-card/story-a-card.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1200,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "sys": {
+            "id": "story-b",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "story"
+              }
+            }
+          },
+          "fields": {
+            "title": "W1: designed by air",
+            "slug": "w1-designed-by-air",
+            "kicker": "MSO",
+            "publishDate": "2026-05-01",
+            "standfirst": "Standfirst for W1: designed by air.",
+            "heroImage": {
+              "sys": {
+                "id": "story-b-hero",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "W1: designed by air hero",
+                "description": "Hero for W1: designed by air",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/story-b-hero/story-b-hero.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1600,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            },
+            "cardImage": {
+              "sys": {
+                "id": "story-b-card",
+                "type": "Asset"
+              },
+              "fields": {
+                "title": "W1: designed by air card",
+                "file": {
+                  "url": "https://images.ctfassets.net/demo/story-b-card/story-b-card.jpg",
+                  "contentType": "image/jpeg",
+                  "details": {
+                    "size": 1000,
+                    "image": {
+                      "width": 1200,
+                      "height": 900
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "faqs": [
+        {
+          "sys": {
+            "id": "faq-1",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "faqItem"
+              }
+            }
+          },
+          "fields": {
+            "question": "Is it a hybrid?",
+            "answer": {
+              "nodeType": "document",
+              "data": {},
+              "content": [
+                {
+                  "nodeType": "paragraph",
+                  "data": {},
+                  "content": [
+                    {
+                      "nodeType": "text",
+                      "value": "No. It is a ",
+                      "marks": [],
+                      "data": {}
+                    },
+                    {
+                      "nodeType": "text",
+                      "value": "pure V8",
+                      "marks": [
+                        {
+                          "type": "bold"
+                        }
+                      ],
+                      "data": {}
+                    },
+                    {
+                      "nodeType": "text",
+                      "value": ".",
+                      "marks": [],
+                      "data": {}
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "yearIntroduced": 2023,
+      "seo": {
+        "sys": {
+          "id": "seo-750s",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "seoMetadata"
+            }
+          }
+        },
+        "fields": {
+          "title": "750S | McLaren supercar",
+          "description": "The McLaren 750S."
+        }
+      }
+    }
+  },
+  "variants": [
+    {
+      "sys": {
+        "id": "vehicle-750s-spider",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "vehicle"
+          }
+        }
+      },
+      "fields": {
+        "name": "750S Spider",
+        "slug": "750s-spider",
+        "category": {
+          "sys": {
+            "id": "cat-supercars",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "vehicleCategory"
+              }
+            }
+          },
+          "fields": {
+            "name": "Supercars",
+            "slug": "supercars",
+            "intro": "Carbon structure. Twin-turbo power.\n\nBuilt to be driven.",
+            "order": 1
+          }
+        },
+        "status": "current",
+        "order": 4,
+        "parentModel": {
+          "sys": {
+            "id": "vehicle-750s",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "vehicle"
+              }
+            }
+          },
+          "fields": {
+            "name": "750S",
+            "slug": "750s",
+            "status": "current"
+          }
+        },
+        "shortDescription": "The 750S with a folding hard top.",
+        "tagline": "The 750S, open",
+        "heroImage": {
+          "sys": {
+            "id": "img-750s-spider-hero",
+            "type": "Asset"
+          },
+          "fields": {
+            "title": "750S Spider hero",
+            "description": "Spider hero",
+            "file": {
+              "url": "https://images.ctfassets.net/demo/img-750s-spider-hero/img-750s-spider-hero.jpg",
+              "contentType": "image/jpeg",
+              "details": {
+                "size": 1000,
+                "image": {
+                  "width": 1600,
+                  "height": 900
+                }
+              }
+            }
+          }
+        },
+        "cardImage": {
+          "sys": {
+            "id": "img-750s-spider-card",
+            "type": "Asset"
+          },
+          "fields": {
+            "title": "750S Spider card",
+            "file": {
+              "url": "https://images.ctfassets.net/demo/img-750s-spider-card/img-750s-spider-card.jpg",
+              "contentType": "image/jpeg",
+              "details": {
+                "size": 1000,
+                "image": {
+                  "width": 1200,
+                  "height": 900
+                }
+              }
+            }
+          }
+        },
+        "configureUrl": "#/configure/750s-spider",
+        "enquiryUrl": "#/enquire/750s-spider"
+      }
+    }
+  ],
+  "spider": {
+    "sys": {
+      "id": "vehicle-750s-spider",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "vehicle"
+        }
+      }
+    },
+    "fields": {
+      "name": "750S Spider",
+      "slug": "750s-spider",
+      "category": {
+        "sys": {
+          "id": "cat-supercars",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "vehicleCategory"
+            }
+          }
+        },
+        "fields": {
+          "name": "Supercars",
+          "slug": "supercars",
+          "intro": "Carbon structure. Twin-turbo power.\n\nBuilt to be driven.",
+          "order": 1
+        }
+      },
+      "status": "current",
+      "order": 4,
+      "parentModel": {
+        "sys": {
+          "id": "vehicle-750s",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "vehicle"
+            }
+          }
+        },
+        "fields": {
+          "name": "750S",
+          "slug": "750s",
+          "status": "current"
+        }
+      },
+      "shortDescription": "The 750S with a folding hard top.",
+      "tagline": "The 750S, open",
+      "heroImage": {
+        "sys": {
+          "id": "img-750s-spider-hero",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "750S Spider hero",
+          "description": "Spider hero",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-750s-spider-hero/img-750s-spider-hero.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1600,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "cardImage": {
+        "sys": {
+          "id": "img-750s-spider-card",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "750S Spider card",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-750s-spider-card/img-750s-spider-card.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1200,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "configureUrl": "#/configure/750s-spider",
+      "enquiryUrl": "#/enquire/750s-spider"
+    }
+  },
+  "legacy": {
+    "sys": {
+      "id": "vehicle-720s",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "vehicle"
+        }
+      }
+    },
+    "fields": {
+      "name": "720S",
+      "slug": "720s",
+      "category": {
+        "sys": {
+          "id": "cat-supercars",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "vehicleCategory"
+            }
+          }
+        },
+        "fields": {
+          "name": "Supercars",
+          "slug": "supercars",
+          "intro": "Carbon structure. Twin-turbo power.\n\nBuilt to be driven.",
+          "order": 1
+        }
+      },
+      "status": "legacy",
+      "order": 92,
+      "yearIntroduced": 2017,
+      "statement": "The 720S introduced the monocage II tub.",
+      "shortDescription": "The 2017 Super Series coupe.",
+      "heroImage": {
+        "sys": {
+          "id": "img-720s-hero",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "720S hero",
+          "description": "720S hero",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-720s-hero/img-720s-hero.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1600,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "cardImage": {
+        "sys": {
+          "id": "img-720s-card",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "720S card",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-720s-card/img-720s-card.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1200,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "specifications": [
+        {
+          "sys": {
+            "id": "spec-720s-0",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Top speed",
+            "value": "341",
+            "unit": "km/h",
+            "group": "performance",
+            "featured": true,
+            "order": 1
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-720s-1",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Torque",
+            "value": "770",
+            "unit": "Nm",
+            "group": "powertrain",
+            "featured": true,
+            "order": 2
+          }
+        },
+        {
+          "sys": {
+            "id": "spec-720s-2",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "specification"
+              }
+            }
+          },
+          "fields": {
+            "label": "Power",
+            "value": "720",
+            "unit": "PS",
+            "group": "powertrain",
+            "featured": true,
+            "order": 3
+          }
+        }
+      ]
+    }
+  }
+}

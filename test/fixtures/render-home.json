@@ -1,0 +1,98 @@
+{
+  "entry": {
+    "sys": {
+      "id": "page-home",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "page"
+        }
+      }
+    },
+    "fields": {
+      "title": "Home",
+      "slug": "home",
+      "heroStyle": "full",
+      "heroImage": {
+        "sys": {
+          "id": "img-home-hero",
+          "type": "Asset"
+        },
+        "fields": {
+          "title": "Home hero",
+          "description": "Home hero",
+          "file": {
+            "url": "https://images.ctfassets.net/demo/img-home-hero/img-home-hero.jpg",
+            "contentType": "image/jpeg",
+            "details": {
+              "size": 1000,
+              "image": {
+                "width": 1600,
+                "height": 900
+              }
+            }
+          }
+        }
+      },
+      "sections": [
+        {
+          "sys": {
+            "id": "text-home",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "textBlock"
+              }
+            }
+          },
+          "fields": {
+            "heading": "Engineered around the driver",
+            "variant": "header",
+            "body": {
+              "nodeType": "document",
+              "data": {},
+              "content": [
+                {
+                  "nodeType": "paragraph",
+                  "data": {},
+                  "content": [
+                    {
+                      "nodeType": "text",
+                      "value": "Every McLaren starts with a carbon tub.",
+                      "marks": [],
+                      "data": {}
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "seo": {
+        "sys": {
+          "id": "seo-home",
+          "type": "Entry",
+          "contentType": {
+            "sys": {
+              "type": "Link",
+              "linkType": "ContentType",
+              "id": "seoMetadata"
+            }
+          }
+        },
+        "fields": {
+          "title": "McLaren",
+          "description": "Supercars engineered around the driver."
+        }
+      }
+    }
+  },
+  "siblings": [],
+  "children": [],
+  "latestStories": []
+}

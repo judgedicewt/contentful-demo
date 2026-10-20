@@ -1,0 +1,79 @@
+{
+  "retailers": [
+    {
+      "sys": {
+        "id": "r-paris",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "retailer"
+          }
+        }
+      },
+      "fields": {
+        "name": "McLaren Paris",
+        "city": "Paris",
+        "country": "France",
+        "address": "1 Rue de Rivoli\n75001 Paris",
+        "phone": "+33 1 00 00 00 01",
+        "website": "https://example.com/r-paris",
+        "location": {
+          "lat": 48.8566,
+          "lon": 2.3522
+        }
+      }
+    },
+    {
+      "sys": {
+        "id": "r-london",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "retailer"
+          }
+        }
+      },
+      "fields": {
+        "name": "McLaren London",
+        "city": "London",
+        "country": "United Kingdom",
+        "address": "14 Hanover Mews\nMayfair\nLondon W1S 1AA",
+        "phone": "+44 20 0000 0101",
+        "website": "https://example.com/r-london",
+        "location": {
+          "lat": 51.5072,
+          "lon": -0.1276
+        }
+      }
+    },
+    {
+      "sys": {
+        "id": "r-manchester",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "retailer"
+          }
+        }
+      },
+      "fields": {
+        "name": "McLaren Manchester",
+        "city": "Manchester",
+        "country": "United Kingdom",
+        "address": "2 Deansgate\nManchester",
+        "phone": "+44 161 000 0102",
+        "website": "https://example.com/r-manchester",
+        "location": {
+          "lat": 53.4808,
+          "lon": -2.2426
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "entry": {
+    "sys": {
+      "id": "page-legacy",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "page"
+        }
+      }
+    },
+    "fields": {
+      "title": "Legacy",
+      "slug": "legacy",
+      "kicker": "Past models",
+      "sections": []
+    }
+  },
+  "siblings": [],
+  "children": [
+    {
+      "sys": {
+        "id": "p-2010",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "page"
+          }
+        }
+      },
+      "fields": {
+        "title": "Legacy: the 2010s",
+        "slug": "legacy/2010s",
+        "parent": {
+          "sys": {
+            "id": "page-legacy",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "page"
+              }
+            }
+          },
+          "fields": {
+            "title": "Legacy",
+            "slug": "legacy",
+            "kicker": "Past models",
+            "sections": []
+          }
+        },
+        "order": 1
+      }
+    },
+    {
+      "sys": {
+        "id": "p-1990",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "page"
+          }
+        }
+      },
+      "fields": {
+        "title": "Legacy: the 1990s",
+        "slug": "legacy/1990s",
+        "parent": {
+          "sys": {
+            "id": "page-legacy",
+            "type": "Entry",
+            "contentType": {
+              "sys": {
+                "type": "Link",
+                "linkType": "ContentType",
+                "id": "page"
+              }
+            }
+          },
+          "fields": {
+            "title": "Legacy",
+            "slug": "legacy",
+            "kicker": "Past models",
+            "sections": []
+          }
+        },
+        "order": 2
+      }
+    }
+  ],
+  "latestStories": []
+}

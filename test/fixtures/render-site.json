@@ -1,0 +1,78 @@
+{
+  "siteSettings": {
+    "sys": {
+      "id": "site",
+      "type": "Entry",
+      "contentType": {
+        "sys": {
+          "type": "Link",
+          "linkType": "ContentType",
+          "id": "siteSettings"
+        }
+      }
+    },
+    "fields": {
+      "siteName": "McLaren",
+      "locale": "gl_en"
+    }
+  },
+  "categories": [
+    {
+      "sys": {
+        "id": "cat-supercars",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "vehicleCategory"
+          }
+        }
+      },
+      "fields": {
+        "name": "Supercars",
+        "slug": "supercars",
+        "intro": "Carbon structure. Twin-turbo power.\n\nBuilt to be driven.",
+        "order": 1
+      }
+    },
+    {
+      "sys": {
+        "id": "cat-grand-tourer",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "vehicleCategory"
+          }
+        }
+      },
+      "fields": {
+        "name": "Grand Tourers",
+        "slug": "grand-tourer",
+        "intro": "Pace over distance.",
+        "order": 2
+      }
+    },
+    {
+      "sys": {
+        "id": "cat-ultimate",
+        "type": "Entry",
+        "contentType": {
+          "sys": {
+            "type": "Link",
+            "linkType": "ContentType",
+            "id": "vehicleCategory"
+          }
+        }
+      },
+      "fields": {
+        "name": "Hypercars",
+        "slug": "ultimate",
+        "intro": "The most advanced road cars.",
+        "order": 3
+      }
+    }
+  ]
+}
