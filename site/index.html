@@ -3,22 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contentful demo</title>
+  <meta name="description" content="McLaren-style demo site modelled in Contentful and rendered in the browser.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#111214">
+  <title>McLaren</title>
+  <link rel="icon" href="data:,">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <a href="#/" class="brand">Contentful demo</a>
-    <span class="env" id="env-label"></span>
-  </header>
+  <div id="header" class="header-mount"></div>
 
-  <main id="app" class="container" aria-live="polite">
-    <p class="muted">Loading…</p>
+  <main id="main" class="site-main" tabindex="-1">
+    <div class="status status--loading" role="status" aria-live="polite">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Loading…</span>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <p class="muted">Published content from Contentful, rendered in the browser.</p>
-  </footer>
+  <div id="footer" class="footer-mount"></div>
+
+  <noscript>
+    <p class="noscript">This site needs JavaScript to load content from Contentful.</p>
+  </noscript>
 
   <script src="config.js"></script>
   <script type="module" src="app.js"></script>

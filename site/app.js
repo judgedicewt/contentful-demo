@@ -1,146 +1,190 @@
 /**
- * Minimal front end for the contentful-demo space.
+ * Bootstrap for the McLaren-style demo site.
  *
- * Reads published blog posts directly from the Contentful Delivery API using
- * the space ID, environment, and delivery token from config.js. Hash-based
- * routing (#/ and #/post/<slug>) keeps it working on static hosts such as
- * GitHub Pages without any rewrite rules.
+ * This is the only module that touches `document`. It loads config, fetches
+ * the site settings and vehicle categories, mounts the shell, wires up the
+ * navigation, and dispatches hash routes to the render registry.
  */
+import { createClient, assetUrl } from './js/cda.js';
+import { matchRoute, loadRoute, onRouteChange, navigate, routeFor, linkHref } from './js/router.js';
+import { renderRichText } from './js/richtext.js';
+import {
+  renderHeader,
+  renderFooter,
+  renderBreadcrumbs,
+  renderLoading,
+  renderError,
+  renderNotFound,
+} from './js/shell.js';
+import { html, raw, escapeHtml } from './js/dom.js';
+import { registry } from './js/render/index.js';
+
+const mounts = {
+  header: document.getElementById('header'),
+  main: document.getElementById('main'),
+  footer: document.getElementById('footer'),
+};
+
 const config = window.CONTENTFUL_CONFIG;
-const app = document.getElementById('app');
-const envLabel = document.getElementById('env-label');
+const state = { siteSettings: null, categories: [], requestId: 0 };
 
-if (!config || !config.spaceId || !config.deliveryToken) {
-  renderError(
-    'Missing configuration. Copy site/config.example.js to site/config.js, or run <code>npm run build:site</code> ' +
-      'with CONTENTFUL_SPACE_ID and CONTENTFUL_DELIVERY_TOKEN set.',
-  );
-} else {
-  envLabel.textContent = `${config.spaceId} / ${config.environment || 'master'}`;
-  window.addEventListener('hashchange', route);
-  route();
-}
-
-function baseUrl() {
-  return `https://cdn.contentful.com/spaces/${encodeURIComponent(config.spaceId)}/environments/${encodeURIComponent(
-    config.environment || 'master',
-  )}`;
-}
-
-async function cdaGet(path, params = {}) {
-  const url = new URL(`${baseUrl()}${path}`);
-  url.searchParams.set('access_token', config.deliveryToken);
-  for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
-  const response = await fetch(url);
-  if (!response.ok) {
-    let detail = '';
-    try {
-      detail = (await response.json()).message || '';
-    } catch {
-      /* ignore */
+function setHead({ title, description } = {}) {
+  const siteName = state.siteSettings?.fields?.siteName || 'McLaren';
+  if (title !== undefined) {
+    document.title = title && title !== siteName ? `${title} | ${siteName}` : siteName;
+  }
+  if (description !== undefined) {
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
     }
-    throw new Error(`${response.status} ${response.statusText}${detail ? `: ${detail}` : ''}`);
+    meta.setAttribute('content', description || '');
   }
-  return response.json();
 }
 
-/** Resolves linked entries from the `includes` block into a lookup by ID. */
-function buildEntryMap(payload) {
-  const map = new Map();
-  for (const entry of [...(payload.items || []), ...(payload.includes?.Entry || [])]) {
-    map.set(entry.sys.id, entry);
+function showMain(content) {
+  mounts.main.innerHTML = String(content);
+}
+
+function closeMenus() {
+  document.body.classList.remove('nav-open');
+  for (const toggle of document.querySelectorAll('[data-nav-toggle], [data-dropdown-toggle]')) {
+    toggle.setAttribute('aria-expanded', 'false');
   }
-  return map;
+  for (const item of document.querySelectorAll('.has-dropdown.is-open')) item.classList.remove('is-open');
 }
 
-function authorName(post, entries) {
-  const link = post.fields.author;
-  if (!link) return null;
-  return entries.get(link.sys.id)?.fields?.name ?? null;
+function bindShell() {
+  document.addEventListener('click', (event) => {
+    const navToggle = event.target.closest('[data-nav-toggle]');
+    if (navToggle) {
+      const open = !document.body.classList.contains('nav-open');
+      document.body.classList.toggle('nav-open', open);
+      navToggle.setAttribute('aria-expanded', String(open));
+      if (!open) closeMenus();
+      return;
+    }
+    const dropdownToggle = event.target.closest('[data-dropdown-toggle]');
+    if (dropdownToggle) {
+      const item = dropdownToggle.closest('.has-dropdown');
+      const open = !item.classList.contains('is-open');
+      for (const other of document.querySelectorAll('.has-dropdown.is-open')) {
+        if (other !== item) {
+          other.classList.remove('is-open');
+          other.querySelector('[data-dropdown-toggle]')?.setAttribute('aria-expanded', 'false');
+        }
+      }
+      item.classList.toggle('is-open', open);
+      dropdownToggle.setAttribute('aria-expanded', String(open));
+      return;
+    }
+    if (event.target.closest('[data-nav-close]')) {
+      closeMenus();
+      return;
+    }
+    if (!event.target.closest('.has-dropdown')) {
+      for (const item of document.querySelectorAll('.has-dropdown.is-open')) {
+        item.classList.remove('is-open');
+        item.querySelector('[data-dropdown-toggle]')?.setAttribute('aria-expanded', 'false');
+      }
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenus();
+  });
+  window.addEventListener('hashchange', closeMenus);
 }
 
-function formatDate(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+function renderShell() {
+  mounts.header.innerHTML = String(renderHeader(state.siteSettings, state.categories));
+  mounts.footer.innerHTML = String(renderFooter(state.siteSettings));
+  setHead({ title: '' });
 }
 
-async function route() {
-  const hash = window.location.hash || '#/';
-  const match = hash.match(/^#\/post\/([^/]+)$/);
+function buildContext(cda, route) {
+  return {
+    siteSettings: state.siteSettings,
+    categories: state.categories,
+    cda,
+    routeFor,
+    linkHref,
+    renderRichText,
+    html,
+    raw,
+    escapeHtml,
+    assetUrl,
+    renderBreadcrumbs,
+    setHead,
+    route,
+  };
+}
+
+function fallbackTitle(view, data) {
+  const entry = data?.entry;
+  if (entry?.fields) {
+    return entry.fields.seo?.fields?.title || entry.fields.title || entry.fields.name || '';
+  }
+  if (view === 'retailers') return 'Retailers';
+  if (view === 'notFound') return 'Page not found';
+  return '';
+}
+
+async function handleRoute(route, cda) {
+  const requestId = (state.requestId += 1);
+  const isCurrent = () => requestId === state.requestId;
+  showMain(renderLoading());
   try {
-    if (match) {
-      await renderPost(decodeURIComponent(match[1]));
-    } else {
-      await renderList();
+    const { view, data } = await loadRoute(route, cda);
+    if (!isCurrent()) return;
+    if (view === 'redirect') {
+      navigate(data.to, { replace: true });
+      return;
     }
+    const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
+    const titleBefore = document.title;
+    showMain(renderer(data, buildContext(cda, route)));
+    if (document.title === titleBefore) setHead({ title: fallbackTitle(view, data) });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    mounts.main.focus({ preventScroll: true });
   } catch (error) {
-    renderError(`Couldn't load content from Contentful. ${escapeHtml(error.message)}`);
+    if (!isCurrent()) return;
+    console.error(error);
+    showMain(renderError(error));
+    setHead({ title: 'Error' });
   }
 }
 
-async function renderList() {
-  app.innerHTML = '<p class="muted">Loading posts…</p>';
-  const payload = await cdaGet('/entries', {
-    content_type: 'blogPost',
-    order: '-fields.publishDate',
-    include: '1',
-  });
-  const entries = buildEntryMap(payload);
-  if (payload.items.length === 0) {
-    app.innerHTML = '<p class="muted">No published posts yet. Run <code>npm run setup</code> to seed some.</p>';
+async function boot() {
+  if (!config || !config.spaceId || !config.deliveryToken) {
+    mounts.header.innerHTML = String(renderHeader(null, []));
+    showMain(
+      renderError(
+        'Missing configuration. Copy site/config.example.js to site/config.js, or run npm run build:site with CONTENTFUL_SPACE_ID and CONTENTFUL_DELIVERY_TOKEN set.',
+        'The site does not know which Contentful space to read.',
+      ),
+    );
     return;
   }
-  const items = payload.items
-    .map((post) => {
-      const { title, slug, body, publishDate } = post.fields;
-      const author = authorName(post, entries);
-      const excerpt = (body || '').split('\n')[0].slice(0, 160);
-      return `
-        <li class="card">
-          <h2><a href="#/post/${encodeURIComponent(slug)}">${escapeHtml(title)}</a></h2>
-          <p class="meta">${escapeHtml(formatDate(publishDate))}${author ? ` · ${escapeHtml(author)}` : ''}</p>
-          <p>${escapeHtml(excerpt)}</p>
-        </li>`;
-    })
-    .join('');
-  app.innerHTML = `<ul class="post-list">${items}</ul>`;
+
+  const cda = createClient(config);
+  bindShell();
+
+  const [settings, categories] = await Promise.allSettled([cda.getSiteSettings(), cda.getCategories()]);
+  if (settings.status === 'fulfilled') state.siteSettings = settings.value;
+  else console.warn('siteSettings unavailable:', settings.reason);
+  if (categories.status === 'fulfilled') state.categories = categories.value;
+  else console.warn('vehicleCategory entries unavailable:', categories.reason);
+
+  renderShell();
+
+  const dispatch = (route) => handleRoute(route, cda);
+  onRouteChange(dispatch);
+  dispatch(matchRoute(window.location.hash || '#/'));
 }
 
-async function renderPost(slug) {
-  app.innerHTML = '<p class="muted">Loading post…</p>';
-  const payload = await cdaGet('/entries', {
-    content_type: 'blogPost',
-    'fields.slug': slug,
-    include: '1',
-    limit: '1',
-  });
-  const post = payload.items[0];
-  if (!post) {
-    app.innerHTML = `<a class="back" href="#/">← All posts</a><p>No post found for <code>${escapeHtml(slug)}</code>.</p>`;
-    return;
-  }
-  const entries = buildEntryMap(payload);
-  const { title, body, publishDate } = post.fields;
-  const author = authorName(post, entries);
-  app.innerHTML = `
-    <a class="back" href="#/">← All posts</a>
-    <article>
-      <h1>${escapeHtml(title)}</h1>
-      <p class="meta">${escapeHtml(formatDate(publishDate))}${author ? ` · ${escapeHtml(author)}` : ''}</p>
-      <div class="body">${escapeHtml(body || '')}</div>
-    </article>`;
-  document.title = `${title} · Contentful demo`;
-}
-
-function renderError(html) {
-  app.innerHTML = `<div class="error">${html}</div>`;
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
+boot().catch((error) => {
+  console.error(error);
+  showMain(renderError(error, 'The site failed to start.'));
+});
