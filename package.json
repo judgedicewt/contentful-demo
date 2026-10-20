@@ -10,7 +10,9 @@
   "scripts": {
     "check": "node scripts/check.js",
     "setup": "node scripts/setup.js",
-    "fetch": "node scripts/fetch.js"
+    "fetch": "node scripts/fetch.js",
+    "build:site": "node scripts/build-site.js",
+    "dev": "npm run build:site && node scripts/serve.js"
   },
   "dependencies": {
     "axios": "^1.16.1",

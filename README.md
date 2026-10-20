@@ -33,6 +33,7 @@ npm install
 npm run check    # Verifies env vars and that both APIs accept the tokens.
 npm run setup    # Creates or updates the content model and sample entries.
 npm run fetch    # Reads the blog posts back through the Delivery API.
+npm run dev      # Generates site/config.js and serves the front end on :4173.
 ```
 
 `setup` is idempotent. Content types and entries use fixed IDs, so running it
@@ -61,3 +62,32 @@ to change what gets provisioned.
 HTTPS through a proxy correctly and fails with `405 Method Not Allowed`.
 `src/clients.js` works around this by passing the installed top-level axios
 HTTP adapter to the management client. Keep `axios` at 1.16.1 or later.
+
+## Front end
+
+`site/` is a dependency-free static page that lists the blog posts and shows
+each one, reading published content from the Delivery API in the browser.
+It uses hash routing (`#/` and `#/post/<slug>`), so it needs no server-side
+rewrites.
+
+The page reads its settings from `site/config.js`, which is generated and not
+committed. Run `npm run dev` to generate it from your environment and serve
+the site locally.
+
+The delivery token ends up in the page source. That's expected for Contentful
+delivery tokens, which can only read published content, but don't use a
+management or preview token here.
+
+## Hosting on GitHub Pages
+
+`.github/workflows/pages.yml` builds `site/config.js` and deploys `site/` on
+every push to `main`. One-time setup in the GitHub repository:
+
+1. In **Settings > Pages**, set **Source** to **GitHub Actions**.
+2. In **Settings > Secrets and variables > Actions**, add:
+   - Variable `CONTENTFUL_SPACE_ID` = `za8ljzyomqr0`
+   - Variable `CONTENTFUL_ENVIRONMENT` = `master`
+   - Secret `CONTENTFUL_DELIVERY_TOKEN` = your delivery token
+3. Push to `main` or run the workflow manually from the **Actions** tab.
+
+The site is then served at `https://<owner>.github.io/<repo>/`.
