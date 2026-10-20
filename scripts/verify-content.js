@@ -27,12 +27,15 @@ async function cda(params) {
 
 async function all(params) {
   const items = [];
+  const includes = { Entry: [], Asset: [] };
   let skip = 0;
   for (;;) {
     const page = await cda({ ...params, limit: 100, skip });
     items.push(...page.items);
+    includes.Entry.push(...(page.includes?.Entry ?? []));
+    includes.Asset.push(...(page.includes?.Asset ?? []));
     skip += page.items.length;
-    if (skip >= page.total || page.items.length === 0) return { items, total: page.total };
+    if (skip >= page.total || page.items.length === 0) return { items, includes, total: page.total };
   }
 }
 
