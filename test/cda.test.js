@@ -139,7 +139,9 @@ test('getEnquiryForm requests the singleton with include 1 and returns the first
   assert.equal(calls[0].searchParams.get('content_type'), 'enquiryForm');
   assert.equal(calls[0].searchParams.get('limit'), '1');
   assert.equal(calls[0].searchParams.get('include'), '1');
-  assert.equal(await client.getEnquiryForm(), null);
+  // A fresh client, because the first response is cached by URL.
+  const emptyClient = createClient({ spaceId: "space", deliveryToken: "tok" }, { fetch: fakeFetch });
+  assert.equal(await emptyClient.getEnquiryForm(), null);
 });
 
 test('createClient treats an unknown content type as an empty result and throws on other errors', async () => {
@@ -163,4 +165,37 @@ test('createClient treats an unknown content type as an empty result and throws 
 
 test('createClient requires spaceId and deliveryToken', () => {
   assert.throws(() => createClient({}), /spaceId/);
+});
+
+test('createClient caches responses by URL for the life of the client', async () => {
+  let fetches = 0;
+  const fakeFetch = async () => {
+    fetches += 1;
+    return { ok: true, status: 200, json: async () => loadFixture() };
+  };
+  const client = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
+  const [first, second] = await Promise.all([client.getBySlug('vehicle', '750s'), client.getBySlug('vehicle', '750s')]);
+  assert.equal(fetches, 1, 'concurrent identical requests share one fetch');
+  assert.equal(first.fields.name, second.fields.name);
+  assert.notEqual(first, second, 'each call resolves its own object graph');
+  await client.getBySlug('vehicle', '750s');
+  assert.equal(fetches, 1, 'a repeat read is served from the cache');
+  await client.getBySlug('vehicle', '750s-spider');
+  assert.equal(fetches, 2, 'a different query is a different cache key');
+  await client.getBySlug('vehicle', '750s', 2);
+  assert.equal(fetches, 3, 'include depth is part of the key');
+});
+
+test('createClient does not cache a failed request', async () => {
+  let fetches = 0;
+  const fakeFetch = async () => {
+    fetches += 1;
+    if (fetches === 1) return { ok: false, status: 500, statusText: 'Server Error', json: async () => ({ message: 'boom' }) };
+    return { ok: true, status: 200, json: async () => loadFixture() };
+  };
+  const client = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
+  await assert.rejects(() => client.getBySlug('vehicle', '750s'), /Contentful 500/);
+  const vehicle = await client.getBySlug('vehicle', '750s');
+  assert.equal(vehicle.fields.name, '750S');
+  assert.equal(fetches, 2);
 });

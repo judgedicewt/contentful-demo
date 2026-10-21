@@ -10,6 +10,7 @@
  * `fields` (at any depth, including arrays and rich text `data.target`)
  * replaced by the resolved entry or asset. Links whose target is not in the
  * payload become `null`. Cycles are preserved as object references.
+ * Responses are cached by full URL for the life of the client. Failed requests are not cached.
  */
 
 const DEFAULT_HOST = 'https://cdn.contentful.com';
@@ -112,14 +113,20 @@ export function createClient(config = {}, options = {}) {
 
   const base = `${host}/spaces/${encodeURIComponent(spaceId)}/environments/${encodeURIComponent(environment)}`;
 
-  async function request(path, query = {}) {
+  const cache = new Map();
+
+  function buildUrl(path, query) {
     const url = new URL(`${base}${path}`);
     url.searchParams.set('access_token', deliveryToken);
     for (const [key, value] of Object.entries(query)) {
       if (value === undefined || value === null) continue;
       url.searchParams.set(key, String(value));
     }
-    const response = await fetchImpl(url.toString(), { headers: { Accept: 'application/json' } });
+    return url.toString();
+  }
+
+  async function fetchJson(url, query) {
+    const response = await fetchImpl(url, { headers: { Accept: 'application/json' } });
     let body = null;
     try {
       body = await response.json();
@@ -142,6 +149,22 @@ export function createClient(config = {}, options = {}) {
       throw error;
     }
     return body;
+  }
+
+  /**
+   * Fetches a Delivery API path. Responses are cached for the life of the
+   * client by full URL, so repeat reads (a revisited variant, a prefetch that
+   * already landed) cost no network. A failed request is evicted so it retries.
+   */
+  function request(path, query = {}) {
+    const url = buildUrl(path, query);
+    if (cache.has(url)) return cache.get(url);
+    const pending = fetchJson(url, query).catch((error) => {
+      cache.delete(url);
+      throw error;
+    });
+    cache.set(url, pending);
+    return pending;
   }
 
   /** Raw payload for `/entries`. */
