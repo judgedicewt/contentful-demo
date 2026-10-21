@@ -1,12 +1,13 @@
 /**
- * Provisions the content model and seed content in the configured space.
- * Idempotent: content types, assets and entries use fixed IDs, so re-running
- * updates and republishes instead of duplicating.
+ * Provisions the locales, content model and seed content in the configured space.
+ * Idempotent: locales are matched by code, and content types, assets and
+ * entries use fixed IDs, so re-running updates and republishes instead of
+ * duplicating.
  *
  * Usage:
- *   node scripts/setup.js                 content types, then every seed group
- *   node scripts/setup.js --types-only    content types only
- *   node scripts/setup.js --only=<group>  one seed group (comma-separate for several); skips content types
+ *   node scripts/setup.js                 locales, content types, then every seed group
+ *   node scripts/setup.js --types-only    locales and content types only
+ *   node scripts/setup.js --only=<group>  one seed group (comma-separate for several); skips locales and content types
  *   node scripts/setup.js --dry-run       validate the model and seeds, no API calls; exit 1 on problems
  *
  * Seeds come from src/seed/index.js (`SEED_GROUPS`). Before writing anything,
@@ -17,11 +18,12 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createManagementClient } from '../src/clients.js';
 import { loadConfig } from '../src/config.js';
-import { CONTENT_TYPES } from '../src/content-model.js';
+import { CONTENT_TYPES, LOCALES } from '../src/content-model.js';
 import { PROJECT_ROOT } from '../src/provision/assets.js';
 import { provisionContentTypes } from '../src/provision/content-types.js';
 import { provisionEntries } from '../src/provision/entries.js';
 import { describeError } from '../src/provision/errors.js';
+import { ensureLocales } from '../src/provision/locales.js';
 import { createRequester } from '../src/provision/requests.js';
 import { formatProblem, selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
 
@@ -75,6 +77,9 @@ try {
   const request = createRequester({ log: console.log });
 
   if (!flags.only) {
+    const locales = await ensureLocales(environment, LOCALES, { log: console.log, request });
+    console.log(`  ${summarise(locales)}`);
+
     const types = await provisionContentTypes(environment, CONTENT_TYPES, { log: console.log, request });
     console.log(`  ${summarise(types)}`);
   }

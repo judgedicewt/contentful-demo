@@ -6,6 +6,7 @@ import { normaliseContentType, sameContentType } from '../src/provision/content-
 import { sameFields } from '../src/provision/entries.js';
 import { isNetworkError, isNotFound, isRateLimited, isRetryable, isServerError, rateLimitResetSeconds } from '../src/provision/errors.js';
 import { buildEntryFields } from '../src/provision/fields.js';
+import { ensureLocales } from '../src/provision/locales.js';
 import { createRequester, isPublished } from '../src/provision/requests.js';
 import { selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
 import { SEED_GROUPS } from '../src/seed/index.js';
@@ -403,4 +404,32 @@ test('provisionAssets skips an unchanged asset but re-uploads when the byte size
   assert.equal(changed.summary.unchanged, 0);
   assert.equal(changed.summary.updated, 1);
   assert.deepEqual(changed.uploads, [5]);
+});
+
+function fakeEnvironment(items) {
+  const calls = [];
+  return {
+    calls,
+    getLocales: async () => ({ items }),
+    createLocale: async (props) => { calls.push(['create', props]); return { ...props, sys: { id: 'l1' } }; },
+  };
+}
+
+test('ensureLocales creates a missing locale', async () => {
+  const env = fakeEnvironment([{ code: 'en-US', name: 'English (United States)', default: true }]);
+  const summary = await ensureLocales(env, LOCALES, { log: () => {}, request: (_, fn) => fn() });
+  assert.deepEqual(summary, { created: 1, updated: 0, unchanged: 0 });
+  assert.equal(env.calls[0][1].code, 'ja-JP');
+  assert.equal(env.calls[0][1].fallbackCode, 'en-US');
+});
+
+test('ensureLocales updates a locale whose fallback differs and leaves a matching one alone', async () => {
+  let updated = 0;
+  const stale = { code: 'ja-JP', name: 'Japanese (Japan)', fallbackCode: null, optional: true, contentDeliveryApi: true, contentManagementApi: true, update: async function () { updated += 1; return this; } };
+  const env = fakeEnvironment([stale]);
+  assert.deepEqual(await ensureLocales(env, LOCALES, { log: () => {}, request: (_, fn) => fn() }), { created: 0, updated: 1, unchanged: 0 });
+  assert.equal(updated, 1);
+  assert.equal(stale.fallbackCode, 'en-US');
+  const fresh = fakeEnvironment([{ ...LOCALES[0], update: async () => { throw new Error('must not update'); } }]);
+  assert.deepEqual(await ensureLocales(fresh, LOCALES, { log: () => {}, request: (_, fn) => fn() }), { created: 0, updated: 0, unchanged: 1 });
 });
