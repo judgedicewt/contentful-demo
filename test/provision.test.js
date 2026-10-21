@@ -8,6 +8,7 @@ import { isNetworkError, isNotFound, isRateLimited, isRetryable, isServerError, 
 import { buildEntryFields } from '../src/provision/fields.js';
 import { createRequester, isPublished } from '../src/provision/requests.js';
 import { selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
+import { SEED_GROUPS } from '../src/seed/index.js';
 
 const richText = {
   nodeType: 'document',
@@ -106,7 +107,7 @@ test('the content model covers every type in the design', () => {
   const expected = [
     'siteSettings', 'link', 'linkGroup', 'seoMetadata', 'vehicleCategory', 'vehicle', 'specification',
     'featureHighlight', 'mediaSlide', 'lineageEntry', 'faqItem', 'page', 'story', 'textBlock', 'imageBlock',
-    'bannerButton', 'card', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup', 'retailer',
+    'bannerButton', 'card', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup', 'retailer', 'enquiryForm',
   ];
   for (const id of expected) assert.ok(ids.includes(id), `missing content type ${id}`);
   assert.equal(ids.length, expected.length);
@@ -114,6 +115,19 @@ test('the content model covers every type in the design', () => {
   assert.equal(retailer.fields.find((field) => field.id === 'location').type, 'Location');
   const vehicle = CONTENT_TYPES.find((type) => type.id === 'vehicle');
   assert.deepEqual(vehicle.fields.find((field) => field.id === 'heroImage').validations, [{ linkMimetypeGroup: ['image'] }]);
+});
+
+test('enquiryForm endpoint is https-only and the seed entry satisfies it', () => {
+  const type = CONTENT_TYPES.find((t) => t.id === 'enquiryForm');
+  const endpoint = type.fields.find((f) => f.id === 'endpoint');
+  assert.equal(endpoint.required, true);
+  const pattern = new RegExp(endpoint.validations[0].regexp.pattern);
+  assert.ok(!pattern.test('http://example.com/hook'));
+  const group = SEED_GROUPS.find((g) => g.name === 'enquiry');
+  const entry = group.entries.find((e) => e.id === 'enquiry-form');
+  assert.equal(entry.contentType, 'enquiryForm');
+  assert.ok(pattern.test(entry.fields.endpoint));
+  assert.equal(entry.fields.title, 'Enquire');
 });
 
 test('validateSeeds accepts a consistent set of groups, including cross-group and cyclic links', () => {

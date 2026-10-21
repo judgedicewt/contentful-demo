@@ -396,6 +396,28 @@ export const CONTENT_TYPES = [
     ],
   },
   {
+    id: 'enquiryForm',
+    name: 'Enquiry form',
+    description: 'Enquiry form copy and webhook endpoint (singleton)',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true, validations: [{ size: { max: 120 } }] },
+      { id: 'intro', name: 'Intro', type: 'Text' },
+      {
+        id: 'endpoint',
+        name: 'Webhook endpoint',
+        type: 'Symbol',
+        required: true,
+        validations: [{ regexp: { pattern: '^https://[^\\s]+$' }, message: 'Must be an https URL.' }],
+      },
+      { id: 'submitLabel', name: 'Submit label', type: 'Symbol', ...defaultValue('Send enquiry') },
+      { id: 'consentText', name: 'Consent text', type: 'Text', required: true },
+      { id: 'successTitle', name: 'Success title', type: 'Symbol', required: true, ...defaultValue('Thank you') },
+      { id: 'successBody', name: 'Success body', type: 'Text', required: true },
+      { id: 'errorBody', name: 'Error body', type: 'Text', required: true },
+    ],
+  },
+  {
     id: 'siteSettings',
     name: 'Site settings',
     description:
