@@ -217,16 +217,18 @@ export function initPanel({ mount, location, storage, keydownTarget, signals, ge
     // Keep keyboard focus on the checkbox or button after the panel redraws.
     const active = mount.ownerDocument.activeElement;
     const keep = active && mount.contains(active) && control.action !== 'region' ? active : null;
-    const selector = keep
-      ? `[data-control="${keep.getAttribute('data-control')}"]${keep.hasAttribute('data-key') ? `[data-key="${keep.getAttribute('data-key')}"]` : ''}`
+    // Without CSS.escape the key cannot be quoted safely, so the focus restore is skipped.
+    const canEscape = typeof globalThis.CSS?.escape === 'function';
+    const selector = keep && canEscape
+      ? `[data-control="${keep.getAttribute('data-control')}"]${keep.hasAttribute('data-key') ? `[data-key="${globalThis.CSS.escape(keep.getAttribute('data-key'))}"]` : ''}`
       : null;
     try {
       await rerender();
+      refresh();
+      if (selector) mount.querySelector(selector)?.focus();
     } catch (error) {
       console.error(error);
     }
-    refresh();
-    if (selector) mount.querySelector(selector)?.focus();
   }
 
   const onClick = (event) => {

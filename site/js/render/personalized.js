@@ -35,25 +35,25 @@ function defaultProblem(fallback) {
 
 /**
  * Returns the first variant whose audience key is active, else the default.
- * `variant` is the audience key, or null for the default. Each broken variant
- * is skipped with one `warn` call. The default is only checked when no
- * variant matches.
+ * `variant` is the audience key, or null for the default. Variants are checked
+ * in order and the scan stops at the first match, so a broken variant after
+ * the match is never reported. Each broken variant before the match is skipped
+ * with one `warn` call. The default is only checked when no variant matches.
  */
 export function pick(entry, audienceKeys, { warn = console.warn } = {}) {
   const id = entry?.sys?.id;
   const active = new Set(audienceKeys || []);
   const variants = Array.isArray(entry?.fields?.variants) ? entry.fields.variants : [];
-  let match = null;
-  variants.forEach((variant, index) => {
+  for (let index = 0; index < variants.length; index += 1) {
+    const variant = variants[index];
     const problem = variantProblem(variant);
     if (problem) {
       warn(`personalizedContent ${id} variant ${index} skipped: ${problem}`);
-      return;
+      continue;
     }
     const key = audienceKeyOf(variant);
-    if (!match && active.has(key)) match = { content: variant.fields.content, variant: key };
-  });
-  if (match) return match;
+    if (active.has(key)) return { content: variant.fields.content, variant: key };
+  }
   const fallback = entry?.fields?.default;
   const problem = defaultProblem(fallback);
   if (problem) {

@@ -312,9 +312,14 @@ async function handleRoute(route, cda, preloaded) {
     state.current = { view, data, route };
     // Record the view only now: a superseded or failed request returned or threw above.
     // Recording never starts a render, so the next route sees the updated profile.
-    const seen = viewFrom(view, data);
-    if (seen) recordView(seen);
-    state.panel?.refresh();
+    // A failure here must not replace the rendered page, so it only logs.
+    try {
+      const seen = viewFrom(view, data);
+      if (seen) recordView(seen);
+      state.panel?.refresh();
+    } catch (recordError) {
+      console.warn('view recording or panel refresh failed:', recordError);
+    }
   } catch (error) {
     if (!isCurrent()) return;
     console.error(error);
