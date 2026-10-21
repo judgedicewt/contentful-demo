@@ -38,16 +38,22 @@
       }
     },
     {
-      "id": 2,
-      "module": "workfront:createRecord",
-      "version": 1,
+      "id": 4,
+      "module": "workfront-workfront:createARecord",
+      "version": 2,
       "parameters": {
-        "__IMTCONN__": null
+        "__IMTCONN__": 105418
       },
       "mapper": {
-        "record_type": "OPTASK",
-        "projectID": "6ad8d2f90005295eaf29343ebd663ed8",
+        "object_code": "OPTASK",
+        "fieldNames": [
+          "name",
+          "projectID",
+          "description"
+        ],
+        "customForms": [],
         "name": "Enquiry: {{1.model}} - {{1.name}}",
+        "projectID": "6ad8d2f90005295eaf29343ebd663ed8",
         "description": "Name: {{1.name}}\nEmail: {{1.email}}\nPhone: {{1.phone}}\nCountry: {{1.country}}\nModel: {{1.model}} ({{1.modelSlug}})\nMessage: {{1.message}}\nConsent: {{1.consent}}\nSource: {{1.source}}\nPage: {{1.pageUrl}}\nSubmitted: {{1.submittedAt}}"
       },
       "metadata": {
@@ -56,36 +62,100 @@
           "y": 0
         },
         "restore": {
-          "parameters": {
-            "__IMTCONN__": {
-              "label": ""
-            }
+          "__IMTCONN__": {
+            "label": "Jdice Connection (Judge DiCesaro | maarkllcamerptrsd.my.workfront.com)"
           },
-          "expect": {
-            "record_type": {
-              "label": "Issue"
-            }
+          "object_code": {
+            "mode": "chose",
+            "label": "Issue"
+          },
+          "fieldNames": {
+            "mode": "chose",
+            "label": [
+              "Name",
+              "Project ID",
+              "Description"
+            ]
+          },
+          "customForms": {
+            "mode": "chose",
+            "label": []
           }
         },
         "parameters": [
           {
             "name": "__IMTCONN__",
+            "type": "account",
             "label": "Connection",
-            "type": "account:workfront",
-            "required": true
+            "required": true,
+            "mappable": false
           }
         ],
         "expect": [
           {
-            "name": "record_type",
+            "name": "object_code",
             "type": "select",
-            "label": "Record type",
-            "required": true
+            "label": "Record Type",
+            "required": true,
+            "mappable": true,
+            "validate": {
+              "enum": [
+                "ARVPRC",
+                "ASSGN",
+                "BLIN",
+                "BILL",
+                "RATE",
+                "CMPY",
+                "DOCU",
+                "DOCFDR",
+                "DOCV",
+                "EXRATE",
+                "EXPNS",
+                "EXPTYP",
+                "GROUP",
+                "HOUR",
+                "HOURT",
+                "OPTASK",
+                "ITRN",
+                "ROLE",
+                "JRNLE",
+                "MILE",
+                "MPATH",
+                "NOTE",
+                "NTAG",
+                "PORT",
+                "PRGM",
+                "PROJ",
+                "PRTU",
+                "RESVT",
+                "RISK",
+                "RSKTYP",
+                "SPAPVR",
+                "TASK",
+                "TEAMOB",
+                "TMPL",
+                "TTSK",
+                "TSHET",
+                "UPDATE",
+                "USER"
+              ]
+            }
           },
           {
-            "name": "projectID",
-            "type": "text",
-            "label": "Project ID"
+            "name": "fieldNames",
+            "type": "select",
+            "label": "Select fields to map",
+            "multiple": true,
+            "validate": false,
+            "mappable": true
+          },
+          {
+            "name": "customForms",
+            "type": "select",
+            "label": "Select forms to map",
+            "multiple": true,
+            "validate": false,
+            "mappable": true
           },
           {
             "name": "name",
@@ -94,9 +164,16 @@
             "required": true
           },
           {
+            "name": "projectID",
+            "type": "text",
+            "label": "Project ID",
+            "required": true
+          },
+          {
             "name": "description",
             "type": "text",
-            "label": "Description"
+            "label": "Description",
+            "multiline": true
           }
         ]
       }
@@ -108,7 +185,7 @@
       "parameters": {},
       "mapper": {
         "status": "200",
-        "body": "{\"ok\":true,\"id\":\"{{2.ID}}\"}",
+        "body": "{\"ok\":true,\"id\":\"{{4.ID}}\"}",
         "headers": [
           {
             "key": "Content-Type",
@@ -122,31 +199,34 @@
           "y": 0
         },
         "restore": {
-          "expect": {
-            "headers": {
-              "mode": "chose"
-            }
+          "headers": {
+            "mode": "chose",
+            "items": [
+              null
+            ]
           }
         },
         "expect": [
           {
             "name": "status",
-            "type": "uinteger",
             "label": "Status",
+            "type": "uinteger",
             "required": true,
             "validate": {
               "min": 100
-            }
+            },
+            "mappable": false
           },
           {
             "name": "body",
+            "label": "Body",
             "type": "any",
-            "label": "Body"
+            "mappable": false
           },
           {
             "name": "headers",
-            "type": "array",
             "label": "Custom headers",
+            "type": "array",
             "spec": [
               {
                 "name": "key",
@@ -166,7 +246,11 @@
                   "max": 4096
                 }
               }
-            ]
+            ],
+            "validate": {
+              "maxItems": 16
+            },
+            "mappable": false
           }
         ]
       }

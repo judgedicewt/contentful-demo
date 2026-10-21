@@ -14,10 +14,11 @@ test('blueprint has the three expected modules in order', () => {
   const bp = load();
   assert.deepEqual(bp.flow.map((m) => m.module), [
     'gateway:CustomWebHook',
-    'workfront:createRecord',
+    'workfront-workfront:createARecord',
     'gateway:WebhookRespond'
   ]);
-  assert.deepEqual(bp.flow.map((m) => m.id), [1, 2, 3]);
+  assert.deepEqual(bp.flow.map((m) => m.id), [1, 4, 3]);
+  assert.equal(bp.flow[1].version, 2);
 });
 
 test('blueprint metadata and name', () => {
@@ -34,7 +35,8 @@ test('module 1 keeps the starter webhook', () => {
 
 test('module 2 creates an OPTASK in the queue project', () => {
   const m = load().flow[1];
-  assert.equal(m.mapper.record_type, 'OPTASK');
+  assert.equal(m.mapper.object_code, 'OPTASK');
+  assert.deepEqual(m.mapper.fieldNames, ['name', 'projectID', 'description']);
   assert.equal(m.mapper.projectID, '6ad8d2f90005295eaf29343ebd663ed8');
   assert.equal(m.mapper.name, 'Enquiry: {{1.model}} - {{1.name}}');
   for (const key of PAYLOAD_KEYS) {
@@ -42,15 +44,15 @@ test('module 2 creates an OPTASK in the queue project', () => {
   }
 });
 
-test('module 2 carries no connection id', () => {
+test('module 2 binds the exported Workfront connection', () => {
   const m = load().flow[1];
-  assert.ok(!m.parameters.__IMTCONN__);
+  assert.equal(typeof m.parameters.__IMTCONN__, 'number');
 });
 
 test('module 3 answers 200 JSON with the record id', () => {
   const m = load().flow[2];
   assert.equal(m.mapper.status, '200');
-  assert.ok(m.mapper.body.includes('{{2.ID}}'));
+  assert.ok(m.mapper.body.includes('{{4.ID}}'));
   assert.deepEqual(m.mapper.headers, [{ key: 'Content-Type', value: 'application/json' }]);
 });
 

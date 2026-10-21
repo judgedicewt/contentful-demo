@@ -35,9 +35,9 @@ blueprint into that scenario instead of into a new one.
    select **Import Blueprint**.
 3. Choose `fusion/enquiry-scenario.blueprint.json`. The import replaces the
    scenario's flow with the three modules in this guide.
-4. Select the **Workfront** module (module 2). In **Connection**, choose your
-   Workfront connection. The blueprint doesn't carry a connection ID, so you
-   must do this step yourself.
+4. Select the **Workfront** module. **Connection** should already show your
+   Workfront connection, because the blueprint was built from an export of this
+   account. If it is empty, choose your connection.
 5. Select the **Webhooks** module and confirm that **Webhook** is
    "Mclaren Request Webhook".
 6. Select **Save**.
@@ -107,15 +107,16 @@ so Fusion learns the shape.
 
 ## Build the scenario by hand
 
-The module identifiers in the blueprint (`workfront:createRecord` and
-`gateway:WebhookRespond`) and their metadata are written from the Make
-blueprint conventions that Fusion uses. They weren't checked against a public
-export from a Fusion account, so your Fusion version might reject them. If it
-does, add the three modules yourself with these settings. The result behaves the
-same as the import. Build them in the scenario that owns "Mclaren Request
-Webhook" (the starter scenario "Integration Webhooks"), because a webhook can be
-attached to only one scenario at a time. To build in a new scenario instead,
-first remove the webhook from the starter scenario.
+The blueprint's module identifiers (`workfront-workfront:createARecord`
+version 2 and `gateway:WebhookRespond`) and the Workfront module's field shape
+(`object_code`, `fieldNames`, and one mapper key per selected field) were taken
+from a blueprint exported from this Fusion account, so the import should bind
+without edits. If a future Fusion version rejects a module, add the three
+modules yourself with these settings. The result behaves the same as the
+import. Build them in the scenario that owns "Mclaren Request Webhook" (the
+starter scenario "Integration Webhooks"), because a webhook can be attached to
+only one scenario at a time. To build in a new scenario instead, first remove
+the webhook from the starter scenario.
 
 ### Module 1: Webhooks, Custom webhook
 
@@ -131,13 +132,15 @@ first remove the webhook from the starter scenario.
 | --- | --- |
 | Module | Adobe Workfront > Create a record |
 | Connection | Your Workfront connection |
-| Record type | Issue (`OPTASK`) |
-| Project ID | `6ad8d2f90005295eaf29343ebd663ed8` |
+| Record Type | Issue (`OPTASK`) |
+| Select fields to map | Name, Project ID, Description |
+| Select forms to map | Leave empty |
 | Name | `Enquiry: {{1.model}} - {{1.name}}` |
+| Project ID | `6ad8d2f90005295eaf29343ebd663ed8` |
 | Description | The ten lines that follow, as one multi-line value |
 
-If the **Project ID** field isn't listed under the record type's settings,
-choose **Add item** under **Fields** and add `projectID`.
+The Name, Project ID, and Description inputs appear only after you pick them
+under **Select fields to map**.
 
 ```text
 Name: {{1.name}}
@@ -158,7 +161,7 @@ Submitted: {{1.submittedAt}}
 | --- | --- |
 | Module | Webhooks > Webhook response |
 | Status | `200` |
-| Body | `{"ok":true,"id":"{{2.ID}}"}` |
+| Body | `{"ok":true,"id":"{{4.ID}}"}` |
 | Custom headers, Key | `Content-Type` |
 | Custom headers, Value | `application/json` |
 
