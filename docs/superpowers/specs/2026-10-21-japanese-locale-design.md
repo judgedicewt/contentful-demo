@@ -125,7 +125,7 @@ idempotent.
 ### Locale in the route
 
 - `site/js/i18n.js` exports `LOCALES = { en: 'en-US', ja: 'ja-JP' }`,
-  `DEFAULT_LANG = 'en'`, `langFromLocale(locale)`, `t(key, lang)`, and the
+  `DEFAULT_LANG = 'en'`, `langOf(value)`, `t(key, lang)`, and the
   dictionary `STRINGS` (see below).
 - `matchRoute(hash)` recognises a leading `ja` segment: `#/ja`, `#/ja/750s`,
   `#/ja/enquire/gts`. It strips the segment, matches the rest as today, and
@@ -140,10 +140,10 @@ idempotent.
   navigation. When it changes, the app reloads site settings and categories
   for that locale, re-renders the shell, and sets
   `document.documentElement.lang` to `ja` or `en`.
-- The CDA client takes the locale per call: `createClient(config)` returns
-  the same API, and every query helper accepts the client's current
-  `locale`, set with `cda.setLocale('ja-JP')`. Requests add `locale=<code>`.
-  The default is `en-US`.
+- The CDA client is bound to a locale: `cda.forLocale('ja-JP')` returns a
+  client with the same API whose requests add `locale=ja-JP`, sharing the
+  response cache with the client it came from. The app uses one bound client
+  per language, so cached English responses never serve a Japanese route.
 
 ### Switcher
 
