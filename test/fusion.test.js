@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const PATH = new URL('../fusion/enquiry-scenario.blueprint.json', import.meta.url);
 const PAYLOAD_KEYS = [
   'name', 'email', 'phone', 'country', 'model', 'modelSlug',
-  'message', 'consent', 'source', 'pageUrl', 'submittedAt'
+  'message', 'consent', 'source', 'pageUrl', 'submittedAt', 'locale'
 ];
 
 const load = () => JSON.parse(readFileSync(PATH, 'utf8'));

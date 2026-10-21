@@ -81,6 +81,7 @@ and the following body. The webhook answers CORS preflight requests and returns
 | `source` | string | Always `contentful-demo`. |
 | `pageUrl` | string | URL of the page that sent the enquiry. |
 | `submittedAt` | string | Submission time as an ISO 8601 timestamp in UTC. |
+| `locale` | string | `"en-US"` or `"ja-JP"`, the language the form was shown in. |
 
 Example body:
 
@@ -96,7 +97,8 @@ Example body:
   "consent": true,
   "source": "contentful-demo",
   "pageUrl": "https://judgedicewt.github.io/contentful-demo/#/enquire/750s",
-  "submittedAt": "2026-10-21T09:30:00.000Z"
+  "submittedAt": "2026-10-21T09:30:00.000Z",
+  "locale": "en-US"
 }
 ```
 
@@ -104,6 +106,12 @@ The module 2 mappings refer to these keys as `{{1.name}}`, `{{1.email}}`, and
 so on. If the mapping panel doesn't list the keys, open the webhook module,
 select **Redetermine data structure**, and send one submission from the site
 so Fusion learns the shape.
+
+The blueprint maps `locale` on the last line of the issue description
+(`Locale: {{1.locale}}`). A scenario you imported before this key existed keeps
+working without that line, because Fusion ignores payload keys that no module
+maps. To add the line, re-import the blueprint, or add `Locale: {{1.locale}}` to
+the description of the Workfront module yourself.
 
 ## Build the scenario by hand
 

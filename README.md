@@ -100,6 +100,33 @@ creates:
   `npm run placeholders` from `src/placeholders/manifest.js`. Photos replace
   them when present.
 
+## Locales
+
+The space has two locales: `en-US` is the default, and `ja-JP` (Japanese) falls
+back to `en-US` when a value is missing. `setup` creates the `ja-JP` locale if
+it doesn't exist.
+
+The Japanese text lives in overlay files at `src/seed/ja-JP/<group>.js`, with
+one file per seed group. Each overlay is keyed by entry ID, then by field ID,
+and `src/seed/ja-JP/GLOSSARY.md` beside them holds the translation glossary and
+describes the overlay format. The English seed files stay unchanged.
+
+Every localized text field needs a `ja-JP` value. `scripts/setup.js` fails
+validation when one is missing, and `node scripts/setup.js --dry-run` prints a
+`ja-JP coverage` line for each group so you can see the gap before you write
+anything.
+
+On the site, routes under the `#/ja/` prefix show the Japanese content, for
+example `#/ja/750s`. Routes without the prefix show English. The language
+switcher in the header moves you between the two versions of the current page.
+
+`npm run verify` checks each locale in turn. The `ja-JP` pass runs the same
+route, link, and slug checks with `locale=ja-JP`, and also confirms that the
+category intros, story standfirsts, enquiry form intro, and newsletter text
+contain Japanese script. If the space doesn't have the `ja-JP` locale yet, the
+Delivery API rejects the request, and `verify` reports that as a problem and
+exits with a non-zero code.
+
 ## Imagery
 
 `src/photos/manifest.js` defines the 30 studio photos the site uses: 11
