@@ -1064,6 +1064,39 @@ body.nav-open .site-nav {
 
 /* sections */
 
+/* View transitions --------------------------------------------------------
+   A variant switch crossfades the hero and title in place. Header and footer
+   keep their own names so they do not fade at all. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+}
+
+.site-header {
+  view-transition-name: site-header;
+}
+
+.site-footer {
+  view-transition-name: site-footer;
+}
+
+.hero--vehicle .hero__image {
+  view-transition-name: vehicle-hero;
+}
+
+.hero--vehicle .hero__title {
+  view-transition-name: vehicle-title;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
 /* Motion ------------------------------------------------------------------
    Everything that hides or moves content lives inside the no-preference query,
    so with reduced motion (or without JS adding .is-visible) nothing is hidden. */

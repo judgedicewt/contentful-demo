@@ -4,6 +4,11 @@
  * This is the only module that touches `document`. It loads config, fetches
  * the site settings and vehicle categories, mounts the shell, wires up the
  * navigation, and dispatches hash routes to the render registry.
+ *
+ * A route change within one vehicle family (a parent and its variants) updates
+ * the page in place: no loading state, no scroll reset, and a crossfade when the
+ * browser supports view transitions. Any other route replaces the page, and its
+ * loading indicator only appears if loading takes longer than SPINNER_DELAY_MS.
  */
 import { createClient, assetUrl } from './js/cda.js';
 import { matchRoute, loadRoute, onRouteChange, navigate, routeFor, linkHref } from './js/router.js';
@@ -21,6 +26,7 @@ import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
 import { initEnquiry } from './js/enquiry.js';
 import { prefetchFamily, warmHeroImages } from './js/prefetch.js';
+import { isFamilySwitch, SPINNER_DELAY_MS, HERO_DECODE_CAP_MS } from './js/swap.js';
 
 const mounts = {
   header: document.getElementById('header'),
@@ -29,7 +35,15 @@ const mounts = {
 };
 
 const config = window.CONTENTFUL_CONFIG;
-const state = { siteSettings: null, categories: [], requestId: 0, headSet: false, cancelPrefetch: () => {} };
+const state = {
+  siteSettings: null,
+  categories: [],
+  requestId: 0,
+  headSet: false,
+  cancelPrefetch: () => {},
+  /** The last view shown, as `{ view, data }`, or null before the first view and after an error. */
+  current: null,
+};
 
 function setHead({ title, description } = {}) {
   state.headSet = true;
@@ -175,12 +189,50 @@ function fallbackTitle(view, data) {
   return '';
 }
 
+function prefersReducedMotion() {
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+}
+
+/** Resolves once the hero image in `markup` has decoded, or after HERO_DECODE_CAP_MS. */
+function waitForHero(markup) {
+  const template = document.createElement('template');
+  template.innerHTML = markup;
+  const hero = template.content.querySelector('.hero__image');
+  if (!hero) return Promise.resolve();
+  const img = new Image();
+  if (hero.getAttribute('sizes')) img.sizes = hero.getAttribute('sizes');
+  if (hero.getAttribute('srcset')) img.srcset = hero.getAttribute('srcset');
+  img.src = hero.getAttribute('src');
+  const decoded = img.decode().catch(() => {});
+  const capped = new Promise((resolve) => setTimeout(resolve, HERO_DECODE_CAP_MS));
+  return Promise.race([decoded, capped]);
+}
+
+/** Replaces the main content without a loading state, crossfading when the browser can. */
+async function swapInPlace(content) {
+  const markup = String(content);
+  await waitForHero(markup);
+  const apply = () => showMain(markup, { motion: true });
+  if (typeof document.startViewTransition === 'function' && !prefersReducedMotion()) {
+    await document.startViewTransition(apply).updateCallbackDone;
+  } else {
+    apply();
+  }
+}
+
 async function handleRoute(route, cda) {
   // In-page anchors are not routes: keep the current view.
   if (route.name === 'ignore') return;
   const requestId = (state.requestId += 1);
   const isCurrent = () => requestId === state.requestId;
-  showMain(renderLoading());
+  // Fast loads never show the loading indicator.
+  const spinner = setTimeout(() => {
+    if (isCurrent()) showMain(renderLoading());
+  }, SPINNER_DELAY_MS);
   try {
     const { view, data } = await loadRoute(route, cda);
     if (!isCurrent()) return;
@@ -188,19 +240,31 @@ async function handleRoute(route, cda) {
       navigate(data.to, { replace: true });
       return;
     }
+    const inPlace = isFamilySwitch(state.current, { view, data });
     const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
     state.headSet = false;
-    showMain(renderer(data, buildContext(cda, route)), { motion: true });
+    const content = renderer(data, buildContext(cda, route));
+    if (inPlace) {
+      await swapInPlace(content);
+      // The swap yields, so a newer navigation may have started in the meantime.
+      if (!isCurrent()) return;
+    } else {
+      showMain(content, { motion: true });
+    }
     state.cancelPrefetch();
     state.cancelPrefetch = view === 'vehicle' ? prefetchFamily(cda, data) : () => {};
     if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (!inPlace) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
+    state.current = { view, data };
   } catch (error) {
     if (!isCurrent()) return;
     console.error(error);
+    state.current = null;
     showMain(renderError(error));
     setHead({ title: 'Error' });
+  } finally {
+    clearTimeout(spinner);
   }
 }
 
