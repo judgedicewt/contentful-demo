@@ -1,6 +1,7 @@
 import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { validate, buildPayload, initEnquiry } from '../site/js/enquiry.js';
+import { STRINGS } from '../site/js/i18n.js';
 
 const good = { name: ' Ada ', email: 'ada@example.com', phone: '', country: 'UK', model: '750s', message: 'Hi', consent: true, website: '' };
 
@@ -12,6 +13,13 @@ test('validate accepts a complete submission and names each failure', () => {
   assert.equal(validate({ ...good, model: '' }).errors.model, 'Choose a model.');
   assert.equal(validate({ ...good, consent: false }).errors.consent, 'Tick the consent box to continue.');
   assert.equal(validate({ ...good, message: 'x'.repeat(2001) }).errors.message, 'Keep your message under 2000 characters.');
+});
+
+test('validate messages and payload locale follow lang', () => {
+  assert.equal(validate({}, { lang: 'ja' }).errors.name, STRINGS.ja.error_name);
+  assert.equal(validate({}).errors.name, 'Enter your name.');
+  assert.equal(buildPayload({ name: 'a', email: 'a@b.c', country: 'JP', model: '750s' }, { lang: 'ja' }).locale, 'ja-JP');
+  assert.equal(buildPayload({ name: 'a' }).locale, 'en-US');
 });
 
 test('validate skips the model rule when the form has no models to choose', () => {
@@ -27,7 +35,7 @@ test('buildPayload trims, resolves the model name and stamps source and time', (
   assert.deepEqual(payload, {
     name: 'Ada', email: 'ada@example.com', phone: '', country: 'UK', model: '750S', modelSlug: '750s',
     message: 'Hi', consent: true, source: 'contentful-demo', pageUrl: 'https://x/#/enquire/750s',
-    submittedAt: '2026-10-21T12:00:00.000Z',
+    submittedAt: '2026-10-21T12:00:00.000Z', locale: 'en-US',
   });
   assert.equal(buildPayload({ ...good, model: 'zz' }, { vehicles, pageUrl: '', now }).model, 'zz');
 });
@@ -199,6 +207,17 @@ test('a validation failure writes the message, flags the field and does not send
   assert.equal(form.elements.email.focused, true, 'first invalid field is focused');
   assert.equal(form.elements.name.attrs['aria-invalid'], undefined);
   assert.equal(form.button.disabled, false);
+});
+
+test('a validation failure uses the language on the form dataset', async () => {
+  const form = fakeForm({ ...good, name: '' });
+  form.dataset.lang = 'ja';
+  let calls = 0;
+  initEnquiry(rootOf(form), deps(async () => { calls += 1; return { ok: true }; }));
+  form.submit();
+  await tick();
+  assert.equal(calls, 0);
+  assert.equal(form.errors.name.textContent, STRINGS.ja.error_name);
 });
 
 test('fixing a field clears its earlier error on the next submit', async () => {

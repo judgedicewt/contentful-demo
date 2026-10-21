@@ -39,17 +39,21 @@ function subNavItems(entry, data) {
   return [];
 }
 
+const TITLE_SEPARATORS = [': ', '：'];
+
 function subNav(ctx, entry, data) {
   const items = subNavItems(entry, data);
   if (items.length < 2) return '';
   const base = isEntry(entry.fields.parent) ? entry.fields.parent : entry;
-  const prefix = `${base.fields.title}: `;
+  // a child title reads "Parent: Child"; Japanese titles use the full-width colon
+  const prefixes = TITLE_SEPARATORS.map((separator) => `${base.fields.title}${separator}`);
   const nameOf = (page) => {
     const title = String(page.fields.title || '');
-    return page !== base && title.startsWith(prefix) ? title.slice(prefix.length).replace(/^./, (ch) => ch.toUpperCase()) : title;
+    const prefix = prefixes.find((candidate) => title.startsWith(candidate));
+    return page !== base && prefix ? title.slice(prefix.length).replace(/^./, (ch) => ch.toUpperCase()) : title;
   };
   return html`
-    <nav class="subnav subnav--page" aria-label="${base.fields.title} sections">
+    <nav class="subnav subnav--page" aria-label="${ctx.t('sections_of', { title: base.fields.title })}">
       <div class="subnav__inner container">
         <ul class="subnav__list">
           ${items.map((page) => {
@@ -72,12 +76,12 @@ export function renderPage(data, ctx, options = {}) {
   if (options.head) options.head(entry);
   else applyHead(ctx, entry, { title: f.title });
   const trail = [
-    { label: 'Home', href: '#/' },
+    { label: ctx.t('home'), href: ctx.href('#/') },
     ...parentChain(entry).map((page) => ({ label: page.fields.title, href: ctx.routeFor(page) })),
     { label: f.title },
   ];
   return html`
-    ${options.breadcrumbs === false ? '' : html`<div class="container crumb-bar">${ctx.renderBreadcrumbs(trail)}</div>`}
+    ${options.breadcrumbs === false ? '' : html`<div class="container crumb-bar">${ctx.renderBreadcrumbs(trail, { lang: ctx.lang })}</div>`}
     ${hero(ctx, entry, title)}
     ${subNav(ctx, entry, data)}
     ${renderSections(f.sections, ctx, { latestStories: data.latestStories })}`;

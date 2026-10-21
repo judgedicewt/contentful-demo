@@ -14,7 +14,7 @@ export function render(entry, ctx) {
   return html`
     <section class="section story-grid theme-white">
       <div class="container">
-        <h2 class="section__title" data-reveal>${f.heading || 'Stories'}</h2>
+        <h2 class="section__title" data-reveal>${f.heading || ctx.t('stories')}</h2>
         ${cardList(stories.map((story) => storyCard(ctx, story)))}
       </div>
     </section>`;

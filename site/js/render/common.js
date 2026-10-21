@@ -139,12 +139,17 @@ export function lines(text) {
   return value.split('\n').flatMap((line, index) => (index ? [raw('<br>'), line] : [line]));
 }
 
-/** `2026-02-12` → `12 February 2026`; '' when the date does not parse. */
-export function formatDate(value) {
+/** `2026-02-12` → `12 February 2026` (`en-GB`) or `2026年2月12日` (`ja-JP`); '' when the date does not parse. */
+export function formatDate(value, locale = 'en-GB') {
   if (!value) return '';
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(value)) ? `${value}T00:00:00Z` : value);
   if (Number.isNaN(date.getTime())) return '';
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'long', timeZone: 'UTC' }).format(date);
+}
+
+/** The `formatDate` locale for a render context: Japanese dates in `ja`, British English otherwise. */
+export function dateLocale(ctx) {
+  return ctx.locale === 'ja-JP' ? 'ja-JP' : 'en-GB';
 }
 
 /** Normalises a date to `YYYY-MM-DD` for `<time datetime>`; '' when invalid. */

@@ -7,10 +7,11 @@
  * teardown; `validate` and `buildPayload` are pure and exported for tests.
  *
  * Markup contract (see `render/enquire.js`): `form[data-enquiry-form]` with
- * `data-endpoint` and `data-error-body`; inputs read by `name`; a
+ * `data-lang`, `data-endpoint` and `data-error-body`; inputs read by `name`; a
  * `#<name>-error` paragraph per field; `button[type="submit"]`;
  * `[data-enquiry-status]`; and `[data-enquiry-success]` holding an `h2`.
  */
+import { t, LOCALES, DEFAULT_LANG, langOf } from './i18n.js';
 
 const FIELDS = ['name', 'email', 'phone', 'country', 'model', 'message', 'consent'];
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -20,21 +21,25 @@ const HTTPS = /^https:\/\//;
 
 /**
  * Checks a submission. Returns `{ ok, errors }`, with one message per failing
- * field. Pass `requireModel: false` when the form has no models to choose from.
+ * field, worded in `lang`. Pass `requireModel: false` when the form has no models
+ * to choose from.
  */
-export function validate(values, { requireModel = true } = {}) {
+export function validate(values, { requireModel = true, lang = DEFAULT_LANG } = {}) {
   const errors = {};
-  if (!String(values.name ?? '').trim()) errors.name = 'Enter your name.';
-  if (!EMAIL.test(String(values.email ?? '').trim())) errors.email = 'Enter a valid email address.';
-  if (!String(values.country ?? '').trim()) errors.country = 'Enter your country.';
-  if (requireModel && !String(values.model ?? '').trim()) errors.model = 'Choose a model.';
-  if (values.consent !== true) errors.consent = 'Tick the consent box to continue.';
-  if (String(values.message ?? '').length > MAX_MESSAGE) errors.message = 'Keep your message under 2000 characters.';
+  if (!String(values.name ?? '').trim()) errors.name = t('error_name', lang);
+  if (!EMAIL.test(String(values.email ?? '').trim())) errors.email = t('error_email', lang);
+  if (!String(values.country ?? '').trim()) errors.country = t('error_country', lang);
+  if (requireModel && !String(values.model ?? '').trim()) errors.model = t('error_model', lang);
+  if (values.consent !== true) errors.consent = t('error_consent', lang);
+  if (String(values.message ?? '').length > MAX_MESSAGE) errors.message = t('error_message', lang);
   return { ok: Object.keys(errors).length === 0, errors };
 }
 
-/** Builds the JSON body for the webhook. `model` is the display name, falling back to the slug. */
-export function buildPayload(values, { vehicles = [], pageUrl = '', now = new Date() } = {}) {
+/**
+ * Builds the JSON body for the webhook. `model` is the display name, falling back
+ * to the slug; `locale` is the Contentful locale of the page the form was sent from.
+ */
+export function buildPayload(values, { vehicles = [], pageUrl = '', now = new Date(), lang = DEFAULT_LANG } = {}) {
   const trim = (value) => String(value ?? '').trim();
   const modelSlug = trim(values.model);
   const match = vehicles.find((v) => v?.fields?.slug === modelSlug);
@@ -50,6 +55,7 @@ export function buildPayload(values, { vehicles = [], pageUrl = '', now = new Da
     source: SOURCE,
     pageUrl,
     submittedAt: now.toISOString(),
+    locale: LOCALES[lang] || LOCALES[DEFAULT_LANG],
   };
 }
 
@@ -89,6 +95,7 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
   const status = form.querySelector('[data-enquiry-status]');
   const success = root.querySelector('[data-enquiry-success]') || form.querySelector('[data-enquiry-success]');
   const button = form.querySelector('button[type="submit"]');
+  const lang = langOf(form.dataset?.lang);
   let sending = false;
 
   const setStatus = (text) => {
@@ -127,7 +134,7 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
     if (sending) return;
     clearErrors();
     const values = readValues(form);
-    const { ok, errors } = validate(values, { requireModel: hasModelOptions(form) });
+    const { ok, errors } = validate(values, { requireModel: hasModelOptions(form), lang });
     if (!ok) {
       showErrors(errors);
       return;
@@ -139,12 +146,13 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
     }
     sending = true;
     if (button) button.disabled = true;
-    setStatus('Sending…');
+    setStatus(t('sending', lang));
     try {
       const payload = buildPayload(values, {
         vehicles: vehiclesFromSelect(form),
         pageUrl: location?.href || '',
         now: now(),
+        lang,
       });
       const endpoint = form.dataset.endpoint || '';
       if (!HTTPS.test(endpoint)) throw new Error('Enquiry endpoint is not an https URL');

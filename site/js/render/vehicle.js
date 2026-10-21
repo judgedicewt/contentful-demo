@@ -20,27 +20,28 @@ import {
 } from './common.js';
 import { cardList, storyCard } from './cards.js';
 import { render as renderBanner } from './bannerButton.js';
+import { STRINGS } from '../i18n.js';
 
 const SPEC_GROUPS = ['performance', 'powertrain', 'dimensions', 'weight'];
-const AREAS = [
-  ['exterior', 'Exterior'],
-  ['interior', 'Interior'],
-];
+const AREAS = ['exterior', 'interior'];
 
-const label = (value) => String(value || '').replace(/^./, (ch) => ch.toUpperCase());
+const capitalise = (value) => String(value || '').replace(/^./, (ch) => ch.toUpperCase());
+
+/** Spec group heading: the dictionary entry when there is one, else the capitalised group (a custom CMS group). */
+const groupLabel = (ctx, group) => (`spec_group_${group}` in STRINGS.en ? ctx.t(`spec_group_${group}`) : capitalise(group));
 
 function breadcrumbs(ctx, entry) {
   const f = entry.fields;
   const legacy = f.status === 'legacy';
   const trail = [
-    { label: 'Home', href: '#/' },
+    { label: ctx.t('home'), href: ctx.href('#/') },
     legacy
-      ? { label: 'Legacy', href: '#/legacy' }
-      : { label: 'Current models', href: '#/current-models' },
+      ? { label: ctx.t('legacy'), href: ctx.href('#/legacy') }
+      : { label: ctx.t('current_models'), href: ctx.href('#/current-models') },
   ];
   if (isEntry(f.category)) trail.push({ label: f.category.fields.name, href: ctx.routeFor(f.category) });
   trail.push({ label: f.name });
-  return html`<div class="container crumb-bar">${ctx.renderBreadcrumbs(trail)}</div>`;
+  return html`<div class="container crumb-bar">${ctx.renderBreadcrumbs(trail, { lang: ctx.lang })}</div>`;
 }
 
 function hero(ctx, entry) {
@@ -77,17 +78,17 @@ function subNav(ctx, entry, variants) {
   const family = variantItems(entry, variants);
   const downloads = present(f.downloads).filter((asset) => ctx.assetUrl(asset));
   return html`
-    <nav class="subnav subnav--product" aria-label="${f.name} navigation" data-compact-bar>
+    <nav class="subnav subnav--product" aria-label="${ctx.t('vehicle_navigation', { name: f.name })}" data-compact-bar>
       <div class="subnav__inner container">
         <span class="subnav__title">${f.name}</span>
         <ul class="subnav__list">
-          ${f.configureUrl ? html`<li>${anchor(f.configureUrl, 'btn btn-primary btn--sm', 'Configure')}</li>` : ''}
-          ${f.enquiryUrl ? html`<li>${anchor(f.enquiryUrl, 'btn btn-secondary btn--sm', 'Enquire')}</li>` : ''}
+          ${f.configureUrl ? html`<li>${anchor(ctx.href(f.configureUrl), 'btn btn-primary btn--sm', ctx.t('configure'))}</li>` : ''}
+          ${f.enquiryUrl ? html`<li>${anchor(ctx.href(f.enquiryUrl), 'btn btn-secondary btn--sm', ctx.t('enquire'))}</li>` : ''}
           ${family.length > 1
             ? html`
               <li>
                 <details class="subnav__menu" name="subnav-menu" data-variant-menu>
-                  <summary class="subnav__summary">Change model variant</summary>
+                  <summary class="subnav__summary">${ctx.t('change_model_variant')}</summary>
                   <ul class="subnav__panel">
                     ${family.map((item) => {
                       const current = item === entry || item.sys?.id === entry.sys?.id;
@@ -97,7 +98,7 @@ function subNav(ctx, entry, variants) {
                           'data-hero-src': imageSrc(ctx, item.fields.heroImage, 1920) || null,
                         })
                         : '';
-                      return html`<li><a href="${ctx.routeFor(item)}"${current ? raw(' aria-current="page"') : ''}${heroData}>${item.fields.name}${current ? html` <span class="muted">(current)</span>` : ''}</a></li>`;
+                      return html`<li><a href="${ctx.routeFor(item)}"${current ? raw(' aria-current="page"') : ''}${heroData}>${item.fields.name}${current ? html` <span class="muted">${ctx.t('current')}</span>` : ''}</a></li>`;
                     })}
                   </ul>
                 </details>
@@ -107,9 +108,9 @@ function subNav(ctx, entry, variants) {
             ? html`
               <li>
                 <details class="subnav__menu" name="subnav-menu">
-                  <summary class="subnav__summary">Downloads</summary>
+                  <summary class="subnav__summary">${ctx.t('downloads')}</summary>
                   <ul class="subnav__panel">
-                    ${downloads.map((asset) => html`<li><a href="${ctx.assetUrl(asset)}" target="_blank" rel="noopener">${asset.fields.title || 'Download'}</a></li>`)}
+                    ${downloads.map((asset) => html`<li><a href="${ctx.assetUrl(asset)}" target="_blank" rel="noopener">${asset.fields.title || ctx.t('download')}</a></li>`)}
                   </ul>
                 </details>
               </li>`
@@ -119,14 +120,14 @@ function subNav(ctx, entry, variants) {
     </nav>`;
 }
 
-function statement(entry) {
+function statement(ctx, entry) {
   const f = entry.fields;
   if (!f.statement) return '';
   return html`
     <section class="section statement theme-carbon">
       <div class="container container--narrow">
         <p class="statement__text" data-reveal>${f.statement}</p>
-        ${f.filmUrl ? html`<div class="btn-group">${anchor(f.filmUrl, 'btn btn-secondary', 'Watch the film')}</div>` : ''}
+        ${f.filmUrl ? html`<div class="btn-group">${anchor(ctx.href(f.filmUrl), 'btn btn-secondary', ctx.t('watch_the_film'))}</div>` : ''}
       </div>
     </section>`;
 }
@@ -135,18 +136,18 @@ function carousel(ctx, entry) {
   const slides = present(entry.fields.overviewSlides);
   if (!slides.length) return '';
   return html`
-    <section class="section carousel theme-midnight" aria-roledescription="carousel" aria-label="Overview">
+    <section class="section carousel theme-midnight" aria-roledescription="carousel" aria-label="${ctx.t('overview')}">
       <div class="container carousel__head">
-        <h2 class="carousel__title" data-reveal>Overview</h2>
+        <h2 class="carousel__title" data-reveal>${ctx.t('overview')}</h2>
         <div class="carousel__controls">
-          <button type="button" class="carousel__button" data-carousel-prev aria-label="Previous slide">&larr;</button>
-          <button type="button" class="carousel__button" data-carousel-next aria-label="Next slide">&rarr;</button>
+          <button type="button" class="carousel__button" data-carousel-prev aria-label="${ctx.t('previous_slide')}">&larr;</button>
+          <button type="button" class="carousel__button" data-carousel-next aria-label="${ctx.t('next_slide')}">&rarr;</button>
         </div>
       </div>
-      <ul class="carousel__track" data-carousel-track tabindex="0" aria-label="Overview slides">
+      <ul class="carousel__track" data-carousel-track tabindex="0" aria-label="${ctx.t('overview_slides')}">
         ${slides.map(
           (slide, index) => html`
-            <li class="carousel__slide" id="overview-slide-${String(index + 1)}" aria-label="Slide ${String(index + 1)} of ${String(slides.length)}">
+            <li class="carousel__slide" id="overview-slide-${String(index + 1)}" aria-label="${ctx.t('slide_of', { index: String(index + 1), total: String(slides.length) })}">
               ${isEntry(slide.fields.media) ? html`<div class="carousel__media">${imageTag(ctx, slide.fields.media, { w: 1200, aspect: '16:9', focus: index % 2 ? 'right' : 'left' })}</div>` : ''}
               <div class="carousel__copy">
                 <h3 class="carousel__heading">${slide.fields.heading}</h3>
@@ -176,9 +177,9 @@ function highlightItem(ctx, highlight) {
 
 function inDetail(ctx, entry) {
   const highlights = present(entry.fields.highlights);
-  const areas = AREAS.map(([key, title]) => ({
+  const areas = AREAS.map((key) => ({
     key,
-    title,
+    title: ctx.t(key),
     items: highlights.filter((item) => item.fields.area === key),
   })).filter((area) => area.items.length);
   if (!areas.length) return '';
@@ -190,7 +191,7 @@ function inDetail(ctx, entry) {
     return html`
       <section class="section in-detail theme-white">
         <div class="container">
-          <h2 class="section__title" data-reveal>In detail</h2>
+          <h2 class="section__title" data-reveal>${ctx.t('in_detail')}</h2>
           <h3 class="eyebrow">${areas[0].title}</h3>
           ${panel(areas[0])}
         </div>
@@ -199,9 +200,9 @@ function inDetail(ctx, entry) {
   return html`
     <section class="section in-detail theme-white">
       <div class="container">
-        <h2 class="section__title" data-reveal>In detail</h2>
+        <h2 class="section__title" data-reveal>${ctx.t('in_detail')}</h2>
         <div class="tabs">
-          <div class="tabs__group" role="radiogroup" aria-label="In detail">
+          <div class="tabs__group" role="radiogroup" aria-label="${ctx.t('in_detail')}">
             ${areas.map(
               (area, index) =>
                 html`<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-${area.key}"${index === 0 ? raw(' checked') : ''}>`,
@@ -236,7 +237,7 @@ function specifications(ctx, entry) {
   return html`
     <section class="section specs theme-carbon">
       <div class="container">
-        <h2 class="section__title" data-reveal>Specifications</h2>
+        <h2 class="section__title" data-reveal>${ctx.t('specifications')}</h2>
         ${featured.length
           ? html`
             <ul class="spec-tiles" data-reveal>
@@ -252,13 +253,13 @@ function specifications(ctx, entry) {
         ${groups.length
           ? html`
             <details class="spec-full" data-reveal>
-              <summary class="spec-full__summary">Full specifications</summary>
+              <summary class="spec-full__summary">${ctx.t('full_specifications')}</summary>
               <table class="spec-table">
-                <caption class="visually-hidden">${f.name} full specifications</caption>
+                <caption class="visually-hidden">${f.name} ${ctx.t('full_specifications').toLowerCase()}</caption>
                 ${groups.map(
                   (group) => html`
                     <tbody>
-                      <tr class="spec-table__group"><th scope="colgroup" colspan="2">${label(group.key)}</th></tr>
+                      <tr class="spec-table__group"><th scope="colgroup" colspan="2">${groupLabel(ctx, group.key)}</th></tr>
                       ${group.rows.map(
                         (spec) => html`<tr><th scope="row">${spec.fields.label}</th><td>${spec.fields.value}${spec.fields.unit ? html` <span class="muted">${spec.fields.unit}</span>` : ''}</td></tr>`,
                       )}
@@ -285,7 +286,7 @@ function lineage(ctx, entry) {
   return html`
     <section class="section lineage theme-mist">
       <div class="container">
-        <h2 class="section__title" data-reveal>Lineage</h2>
+        <h2 class="section__title" data-reveal>${ctx.t('lineage')}</h2>
         ${f.lineageIntro ? html`<div class="lineage__intro lead">${paragraphs(f.lineageIntro)}</div>` : ''}
         <ol class="timeline">
           ${items.map((item) => {
@@ -297,7 +298,7 @@ function lineage(ctx, entry) {
                   <h3 class="timeline__title">${l.title}</h3>
                   ${l.body ? html`<div class="timeline__text muted">${paragraphs(l.body)}</div>` : ''}
                   ${isEntry(l.vehicle)
-                    ? html`<a class="btn btn-text" href="${ctx.routeFor(l.vehicle)}">Explore the ${l.vehicle.fields.name}</a>`
+                    ? html`<a class="btn btn-text" href="${ctx.routeFor(l.vehicle)}">${ctx.t('explore_the', { name: l.vehicle.fields.name })}</a>`
                     : ''}
                 </div>
                 ${isEntry(l.image) ? html`<div class="timeline__media">${imageTag(ctx, l.image, { w: 600, aspect: '3:4', focus: 'left' })}</div>` : ''}
@@ -314,7 +315,7 @@ function relatedStories(ctx, entry) {
   return html`
     <section class="section story-grid theme-white">
       <div class="container">
-        <h2 class="section__title" data-reveal>Related stories</h2>
+        <h2 class="section__title" data-reveal>${ctx.t('related_stories')}</h2>
         ${cardList(stories.map((story) => storyCard(ctx, story)))}
       </div>
     </section>`;
@@ -326,7 +327,7 @@ function faqs(ctx, entry) {
   return html`
     <section class="section faqs theme-carbon">
       <div class="container container--narrow">
-        <h2 class="section__title" data-reveal>FAQs</h2>
+        <h2 class="section__title" data-reveal>${ctx.t('faqs')}</h2>
         <div class="faq-list" data-reveal>
           ${items.map(
             (item) => html`
@@ -349,7 +350,7 @@ export function render(data, ctx) {
     ${breadcrumbs(ctx, entry)}
     ${hero(ctx, entry)}
     ${subNav(ctx, entry, data.variants)}
-    ${statement(entry)}
+    ${statement(ctx, entry)}
     ${carousel(ctx, entry)}
     ${inDetail(ctx, entry)}
     ${specifications(ctx, entry)}

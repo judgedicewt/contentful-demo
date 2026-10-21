@@ -13,7 +13,7 @@ function telHref(phone) {
   return `tel:${String(phone).replace(/[^\d+]/g, '')}`;
 }
 
-function retailerItem(retailer) {
+function retailerItem(ctx, retailer) {
   const f = retailer.fields;
   const map = mapHref(f.location);
   return html`
@@ -23,8 +23,8 @@ function retailerItem(retailer) {
       ${f.address ? html`<address class="retailer__address">${lines(f.address)}</address>` : ''}
       <ul class="retailer__links">
         ${f.phone ? html`<li>${anchor(telHref(f.phone), '', f.phone)}</li>` : ''}
-        ${f.website ? html`<li>${anchor(f.website, '', 'Website')}</li>` : ''}
-        ${map ? html`<li>${anchor(map, 'btn btn-text', 'View on map')}</li>` : ''}
+        ${f.website ? html`<li>${anchor(f.website, '', ctx.t('website'))}</li>` : ''}
+        ${map ? html`<li>${anchor(map, 'btn btn-text', ctx.t('view_on_map'))}</li>` : ''}
       </ul>
     </li>`;
 }
@@ -33,20 +33,20 @@ export function render(data, ctx) {
   const retailers = present(data.retailers);
   const countries = [];
   for (const retailer of retailers) {
-    const country = retailer.fields.country || 'Other';
+    const country = retailer.fields.country || ctx.t('other');
     let group = countries.find((item) => item.country === country);
     if (!group) countries.push((group = { country, items: [] }));
     group.items.push(retailer);
   }
-  ctx.setHead({ title: 'Find a retailer', description: 'Find a McLaren retailer near you.' });
-  const trail = [{ label: 'Home', href: '#/' }, { label: 'Retailers' }];
+  ctx.setHead({ title: ctx.t('find_a_retailer'), description: ctx.t('retailers_description') });
+  const trail = [{ label: ctx.t('home'), href: ctx.href('#/') }, { label: ctx.t('retailers') }];
   return html`
-    <div class="container crumb-bar">${ctx.renderBreadcrumbs(trail)}</div>
+    <div class="container crumb-bar">${ctx.renderBreadcrumbs(trail, { lang: ctx.lang })}</div>
     <section class="section retailers-header theme-carbon">
       <div class="container container--narrow">
-        <span class="eyebrow">Retailers</span>
-        <h1>Find a retailer</h1>
-        <p class="lead">Speak to the people who sell and service McLaren road cars near you.</p>
+        <span class="eyebrow">${ctx.t('retailers')}</span>
+        <h1>${ctx.t('find_a_retailer')}</h1>
+        <p class="lead">${ctx.t('retailers_lead')}</p>
       </div>
     </section>
     <section class="section retailers theme-white">
@@ -56,10 +56,10 @@ export function render(data, ctx) {
               (group) => html`
                 <div class="retailers__country">
                   <h2 class="retailers__heading">${group.country}</h2>
-                  <ul class="retailers__list">${group.items.map(retailerItem)}</ul>
+                  <ul class="retailers__list">${group.items.map((retailer) => retailerItem(ctx, retailer))}</ul>
                 </div>`,
             )
-          : html`<p class="muted">No retailers are listed yet.</p>`}
+          : html`<p class="muted">${ctx.t('no_retailers')}</p>`}
       </div>
     </section>`;
 }

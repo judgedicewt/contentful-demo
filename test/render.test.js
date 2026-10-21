@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { html, raw, escapeHtml } from '../site/js/dom.js';
 import { renderRichText } from '../site/js/richtext.js';
-import { routeFor, linkHref } from '../site/js/router.js';
+import { routeFor, linkHref, withLang } from '../site/js/router.js';
+import { t, LOCALES, STRINGS } from '../site/js/i18n.js';
 import { assetUrl } from '../site/js/cda.js';
-import { renderBreadcrumbs, renderHeader, renderFooter } from '../site/js/shell.js';
+import { renderBreadcrumbs, renderHeader, renderFooter, renderError, renderNotFound } from '../site/js/shell.js';
 import { registry } from '../site/js/render/index.js';
-import { imageTag, imageSrc, imageSrcset, HERO_WIDTHS } from '../site/js/render/common.js';
+import { imageTag, imageSrc, imageSrcset, formatDate, HERO_WIDTHS } from '../site/js/render/common.js';
 import { sortShowcase } from '../site/js/render/home.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
@@ -24,12 +25,17 @@ const enquireData = load('enquire');
 /** Builds a render context from the real modules with a recording setHead. */
 function makeCtx(overrides = {}) {
   const heads = [];
+  const lang = overrides.lang || 'en';
   const ctx = {
     siteSettings: site.siteSettings,
     categories: site.categories,
     cda: {},
-    routeFor,
-    linkHref,
+    lang,
+    locale: LOCALES[lang],
+    t: (key, vars) => t(key, lang, vars),
+    href: (hash) => withLang(hash, lang),
+    routeFor: (entry) => routeFor(entry, lang),
+    linkHref: (link) => linkHref(link, lang),
     renderRichText,
     html,
     raw,
@@ -879,4 +885,62 @@ test('enquire renderer with no models shows a hint and does not require the sele
   assert.equal((select.match(/<option/g) || []).length, 1);
   assert.match(select, /<option value="" selected>Select a model<\/option>/);
   assert.match(out, /<p class="form__hint">Models could not be loaded\. Reload the page to try again\.<\/p>/);
+});
+
+// ---------------------------------------------------------------------------
+// language
+// ---------------------------------------------------------------------------
+
+test('Japanese context renders chrome strings in Japanese and prefixed routes', () => {
+  const { ctx } = makeCtx({ lang: 'ja' });
+  const out = String(registry.vehicle({ entry: vehicles.full, variants: vehicles.variants }, ctx));
+  assert.ok(out.includes(STRINGS.ja.specifications));
+  assert.ok(out.includes(STRINGS.ja.change_model_variant) || !out.includes('Change model variant'));
+  assert.ok(!out.includes('>Specifications<'));
+  assert.ok(out.includes('href="#/ja"'));
+  assert.ok(!/href="#\/(?!ja)/.test(out), 'every internal href carries the ja prefix');
+  const form = String(registry.enquire(enquireData, ctx));
+  assert.ok(form.includes('data-lang="ja"'));
+  assert.ok(form.includes(STRINGS.ja.full_name));
+});
+
+test('header switcher links to the same route in the other language', () => {
+  const out = String(renderHeader(site.siteSettings, site.categories, { lang: 'ja', hash: '#/ja/750s' }));
+  assert.ok(out.includes('<nav class="lang-switch"'));
+  assert.ok(out.includes('href="#/750s" hreflang="en" lang="en" data-lang-link="en"'));
+  assert.ok(out.includes('href="#/ja/750s" hreflang="ja" lang="ja" data-lang-link="ja" aria-current="true"'));
+  assert.ok(out.includes(`lang="ja" data-lang-link="ja" aria-current="true">日本語<`));
+  const en = String(renderHeader(site.siteSettings, site.categories));
+  assert.ok(en.includes('data-lang-link="en" aria-current="true"'));
+  assert.ok(en.includes('>Skip to content<'));
+});
+
+test('formatDate honours the locale', () => {
+  assert.equal(formatDate('2026-02-12'), '12 February 2026');
+  assert.equal(formatDate('2026-02-12', 'ja-JP'), '2026年2月12日');
+  assert.equal(formatDate('nope', 'ja-JP'), '');
+});
+
+test('Japanese shell, error and not-found panels use Japanese strings and prefixed hrefs', () => {
+  const footer = String(renderFooter(site.siteSettings, { lang: 'ja' }));
+  assert.ok(footer.includes(STRINGS.ja.demo_footer_note));
+  assert.ok(!footer.includes('Demo site.'));
+  assert.ok(!/href="#\/(?!ja)/.test(footer));
+  const crumbs = String(renderBreadcrumbs([{ label: 'A' }], { lang: 'ja' }));
+  assert.ok(crumbs.includes(`aria-label="${STRINGS.ja.breadcrumb}"`));
+  const err = String(renderError(new Error('boom'), undefined, { lang: 'ja' }));
+  assert.ok(err.includes(STRINGS.ja.error_context));
+  assert.ok(err.includes('href="#/ja"'));
+  const nf = String(renderNotFound({ lang: 'ja', params: { slug: 'x' } }));
+  assert.ok(nf.includes(STRINGS.ja.page_not_found));
+  assert.ok(nf.includes('href="#/ja"'));
+  assert.ok(!/href="#\/(?!ja)/.test(nf));
+});
+
+test('page sub-navigation strips a full-width colon title prefix', () => {
+  const { ctx } = makeCtx({ lang: 'ja' });
+  const parent = { sys: { id: 'p', contentType: { sys: { id: 'page' } } }, fields: { title: 'レガシー', slug: 'legacy', sections: [] } };
+  const child = { sys: { id: 'c', contentType: { sys: { id: 'page' } } }, fields: { title: 'レガシー：2010年代', slug: 'legacy-2010s', parent, sections: [] } };
+  const out = String(registry.page({ entry: child, siblings: [child], children: [] }, ctx));
+  assert.match(out, /class="subnav__link" href="#\/ja\/legacy-2010s" aria-current="page">2010年代</);
 });

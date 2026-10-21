@@ -1,6 +1,6 @@
 /** Shared card helpers: product cards (vehicles) and story cards. */
 import { html } from '../dom.js';
-import { anchor, imageTag, formatDate, isoDate, isEntry, paragraphs } from './common.js';
+import { anchor, dateLocale, imageTag, formatDate, isoDate, isEntry, paragraphs } from './common.js';
 
 /** Product card: image, name, short description, Explore plus Configure or Enquire. */
 export function vehicleCard(ctx, vehicle) {
@@ -9,9 +9,9 @@ export function vehicleCard(ctx, vehicle) {
   const href = ctx.routeFor(vehicle);
   const image = f.cardImage || f.heroImage;
   const action = f.configureUrl
-    ? anchor(f.configureUrl, 'btn btn-primary', 'Configure')
+    ? anchor(ctx.href(f.configureUrl), 'btn btn-primary', ctx.t('configure'))
     : f.enquiryUrl
-      ? anchor(f.enquiryUrl, 'btn btn-primary', 'Enquire')
+      ? anchor(ctx.href(f.enquiryUrl), 'btn btn-primary', ctx.t('enquire'))
       : '';
   return html`
     <article class="card product-card">
@@ -21,7 +21,7 @@ export function vehicleCard(ctx, vehicle) {
         <h3 class="card__title"><a href="${href}">${f.name}</a></h3>
         ${f.shortDescription ? html`<div class="card__text muted">${paragraphs(f.shortDescription)}</div>` : ''}
         <div class="card__actions">
-          ${anchor(href, 'btn btn-secondary', html`Explore<span class="visually-hidden"> ${f.name}</span>`)}
+          ${anchor(href, 'btn btn-secondary', html`${ctx.t('explore')}<span class="visually-hidden"> ${f.name}</span>`)}
           ${action}
         </div>
       </div>
@@ -34,7 +34,7 @@ export function storyCard(ctx, story) {
   const f = story.fields;
   const href = ctx.routeFor(story);
   const image = f.cardImage || f.heroImage;
-  const date = formatDate(f.publishDate);
+  const date = formatDate(f.publishDate, dateLocale(ctx));
   return html`
     <article class="card story-card">
       ${image ? html`<a class="card__media-link" href="${href}" tabindex="-1" aria-hidden="true">${imageTag(ctx, image, { w: 800, className: 'card__media', aspect: '4:3' })}</a>` : ''}
@@ -45,7 +45,7 @@ export function storyCard(ctx, story) {
         <h3 class="card__title"><a href="${href}">${f.title}</a></h3>
         ${f.standfirst ? html`<p class="card__text muted">${f.standfirst}</p>` : ''}
         <div class="card__actions">
-          ${anchor(href, 'btn btn-text', html`Read story<span class="visually-hidden">: ${f.title}</span>`)}
+          ${anchor(href, 'btn btn-text', html`${ctx.t('read_story')}<span class="visually-hidden">: ${f.title}</span>`)}
         </div>
       </div>
     </article>`;

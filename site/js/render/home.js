@@ -26,7 +26,7 @@ function showcaseCard(ctx, vehicle) {
       <div class="showcase__body">
         <h3 class="showcase__name">${f.name}</h3>
         ${f.tagline ? html`<p class="showcase__tagline muted">${f.tagline}</p>` : ''}
-        <a class="showcase__link" href="${href}">Explore<span class="visually-hidden"> ${f.name}</span></a>
+        <a class="showcase__link" href="${href}">${ctx.t('explore')}<span class="visually-hidden"> ${f.name}</span></a>
       </div>
     </li>`;
 }
@@ -57,13 +57,13 @@ function showcase(ctx, vehicles) {
   return html`
     <section class="section showcase theme-carbon carousel" aria-roledescription="carousel" aria-labelledby="showcase-title">
       <div class="container carousel__head">
-        <h2 id="showcase-title" class="carousel__title" data-reveal>Models</h2>
+        <h2 id="showcase-title" class="carousel__title" data-reveal>${ctx.t('models')}</h2>
         <div class="carousel__controls">
-          <button type="button" class="carousel__button" data-carousel-prev aria-label="Previous models">&larr;</button>
-          <button type="button" class="carousel__button" data-carousel-next aria-label="Next models">&rarr;</button>
+          <button type="button" class="carousel__button" data-carousel-prev aria-label="${ctx.t('previous_models')}">&larr;</button>
+          <button type="button" class="carousel__button" data-carousel-next aria-label="${ctx.t('next_models')}">&rarr;</button>
         </div>
       </div>
-      <ul class="carousel__track showcase__track" data-carousel-track tabindex="0" aria-label="Models">
+      <ul class="carousel__track showcase__track" data-carousel-track tabindex="0" aria-label="${ctx.t('models')}">
         ${cards}
       </ul>
     </section>`;
