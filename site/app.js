@@ -11,7 +11,17 @@
  * loading indicator only appears if loading takes longer than SPINNER_DELAY_MS.
  */
 import { createClient, assetUrl } from './js/cda.js';
-import { matchRoute, loadRoute, onRouteChange, navigate, routeFor, linkHref } from './js/router.js';
+import {
+  matchRoute,
+  loadRoute,
+  onRouteChange,
+  navigate,
+  routeFor,
+  linkHref,
+  withLang,
+  hashForLang,
+} from './js/router.js';
+import { t, LOCALES } from './js/i18n.js';
 import { renderRichText } from './js/richtext.js';
 import {
   renderHeader,
@@ -35,7 +45,13 @@ const mounts = {
 };
 
 const config = window.CONTENTFUL_CONFIG;
+/** The client without a locale; `clientFor` derives the locale-bound clients from it. */
+let rootClient = null;
 const state = {
+  /** The language the shell is rendered in, or null before the first render. */
+  lang: null,
+  /** The locale-bound client in use. */
+  client: null,
   siteSettings: null,
   categories: [],
   requestId: 0,
@@ -155,19 +171,60 @@ function bindShell() {
   );
 }
 
-function renderShell() {
-  mounts.header.innerHTML = String(renderHeader(state.siteSettings, state.categories));
-  mounts.footer.innerHTML = String(renderFooter(state.siteSettings));
+/** The shared-cache client bound to the Contentful locale for `lang`. */
+function clientFor(lang) {
+  return rootClient.forLocale(LOCALES[lang]);
+}
+
+function renderShell(hash) {
+  mounts.header.innerHTML = String(renderHeader(state.siteSettings, state.categories, { lang: state.lang, hash }));
+  mounts.footer.innerHTML = String(renderFooter(state.siteSettings, { lang: state.lang }));
   setHead({ title: '' });
 }
 
-function buildContext(cda, route) {
+let shellRequest = 0;
+
+/**
+ * Makes the header and footer match `lang`. Does nothing when the shell is
+ * already in that language. Otherwise it loads the site settings and
+ * categories in that language, then renders the shell. If a newer call starts
+ * while this one loads, this one leaves the shell to the newer call.
+ */
+async function ensureShell(lang, hash) {
+  const request = (shellRequest += 1);
+  if (lang === state.lang) return;
+  const client = clientFor(lang);
+  const [settings, categories] = await Promise.allSettled([client.getSiteSettings(), client.getCategories()]);
+  if (request !== shellRequest) return;
+  if (settings.status === 'fulfilled') state.siteSettings = settings.value;
+  else console.warn('siteSettings unavailable:', settings.reason);
+  if (categories.status === 'fulfilled') state.categories = categories.value;
+  else console.warn('vehicleCategory entries unavailable:', categories.reason);
+  state.lang = lang;
+  state.client = client;
+  document.documentElement.lang = lang;
+  renderShell(hash);
+}
+
+/** Points each language switcher link at the current route in its language. */
+function updateLangLinks(hash) {
+  for (const link of document.querySelectorAll('[data-lang-link]')) {
+    link.setAttribute('href', hashForLang(hash, link.dataset.langLink));
+  }
+}
+
+function buildContext(client, route) {
+  const lang = route.lang;
   return {
     siteSettings: state.siteSettings,
     categories: state.categories,
-    cda,
-    routeFor,
-    linkHref,
+    cda: client,
+    lang,
+    locale: LOCALES[lang],
+    t: (key, vars) => t(key, lang, vars),
+    href: (hash) => withLang(hash, lang),
+    routeFor: (entry) => routeFor(entry, lang),
+    linkHref: (link) => linkHref(link, lang),
     renderRichText,
     html,
     raw,
@@ -179,13 +236,13 @@ function buildContext(cda, route) {
   };
 }
 
-function fallbackTitle(view, data) {
+function fallbackTitle(view, data, lang) {
   const entry = data?.entry;
   if (entry?.fields) {
     return entry.fields.seo?.fields?.title || entry.fields.title || entry.fields.name || '';
   }
-  if (view === 'retailers') return 'Retailers';
-  if (view === 'notFound') return 'Page not found';
+  if (view === 'retailers') return t('retailers', lang);
+  if (view === 'notFound') return t('page_not_found', lang);
   return '';
 }
 
@@ -237,13 +294,16 @@ async function swapInPlace(content, isCurrent) {
 }
 
 /**
- * Shows `route`. The optional `preloaded` argument is a promise from
- * `loadRoute(route, cda)` that the caller started earlier, so the load can
- * overlap other work.
+ * Shows `route` in the route's language. The optional `preloaded` argument is
+ * a promise from `loadRoute(route, clientFor(route.lang))` that the caller
+ * started earlier, so the load can overlap other work.
  */
-async function handleRoute(route, cda, preloaded) {
+async function handleRoute(route, preloaded) {
   // In-page anchors are not routes: keep the current view.
   if (route.name === 'ignore') return;
+  const lang = route.lang;
+  const hash = routeHash(window.location.hash);
+  const client = clientFor(lang);
   const requestId = (state.requestId += 1);
   const isCurrent = () => requestId === state.requestId;
   // A vehicle page that may be followed by another vehicle keeps its content
@@ -256,11 +316,16 @@ async function handleRoute(route, cda, preloaded) {
       mounts.main.setAttribute('aria-busy', 'true');
       document.body.classList.add('is-loading');
     } else {
-      showMain(renderLoading());
+      showMain(renderLoading(t('loading', lang)));
     }
   }, SPINNER_DELAY_MS);
   try {
-    const { view, data } = await (preloaded || loadRoute(route, cda));
+    // Start loading the content now so it overlaps the shell, which may need its own requests.
+    const loading = preloaded || loadRoute(route, client);
+    loading.catch(() => {});
+    await ensureShell(lang, hash);
+    if (!isCurrent()) return;
+    const { view, data } = await loading;
     // Loading is done: the hero wait below must not trigger the indicator.
     clearTimeout(spinner);
     if (!isCurrent()) return;
@@ -271,7 +336,7 @@ async function handleRoute(route, cda, preloaded) {
     const inPlace = isFamilySwitch(state.current, { view, data });
     const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
     state.headSet = false;
-    const content = renderer(data, buildContext(cda, route));
+    const content = renderer(data, buildContext(client, route));
     if (inPlace) {
       // The swap yields, so a newer navigation may take over. It then skips the swap.
       if (!(await swapInPlace(content, isCurrent))) return;
@@ -279,8 +344,9 @@ async function handleRoute(route, cda, preloaded) {
       showMain(content, { motion: true });
     }
     state.cancelPrefetch();
-    state.cancelPrefetch = view === 'vehicle' ? prefetchFamily(cda, data) : () => {};
-    if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
+    state.cancelPrefetch = view === 'vehicle' ? prefetchFamily(client, data) : () => {};
+    if (!state.headSet) setHead({ title: fallbackTitle(view, data, lang) });
+    updateLangLinks(hash);
     if (!inPlace) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
     state.current = { view, data };
@@ -288,8 +354,9 @@ async function handleRoute(route, cda, preloaded) {
     if (!isCurrent()) return;
     console.error(error);
     state.current = null;
-    showMain(renderError(error));
-    setHead({ title: 'Error' });
+    showMain(renderError(error, undefined, { lang }));
+    setHead({ title: t('error', lang) });
+    updateLangLinks(hash);
   } finally {
     clearTimeout(spinner);
     // A newer request owns the indicator, and clears it when it finishes.
@@ -306,6 +373,12 @@ function routeFromHash(hash) {
   return matched.name === 'ignore' ? matchRoute('#/') : matched;
 }
 
+/** The hash to build language links from: in-page anchors (`#main`) count as the home route. */
+function routeHash(hash) {
+  const value = hash || '#/';
+  return matchRoute(value).name === 'ignore' ? '#/' : value;
+}
+
 async function boot() {
   if (!config || !config.spaceId || !config.deliveryToken) {
     mounts.header.innerHTML = String(renderHeader(null, []));
@@ -318,32 +391,25 @@ async function boot() {
     return;
   }
 
-  const cda = createClient(config);
+  rootClient = createClient(config);
   bindShell();
 
   // Start loading the first route now, so it overlaps the site settings and categories requests.
   const initialHash = window.location.hash || '#/';
   const initial = routeFromHash(initialHash);
-  const preloaded = loadRoute(initial, cda);
+  const preloaded = loadRoute(initial, clientFor(initial.lang));
   // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
   preloaded.catch(() => {});
 
-  const [settings, categories] = await Promise.allSettled([cda.getSiteSettings(), cda.getCategories()]);
-  if (settings.status === 'fulfilled') state.siteSettings = settings.value;
-  else console.warn('siteSettings unavailable:', settings.reason);
-  if (categories.status === 'fulfilled') state.categories = categories.value;
-  else console.warn('vehicleCategory entries unavailable:', categories.reason);
+  await ensureShell(initial.lang, routeHash(initialHash));
 
-  renderShell();
-
-  const dispatch = (route) => handleRoute(route, cda);
-  onRouteChange(dispatch);
+  onRouteChange(handleRoute);
   // The hash may have changed while the shell loaded, before the listener existed. Then discard the preload.
   const currentHash = window.location.hash || '#/';
   if (currentHash === initialHash) {
-    handleRoute(initial, cda, preloaded);
+    handleRoute(initial, preloaded);
   } else {
-    handleRoute(routeFromHash(currentHash), cda);
+    handleRoute(routeFromHash(currentHash));
   }
 }
 
