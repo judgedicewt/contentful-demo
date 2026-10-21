@@ -6,6 +6,8 @@
  * `window` only when called, so the module can be imported in Node tests.
  *
  * Routes (hash without the leading `#`):
+ *   /ja/...                     → any route below with lang 'ja' (the `ja` segment is removed
+ *                                 first; `/ja` and `/ja/` are home; no prefix means lang 'en')
  *   /, /home                    → home
  *   /current-models             → redirect to /current-models/supercars
  *   /current-models/:slug       → category
@@ -21,6 +23,7 @@
  */
 
 import { safeUrl } from './dom.js';
+import { DEFAULT_LANG } from './i18n.js';
 
 export const DEFAULT_CATEGORY_SLUG = 'supercars';
 
@@ -46,12 +49,35 @@ export function segmentsOf(hash) {
     });
 }
 
-/** Matches a location hash to `{ name, params }`. */
+/** Prefixes a hash route (`#/...`) with the `ja` segment when `lang` is `'ja'`; anything else is returned unchanged. */
+export function withLang(href, lang) {
+  if (lang !== 'ja' || typeof href !== 'string' || !href.startsWith('#/')) return href;
+  return href === '#/' ? '#/ja' : `#/ja/${href.slice(2)}`;
+}
+
+/** Rebuilds a hash for `lang`: strips any leading `ja` segment, drops the query string, then applies `withLang`. */
+export function hashForLang(hash, lang) {
+  const segments = segmentsOf(hash);
+  if (segments[0]?.toLowerCase() === 'ja') segments.shift();
+  const rebuilt = segments.length ? `#/${segments.join('/')}` : '#/';
+  return withLang(rebuilt, lang);
+}
+
+/** Matches a location hash to `{ name, params, lang }`. */
 export function matchRoute(hash) {
   const value = String(hash ?? '');
   // In-page anchors (`#main`) are not routes; leave the current view alone.
-  if (value.startsWith('#') && value.length > 1 && !value.startsWith('#/')) return { name: 'ignore', params: {} };
+  if (value.startsWith('#') && value.length > 1 && !value.startsWith('#/')) {
+    return { name: 'ignore', params: {}, lang: DEFAULT_LANG };
+  }
   const segments = segmentsOf(value).map((segment) => segment.toLowerCase());
+  const lang = segments[0] === 'ja' ? 'ja' : DEFAULT_LANG;
+  if (lang === 'ja') segments.shift();
+  return { ...matchSegments(segments, lang), lang };
+}
+
+/** Matches language-free, lowercased segments to `{ name, params }`. */
+function matchSegments(segments, lang) {
   const [first, second] = segments;
 
   if (segments.length === 0 || (segments.length === 1 && first === 'home')) {
@@ -59,7 +85,7 @@ export function matchRoute(hash) {
   }
   if (first === 'current-models') {
     if (segments.length === 1) {
-      return { name: 'redirect', params: { to: `#/current-models/${DEFAULT_CATEGORY_SLUG}` } };
+      return { name: 'redirect', params: { to: withLang(`#/current-models/${DEFAULT_CATEGORY_SLUG}`, lang) } };
     }
     if (segments.length === 2) return { name: 'category', params: { slug: second } };
     return { name: 'notFound', params: { path: segments.join('/') } };
@@ -91,7 +117,11 @@ export function contentTypeOf(entry) {
 }
 
 /** Builds the hash route for an entry based on its content type. */
-export function routeFor(entry) {
+export function routeFor(entry, lang = DEFAULT_LANG) {
+  return withLang(hashRouteFor(entry), lang);
+}
+
+function hashRouteFor(entry) {
   if (!entry || !entry.fields) return '#/';
   const slug = entry.fields.slug ? String(entry.fields.slug) : '';
   switch (contentTypeOf(entry)) {
@@ -109,12 +139,12 @@ export function routeFor(entry) {
 }
 
 /** Resolves a `link` entry to an href: its target's route, else externalUrl. Always safe to interpolate. */
-export function linkHref(link) {
+export function linkHref(link, lang = DEFAULT_LANG) {
   if (!link) return '#';
   if (typeof link === 'string') return safeUrl(link);
   const fields = link.fields || {};
-  if (fields.target && fields.target.fields) return safeUrl(routeFor(fields.target));
-  if (fields.externalUrl) return safeUrl(fields.externalUrl);
+  if (fields.target && fields.target.fields) return safeUrl(routeFor(fields.target, lang));
+  if (fields.externalUrl) return safeUrl(withLang(fields.externalUrl, lang));
   return '#';
 }
 

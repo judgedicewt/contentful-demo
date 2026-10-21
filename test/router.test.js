@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { safeUrl } from '../site/js/dom.js';
-import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref, familyRootId } from '../site/js/router.js';
+import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref, familyRootId, withLang, hashForLang } from '../site/js/router.js';
 
 const entry = (type, fields = {}, id = `${type}-1`) => ({
   sys: { id, type: 'Entry', contentType: { sys: { type: 'Link', linkType: 'ContentType', id: type } } },
@@ -10,29 +10,29 @@ const entry = (type, fields = {}, id = `${type}-1`) => ({
 
 test('matchRoute: home', () => {
   for (const hash of ['', '#', '#/', '#/home', '#/home/', '/']) {
-    assert.deepEqual(matchRoute(hash), { name: 'home', params: {} }, `hash ${JSON.stringify(hash)}`);
+    assert.deepEqual(matchRoute(hash), { name: 'home', params: {}, lang: 'en' }, `hash ${JSON.stringify(hash)}`);
   }
 });
 
 test('matchRoute: current-models redirects to supercars', () => {
-  assert.deepEqual(matchRoute('#/current-models'), { name: 'redirect', params: { to: '#/current-models/supercars' } });
-  assert.deepEqual(matchRoute('#/current-models/'), { name: 'redirect', params: { to: '#/current-models/supercars' } });
+  assert.deepEqual(matchRoute('#/current-models'), { name: 'redirect', params: { to: '#/current-models/supercars' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/current-models/'), { name: 'redirect', params: { to: '#/current-models/supercars' }, lang: 'en' });
 });
 
 test('matchRoute: categories', () => {
   for (const slug of ['supercars', 'grand-tourer', 'ultimate', 'motorsport']) {
-    assert.deepEqual(matchRoute(`#/current-models/${slug}`), { name: 'category', params: { slug } });
+    assert.deepEqual(matchRoute(`#/current-models/${slug}`), { name: 'category', params: { slug }, lang: 'en' });
   }
 });
 
 test('matchRoute: stories', () => {
   for (const slug of ['750s-five-key-facts', 'artura-spider-performance', 'w1-designed-by-air', 'mso-project-placeholder']) {
-    assert.deepEqual(matchRoute(`#/post/${slug}`), { name: 'story', params: { slug } });
+    assert.deepEqual(matchRoute(`#/post/${slug}`), { name: 'story', params: { slug }, lang: 'en' });
   }
 });
 
 test('matchRoute: retailers', () => {
-  assert.deepEqual(matchRoute('#/retailers'), { name: 'retailers', params: {} });
+  assert.deepEqual(matchRoute('#/retailers'), { name: 'retailers', params: {}, lang: 'en' });
 });
 
 test('matchRoute: pages and vehicles share the page route with the full path as slug', () => {
@@ -57,13 +57,13 @@ test('matchRoute: pages and vehicles share the page route with the full path as 
     'f1',
   ];
   for (const slug of slugs) {
-    assert.deepEqual(matchRoute(`#/${slug}`), { name: 'page', params: { slug } });
+    assert.deepEqual(matchRoute(`#/${slug}`), { name: 'page', params: { slug }, lang: 'en' });
   }
 });
 
 test('matchRoute: strips query strings, decodes segments, rejects deep paths', () => {
-  assert.deepEqual(matchRoute('#/750s?utm=x'), { name: 'page', params: { slug: '750s' } });
-  assert.deepEqual(matchRoute('#/post/caf%C3%A9'), { name: 'story', params: { slug: 'café' } });
+  assert.deepEqual(matchRoute('#/750s?utm=x'), { name: 'page', params: { slug: '750s' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/post/caf%C3%A9'), { name: 'story', params: { slug: 'café' }, lang: 'en' });
   assert.equal(matchRoute('#/a/b/c').name, 'notFound');
   assert.equal(matchRoute('#/post').name, 'notFound');
   assert.equal(matchRoute('#/post/a/b').name, 'notFound');
@@ -73,7 +73,7 @@ test('matchRoute: strips query strings, decodes segments, rejects deep paths', (
 
 test('matchRoute: in-page anchors such as the skip link are ignored, not 404s', () => {
   for (const hash of ['#main', '#content', '#section-2', '#main?x=1']) {
-    assert.deepEqual(matchRoute(hash), { name: 'ignore', params: {} }, hash);
+    assert.deepEqual(matchRoute(hash), { name: 'ignore', params: {}, lang: 'en' }, hash);
   }
   // empty, bare # and real routes are untouched
   assert.equal(matchRoute('#').name, 'home');
@@ -82,11 +82,11 @@ test('matchRoute: in-page anchors such as the skip link are ignored, not 404s', 
 });
 
 test('matchRoute: placeholder destinations at any depth', () => {
-  assert.deepEqual(matchRoute('#/configure/750s'), { name: 'placeholder', params: { path: 'configure/750s', kind: 'configure', slug: '750s' } });
-  assert.deepEqual(matchRoute('#/contact'), { name: 'placeholder', params: { path: 'contact', kind: 'contact', slug: null } });
-  assert.deepEqual(matchRoute('#/legal/privacy'), { name: 'placeholder', params: { path: 'legal/privacy', kind: 'legal', slug: 'privacy' } });
-  assert.deepEqual(matchRoute('#/placeholder/winter-ball'), { name: 'placeholder', params: { path: 'placeholder/winter-ball', kind: 'placeholder', slug: 'winter-ball' } });
-  assert.deepEqual(matchRoute('#/mcl-6gt'), { name: 'placeholder', params: { path: 'mcl-6gt', kind: 'mcl-6gt', slug: null } });
+  assert.deepEqual(matchRoute('#/configure/750s'), { name: 'placeholder', params: { path: 'configure/750s', kind: 'configure', slug: '750s' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/contact'), { name: 'placeholder', params: { path: 'contact', kind: 'contact', slug: null }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/legal/privacy'), { name: 'placeholder', params: { path: 'legal/privacy', kind: 'legal', slug: 'privacy' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/placeholder/winter-ball'), { name: 'placeholder', params: { path: 'placeholder/winter-ball', kind: 'placeholder', slug: 'winter-ball' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/mcl-6gt'), { name: 'placeholder', params: { path: 'mcl-6gt', kind: 'mcl-6gt', slug: null }, lang: 'en' });
   const deep = matchRoute('#/configure/750s/extra/segments');
   assert.equal(deep.name, 'placeholder');
   assert.equal(deep.params.path, 'configure/750s/extra/segments');
@@ -95,10 +95,10 @@ test('matchRoute: placeholder destinations at any depth', () => {
 });
 
 test('matchRoute: segments are lowercased', () => {
-  assert.deepEqual(matchRoute('#/W1'), { name: 'page', params: { slug: 'w1' } });
-  assert.deepEqual(matchRoute('#/Legacy/2010S'), { name: 'page', params: { slug: 'legacy/2010s' } });
-  assert.deepEqual(matchRoute('#/Post/W1-Designed-By-Air'), { name: 'story', params: { slug: 'w1-designed-by-air' } });
-  assert.deepEqual(matchRoute('#/Current-Models/Supercars'), { name: 'category', params: { slug: 'supercars' } });
+  assert.deepEqual(matchRoute('#/W1'), { name: 'page', params: { slug: 'w1' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/Legacy/2010S'), { name: 'page', params: { slug: 'legacy/2010s' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/Post/W1-Designed-By-Air'), { name: 'story', params: { slug: 'w1-designed-by-air' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/Current-Models/Supercars'), { name: 'category', params: { slug: 'supercars' }, lang: 'en' });
   assert.equal(matchRoute('#/Configure/750S').params.slug, '750s');
 });
 
@@ -320,8 +320,8 @@ test('loadRoute: placeholder resolves the vehicle for configure only', async () 
 });
 
 test('matchRoute: enquire is a real route, configure stays a placeholder', () => {
-  assert.deepEqual(matchRoute('#/enquire'), { name: 'enquire', params: { slug: null } });
-  assert.deepEqual(matchRoute('#/enquire/750s'), { name: 'enquire', params: { slug: '750s' } });
+  assert.deepEqual(matchRoute('#/enquire'), { name: 'enquire', params: { slug: null }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/enquire/750s'), { name: 'enquire', params: { slug: '750s' }, lang: 'en' });
   assert.equal(matchRoute('#/enquire/a/b').name, 'notFound');
   assert.equal(matchRoute('#/configure/750s').name, 'placeholder');
 });
@@ -410,4 +410,38 @@ test('the footer lists "Follow us" once: social links come from socialLinks, not
   assert.ok(!headings.includes('Follow us'));
   // every footer group reference still resolves to a seeded entry
   for (const id of site.links.footerGroups) assert.ok(entries.some((e) => e.id === id), id);
+});
+
+test('matchRoute carries lang and strips the ja prefix', () => {
+  assert.deepEqual(matchRoute('#/750s'), { name: 'page', params: { slug: '750s' }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/ja/750s'), { name: 'page', params: { slug: '750s' }, lang: 'ja' });
+  for (const hash of ['#/ja', '#/ja/', '#/JA/', '#/ja/home']) assert.deepEqual(matchRoute(hash), { name: 'home', params: {}, lang: 'ja' }, hash);
+  assert.deepEqual(matchRoute('#/JA/750s/'), { name: 'page', params: { slug: '750s' }, lang: 'ja' });
+  assert.deepEqual(matchRoute('#/ja/current-models'), { name: 'redirect', params: { to: '#/ja/current-models/supercars' }, lang: 'ja' });
+  assert.deepEqual(matchRoute('#/ja/enquire/gts'), { name: 'enquire', params: { slug: 'gts' }, lang: 'ja' });
+  assert.deepEqual(matchRoute('#/ja/post/w1-designed-by-air'), { name: 'story', params: { slug: 'w1-designed-by-air' }, lang: 'ja' });
+  assert.equal(matchRoute('#/en/750s').name, 'page');
+  assert.equal(matchRoute('#main').lang, 'en');
+});
+
+test('withLang and hashForLang', () => {
+  assert.equal(withLang('#/', 'ja'), '#/ja');
+  assert.equal(withLang('#/750s', 'ja'), '#/ja/750s');
+  assert.equal(withLang('#/750s', 'en'), '#/750s');
+  assert.equal(withLang('https://example.com/#/x', 'ja'), 'https://example.com/#/x');
+  assert.equal(hashForLang('#/ja/enquire/750s', 'en'), '#/enquire/750s');
+  assert.equal(hashForLang('#/enquire/750s', 'ja'), '#/ja/enquire/750s');
+  assert.equal(hashForLang('#/ja', 'en'), '#/');
+  assert.equal(hashForLang('#/ja/750s', 'ja'), '#/ja/750s');
+  assert.equal(hashForLang('', 'ja'), '#/ja');
+});
+
+test('routeFor and linkHref prefix hash routes for ja', () => {
+  assert.equal(routeFor(entry('vehicle', { slug: '750s' }), 'ja'), '#/ja/750s');
+  assert.equal(routeFor(entry('page', { slug: 'home' }), 'ja'), '#/ja');
+  assert.equal(routeFor(entry('vehicleCategory', { slug: 'supercars' }), 'ja'), '#/ja/current-models/supercars');
+  assert.equal(linkHref(entry('link', { externalUrl: '#/retailers' }), 'ja'), '#/ja/retailers');
+  assert.equal(linkHref(entry('link', { externalUrl: 'https://example.com' }), 'ja'), 'https://example.com');
+  assert.equal(linkHref(entry('link', { target: entry('story', { slug: 's' }) }), 'ja'), '#/ja/post/s');
+  assert.equal(linkHref(entry('link', { externalUrl: '#/retailers' })), '#/retailers');
 });
