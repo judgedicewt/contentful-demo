@@ -198,6 +198,16 @@ export function createClient(config = {}, options = {}) {
     return getEntries({ content_type: 'story', order: '-fields.publishDate', include: 2, limit });
   }
 
+  function getCurrentVehicles() {
+    return getEntries({
+      content_type: 'vehicle',
+      'fields.status': 'current',
+      order: 'fields.order',
+      include: 1,
+      limit: 20,
+    });
+  }
+
   function getRetailers() {
     return getEntries({ content_type: 'retailer', order: 'fields.country,fields.city', limit: 200 });
   }
@@ -224,6 +234,7 @@ export function createClient(config = {}, options = {}) {
     getVehiclesInCategory,
     getVariants,
     getStories,
+    getCurrentVehicles,
     getRetailers,
     getPagesByParent,
     assetUrl,

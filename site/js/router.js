@@ -178,7 +178,13 @@ export async function loadRoute(route, cda) {
     case 'home': {
       const entry = await cda.getBySlug('page', 'home');
       if (!entry) return { view: 'notFound', data: { route } };
-      return { view: 'home', data: await loadPageData(cda, entry) };
+      // A showcase failure must not break the home page: it just loses the strip.
+      const [pageData, showcase] = await Promise.allSettled([loadPageData(cda, entry), cda.getCurrentVehicles()]);
+      if (pageData.status === 'rejected') throw pageData.reason;
+      return {
+        view: 'home',
+        data: { ...pageData.value, showcase: showcase.status === 'fulfilled' ? showcase.value || [] : [] },
+      };
     }
     case 'category': {
       const entry = await cda.getBySlug('vehicleCategory', params.slug, 3);

@@ -166,6 +166,11 @@ function fakeCda(store) {
       calls.push(['getStories', limit]);
       return store.stories || [];
     },
+    async getCurrentVehicles() {
+      calls.push(['getCurrentVehicles']);
+      if (store.currentVehiclesError) throw store.currentVehiclesError;
+      return store.currentVehicles || [];
+    },
     async getRetailers() {
       calls.push(['getRetailers']);
       return store.retailers || [];
@@ -244,6 +249,26 @@ test('loadRoute: home, category, story, retailers, redirect, notFound', async ()
   assert.equal(missing.data.route.params.slug, 'does-not-exist');
   const missingCategory = await loadRoute(matchRoute('#/current-models/nope'), cda);
   assert.equal(missingCategory.view, 'notFound');
+});
+
+test('loadRoute: home route loads showcase vehicles', async () => {
+  const home = entry('page', { slug: 'home', sections: [] }, 'p-home');
+  const models = [entry('vehicle', { slug: 'artura' }, 'v-artura'), entry('vehicle', { slug: '750s' }, 'v-750s')];
+  const cda = fakeCda({ page: { home }, currentVehicles: models });
+  const result = await loadRoute(matchRoute('#/'), cda);
+  assert.equal(result.view, 'home');
+  assert.equal(result.data.showcase.length, 2);
+  assert.deepEqual(result.data.showcase, models);
+  assert.equal(result.data.entry, home);
+});
+
+test('loadRoute: a showcase failure yields an empty showcase and the home view', async () => {
+  const home = entry('page', { slug: 'home', sections: [] }, 'p-home');
+  const cda = fakeCda({ page: { home }, currentVehiclesError: new Error('CDA outage') });
+  const result = await loadRoute(matchRoute('#/'), cda);
+  assert.equal(result.view, 'home');
+  assert.deepEqual(result.data.showcase, []);
+  assert.equal(result.data.entry, home);
 });
 
 test('loadRoute: ignore does nothing and fetches nothing', async () => {

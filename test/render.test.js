@@ -409,6 +409,37 @@ test('home: no breadcrumbs, site name in hero and head', () => {
   assert.deepEqual(heads, [{ title: 'McLaren', description: 'Supercars engineered around the driver.' }]);
 });
 
+test('home renders the showcase strip', () => {
+  const { out } = renderView('home', homeData);
+  assert.match(out, /class="section showcase/);
+  assert.match(out, /data-carousel-track/);
+  assert.match(out, /data-carousel-prev/);
+  assert.match(out, /data-carousel-next/);
+  assert.equal((out.match(/class="showcase__card/g) || []).length, 2);
+  for (const vehicle of homeData.showcase) {
+    assert.ok(out.includes(vehicle.fields.name), `showcase lists ${vehicle.fields.name}`);
+    assert.ok(out.includes(`href="#/${vehicle.fields.slug}"`), `showcase links to ${vehicle.fields.slug}`);
+  }
+  assert.match(out, /Explore/);
+});
+
+test('home without showcase omits the strip', () => {
+  for (const showcase of [[], undefined]) {
+    const { out } = renderView('home', { ...homeData, showcase });
+    assert.doesNotMatch(out, /showcase/);
+    assert.doesNotMatch(out, /data-carousel-track/);
+    assert.match(out, /hero--home/, 'the hero still renders');
+  }
+});
+
+test('home hero uses the taller variant', () => {
+  const { out } = renderView('home', homeData);
+  assert.match(out, /class="hero hero--full hero--home theme-carbon"/);
+  assert.match(out, /data-hero/);
+  assert.match(out, /<h1[^>]*>McLaren<\/h1>/);
+  assert.match(out, /class="hero__strapline[^"]*"[^>]*>Engineered around the driver</);
+});
+
 // ---------------------------------------------------------------------------
 // story
 // ---------------------------------------------------------------------------
