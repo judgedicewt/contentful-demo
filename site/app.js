@@ -316,7 +316,8 @@ async function boot() {
   bindShell();
 
   // Start loading the first route now, so it overlaps the site settings and categories requests.
-  const matched = matchRoute(window.location.hash || '#/');
+  const initialHash = window.location.hash || '#/';
+  const matched = matchRoute(initialHash);
   const initial = matched.name === 'ignore' ? matchRoute('#/') : matched;
   const preloaded = loadRoute(initial, cda);
   // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
@@ -332,7 +333,14 @@ async function boot() {
 
   const dispatch = (route) => handleRoute(route, cda);
   onRouteChange(dispatch);
-  handleRoute(initial, cda, preloaded);
+  // The hash may have changed while the shell loaded, before the listener existed. Then discard the preload.
+  const currentHash = window.location.hash || '#/';
+  if (currentHash === initialHash) {
+    handleRoute(initial, cda, preloaded);
+  } else {
+    const fresh = matchRoute(currentHash);
+    handleRoute(fresh.name === 'ignore' ? matchRoute('#/') : fresh, cda);
+  }
 }
 
 boot().catch((error) => {
