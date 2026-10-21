@@ -2,7 +2,7 @@
  * Media slide seeds (c060-full-bleed-carousel). IDs follow `slide-<slug>-<n>`.
  * Two overview slides per current vehicle, using overview-1 and overview-2.
  */
-import { assetId } from './assets.js';
+import { assetId } from './asset-id.js';
 
 // Rows: [heading, body]
 const SLIDES = {

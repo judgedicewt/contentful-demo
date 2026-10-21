@@ -3,7 +3,7 @@
  * Each current vehicle has two exterior and two interior highlights; the
  * motorsport car has one of each.
  */
-import { assetId } from './assets.js';
+import { assetId } from './asset-id.js';
 
 // Rows: [area, title, tag, body]
 const HIGHLIGHTS = {

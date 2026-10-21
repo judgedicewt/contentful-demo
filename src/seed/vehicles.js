@@ -6,7 +6,7 @@
  * Copy is original placeholder text. Figures are publicly known headline
  * numbers or plausible placeholders and are not presented as official.
  */
-import { assetId } from './assets.js';
+import { assetId } from './asset-id.js';
 import { SPECIFICATION_GROUP, SPECIFICATIONS_BY_VEHICLE } from './specifications.js';
 import { HIGHLIGHT_GROUP, HIGHLIGHTS_BY_VEHICLE } from './highlights.js';
 import { SLIDE_GROUP, SLIDES_BY_VEHICLE } from './slides.js';
