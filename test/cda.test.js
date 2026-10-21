@@ -199,3 +199,19 @@ test('createClient does not cache a failed request', async () => {
   assert.equal(vehicle.fields.name, '750S');
   assert.equal(fetches, 2);
 });
+
+test('forLocale adds the locale to every request and shares the cache', async () => {
+  const urls = [];
+  const fakeFetch = async (url) => { urls.push(new URL(url)); return { ok: true, json: async () => ({ items: [], includes: {} }) }; };
+  const base = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
+  const ja = base.forLocale('ja-JP');
+  const en = base.forLocale('en-US');
+  await base.getEntries({ content_type: 'vehicle' });
+  await ja.getEntries({ content_type: 'vehicle' });
+  await en.getEntries({ content_type: 'vehicle' });
+  await ja.getEntries({ content_type: 'vehicle' });
+  assert.deepEqual(urls.map((u) => u.searchParams.get('locale')), [null, 'ja-JP', 'en-US']);
+  assert.equal(ja.config.locale, 'ja-JP');
+  assert.equal(base.config.locale, undefined);
+  assert.equal(typeof ja.forLocale, 'function');
+});

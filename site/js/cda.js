@@ -11,6 +11,10 @@
  * replaced by the resolved entry or asset. Links whose target is not in the
  * payload become `null`. Cycles are preserved as object references.
  * Responses are cached by full URL for the life of the client. Failed requests are not cached.
+ *
+ * Pass `config.locale` to bind the client to a locale; every request then adds
+ * `locale=<code>`. `client.forLocale(code)` returns a client bound to another
+ * locale that shares this client's response cache and warning set.
  */
 
 const DEFAULT_HOST = 'https://cdn.contentful.com';
@@ -151,122 +155,129 @@ export function createClient(config = {}, options = {}) {
     return body;
   }
 
-  /**
-   * Fetches a Delivery API path. Responses are cached for the life of the
-   * client by full URL, so repeat reads (a revisited variant, a prefetch that
-   * already landed) cost no network. A failed request is evicted so it retries.
-   */
-  function request(path, query = {}) {
-    const url = buildUrl(path, query);
-    if (cache.has(url)) return cache.get(url);
-    const pending = fetchJson(url, query).catch((error) => {
-      cache.delete(url);
-      throw error;
-    });
-    cache.set(url, pending);
-    return pending;
+  /** Builds the query helpers for one locale; every binding shares the cache and warning set. */
+  function api(locale) {
+    /**
+     * Fetches a Delivery API path. Responses are cached for the life of the
+     * client by full URL, so repeat reads (a revisited variant, a prefetch that
+     * already landed) cost no network. A failed request is evicted so it retries.
+     * A bound locale is added to the query, so each locale caches separately.
+     */
+    function request(path, query = {}) {
+      const url = buildUrl(path, locale === undefined ? query : { ...query, locale });
+      if (cache.has(url)) return cache.get(url);
+      const pending = fetchJson(url, query).catch((error) => {
+        cache.delete(url);
+        throw error;
+      });
+      cache.set(url, pending);
+      return pending;
+    }
+
+    /** Raw payload for `/entries`. */
+    function getEntriesRaw(query = {}) {
+      return request('/entries', query);
+    }
+
+    /** Resolved entries for `/entries`. */
+    async function getEntries(query = {}) {
+      return resolve(await getEntriesRaw(query));
+    }
+
+    /** One resolved entry by ID (queried via `sys.id` so includes are returned). */
+    async function getEntry(id, query = {}) {
+      const items = await getEntries({ include: 2, ...query, 'sys.id': id, limit: 1 });
+      return items[0] || null;
+    }
+
+    async function getSiteSettings() {
+      const items = await getEntries({ content_type: 'siteSettings', include: 3, limit: 1 });
+      return items[0] || null;
+    }
+
+    async function getEnquiryForm() {
+      const items = await getEntries({ content_type: 'enquiryForm', include: 1, limit: 1 });
+      return items[0] || null;
+    }
+
+    function getCategories() {
+      return getEntries({ content_type: 'vehicleCategory', order: 'fields.order', include: 2, limit: 50 });
+    }
+
+    async function getBySlug(contentType, slug, include = 4) {
+      const items = await getEntries({ content_type: contentType, 'fields.slug': slug, include, limit: 1 });
+      return items[0] || null;
+    }
+
+    function getVehiclesInCategory(categoryId) {
+      return getEntries({
+        content_type: 'vehicle',
+        'fields.category.sys.id': categoryId,
+        order: 'fields.order',
+        include: 2,
+        limit: 100,
+      });
+    }
+
+    function getVariants(vehicleId) {
+      return getEntries({
+        content_type: 'vehicle',
+        'fields.parentModel.sys.id': vehicleId,
+        order: 'fields.order',
+        include: 1,
+        limit: 20,
+      });
+    }
+
+    function getStories(limit = 3) {
+      return getEntries({ content_type: 'story', order: '-fields.publishDate', include: 2, limit });
+    }
+
+    function getCurrentVehicles() {
+      return getEntries({
+        content_type: 'vehicle',
+        'fields.status[in]': 'current,motorsport',
+        order: 'fields.order',
+        include: 2,
+        limit: 20,
+      });
+    }
+
+    function getRetailers() {
+      return getEntries({ content_type: 'retailer', order: 'fields.country,fields.city', limit: 200 });
+    }
+
+    function getPagesByParent(parentId) {
+      return getEntries({
+        content_type: 'page',
+        'fields.parent.sys.id': parentId,
+        order: 'fields.order',
+        include: 1,
+        limit: 50,
+      });
+    }
+
+    return {
+      config: { spaceId, environment, locale },
+      forLocale: (code) => api(code),
+      request,
+      getEntriesRaw,
+      getEntries,
+      getEntry,
+      getSiteSettings,
+      getEnquiryForm,
+      getCategories,
+      getBySlug,
+      getVehiclesInCategory,
+      getVariants,
+      getStories,
+      getCurrentVehicles,
+      getRetailers,
+      getPagesByParent,
+      assetUrl,
+      resolve,
+    };
   }
 
-  /** Raw payload for `/entries`. */
-  function getEntriesRaw(query = {}) {
-    return request('/entries', query);
-  }
-
-  /** Resolved entries for `/entries`. */
-  async function getEntries(query = {}) {
-    return resolve(await getEntriesRaw(query));
-  }
-
-  /** One resolved entry by ID (queried via `sys.id` so includes are returned). */
-  async function getEntry(id, query = {}) {
-    const items = await getEntries({ include: 2, ...query, 'sys.id': id, limit: 1 });
-    return items[0] || null;
-  }
-
-  async function getSiteSettings() {
-    const items = await getEntries({ content_type: 'siteSettings', include: 3, limit: 1 });
-    return items[0] || null;
-  }
-
-  async function getEnquiryForm() {
-    const items = await getEntries({ content_type: 'enquiryForm', include: 1, limit: 1 });
-    return items[0] || null;
-  }
-
-  function getCategories() {
-    return getEntries({ content_type: 'vehicleCategory', order: 'fields.order', include: 2, limit: 50 });
-  }
-
-  async function getBySlug(contentType, slug, include = 4) {
-    const items = await getEntries({ content_type: contentType, 'fields.slug': slug, include, limit: 1 });
-    return items[0] || null;
-  }
-
-  function getVehiclesInCategory(categoryId) {
-    return getEntries({
-      content_type: 'vehicle',
-      'fields.category.sys.id': categoryId,
-      order: 'fields.order',
-      include: 2,
-      limit: 100,
-    });
-  }
-
-  function getVariants(vehicleId) {
-    return getEntries({
-      content_type: 'vehicle',
-      'fields.parentModel.sys.id': vehicleId,
-      order: 'fields.order',
-      include: 1,
-      limit: 20,
-    });
-  }
-
-  function getStories(limit = 3) {
-    return getEntries({ content_type: 'story', order: '-fields.publishDate', include: 2, limit });
-  }
-
-  function getCurrentVehicles() {
-    return getEntries({
-      content_type: 'vehicle',
-      'fields.status[in]': 'current,motorsport',
-      order: 'fields.order',
-      include: 2,
-      limit: 20,
-    });
-  }
-
-  function getRetailers() {
-    return getEntries({ content_type: 'retailer', order: 'fields.country,fields.city', limit: 200 });
-  }
-
-  function getPagesByParent(parentId) {
-    return getEntries({
-      content_type: 'page',
-      'fields.parent.sys.id': parentId,
-      order: 'fields.order',
-      include: 1,
-      limit: 50,
-    });
-  }
-
-  return {
-    config: { spaceId, environment },
-    request,
-    getEntriesRaw,
-    getEntries,
-    getEntry,
-    getSiteSettings,
-    getEnquiryForm,
-    getCategories,
-    getBySlug,
-    getVehiclesInCategory,
-    getVariants,
-    getStories,
-    getCurrentVehicles,
-    getRetailers,
-    getPagesByParent,
-    assetUrl,
-    resolve,
-  };
+  return api(config.locale);
 }
