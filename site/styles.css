@@ -1100,24 +1100,20 @@ body.nav-open .site-nav {
     transform: none;
   }
 
-  .subnav--product {
-    transition: padding 0.25s ease;
+  .subnav--product .subnav__link,
+  .subnav--product .subnav__summary,
+  .subnav--product .subnav__inner {
+    transition: min-height 0.25s ease, padding 0.25s ease;
   }
 
   .subnav--product.is-compact .subnav__inner {
     min-height: 0;
-    padding-block: 0.35rem;
+    padding-block: 0;
   }
 
-  .carousel__track {
-    cursor: grab;
-  }
-
-  .carousel__track.is-dragging {
-    cursor: grabbing;
-    scroll-snap-type: none;
-    scroll-behavior: auto;
-    user-select: none;
+  .subnav--product.is-compact .subnav__link,
+  .subnav--product.is-compact .subnav__summary {
+    min-height: 40px;
   }
 
   @keyframes hero-zoom {
@@ -1141,6 +1137,23 @@ body.nav-open .site-nav {
       transform: none;
     }
   }
+}
+
+/* Carousel dragging. Always on: reduced motion only affects animation, not drag. */
+.carousel__track {
+  cursor: grab;
+}
+
+.carousel__track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  user-select: none;
+}
+
+.carousel__track img,
+.carousel__track a {
+  -webkit-user-drag: none;
 }
 
 /* On narrow screens the product title only shows once the bar is compact. */
@@ -1176,6 +1189,7 @@ body.nav-open .site-nav {
 }
 
 .showcase__card {
+  position: relative;
   display: flex;
   flex: 0 0 min(78vw, 22rem);
   flex-direction: column;
@@ -1549,6 +1563,7 @@ body.nav-open .site-nav {
 }
 
 .carousel__track {
+  position: relative;
   display: flex;
   gap: var(--space-4);
   margin: 0;

@@ -116,6 +116,11 @@ test('createClient requests the Delivery API and resolves results', async () => 
   await client.getStories(3);
   assert.equal(calls[5].searchParams.get('order'), '-fields.publishDate');
   assert.equal(calls[5].searchParams.get('limit'), '3');
+  await client.getCurrentVehicles();
+  assert.equal(calls[6].searchParams.get('content_type'), 'vehicle');
+  assert.equal(calls[6].searchParams.get('fields.status[in]'), 'current,motorsport');
+  assert.equal(calls[6].searchParams.has('fields.status'), false);
+  assert.equal(calls[6].searchParams.get('include'), '2', 'category resolves');
 });
 
 test('createClient treats an unknown content type as an empty result and throws on other errors', async () => {

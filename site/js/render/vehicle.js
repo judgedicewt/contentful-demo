@@ -133,7 +133,7 @@ function carousel(ctx, entry) {
         ${slides.map(
           (slide, index) => html`
             <li class="carousel__slide" id="overview-slide-${String(index + 1)}" aria-label="Slide ${String(index + 1)} of ${String(slides.length)}">
-              ${isEntry(slide.fields.media) ? html`<div class="carousel__media">${imageTag(ctx, slide.fields.media, { w: 1200, aspect: '16:9' })}</div>` : ''}
+              ${isEntry(slide.fields.media) ? html`<div class="carousel__media">${imageTag(ctx, slide.fields.media, { w: 1200, aspect: '16:9', focus: index % 2 ? 'right' : 'left' })}</div>` : ''}
               <div class="carousel__copy">
                 <h3 class="carousel__heading">${slide.fields.heading}</h3>
                 ${slide.fields.body ? html`<div class="carousel__body muted">${paragraphs(slide.fields.body)}</div>` : ''}
@@ -144,11 +144,14 @@ function carousel(ctx, entry) {
     </section>`;
 }
 
+// Exterior and interior shots share one source photo family; opposite focus keeps the crops distinct.
+const HIGHLIGHT_FOCUS = { exterior: 'left', interior: 'right' };
+
 function highlightItem(ctx, highlight) {
   const f = highlight.fields;
   return html`
     <li class="highlight" data-reveal>
-      ${isEntry(f.image) ? html`<div class="highlight__media">${imageTag(ctx, f.image, { w: 800, aspect: '16:9' })}</div>` : ''}
+      ${isEntry(f.image) ? html`<div class="highlight__media">${imageTag(ctx, f.image, { w: 800, aspect: '4:3', focus: HIGHLIGHT_FOCUS[f.area] || 'center' })}</div>` : ''}
       <div class="highlight__copy">
         ${f.tag ? html`<span class="eyebrow highlight__tag">${f.tag}</span>` : ''}
         <h3 class="highlight__title">${f.title}</h3>
@@ -283,7 +286,7 @@ function lineage(ctx, entry) {
                     ? html`<a class="btn btn-text" href="${ctx.routeFor(l.vehicle)}">Explore the ${l.vehicle.fields.name}</a>`
                     : ''}
                 </div>
-                ${isEntry(l.image) ? html`<div class="timeline__media">${imageTag(ctx, l.image, { w: 600, aspect: '3:4', focus: 'center' })}</div>` : ''}
+                ${isEntry(l.image) ? html`<div class="timeline__media">${imageTag(ctx, l.image, { w: 600, aspect: '3:4', focus: 'left' })}</div>` : ''}
               </li>`;
           })}
         </ol>

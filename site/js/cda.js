@@ -201,9 +201,9 @@ export function createClient(config = {}, options = {}) {
   function getCurrentVehicles() {
     return getEntries({
       content_type: 'vehicle',
-      'fields.status': 'current',
+      'fields.status[in]': 'current,motorsport',
       order: 'fields.order',
-      include: 1,
+      include: 2,
       limit: 20,
     });
   }

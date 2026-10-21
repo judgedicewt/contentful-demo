@@ -44,7 +44,7 @@ npm run setup          # Creates or updates the content model, assets, and entri
 npm run verify         # Compares the published space against the seed data.
 npm run fetch          # Lists the published vehicles through the Delivery API.
 npm run placeholders   # Regenerates the SVG placeholder images.
-npm run photos         # Converts downloaded renders in --input=<dir> to WebP under assets/photos/.
+npm run photos -- --input=<dir>   # Converts downloaded renders in <dir> to WebP under assets/photos/.
 npm run teardown:blog  # Removes the original blogPost and author demo content.
 npm run dev            # Generates site/config.js and serves the front end on :4173.
 npm test               # Runs the unit tests.
@@ -122,13 +122,17 @@ Save each downloaded render as `<shot-id>.png` in a folder, then convert the
 folder:
 
 ```sh
+npm run photos -- --input=<dir>
+# or directly:
 node scripts/generate-photos.js --input=<dir>
 ```
 
 To redo a shot that already has a photo, add `--force=<id>`, for example
-`--force=shot-750s-hero`.
+`--force=shot-750s-hero`. A space works in place of `=` for both `--input` and
+`--force`. A forced shot with no matching render keeps its current photo, and an
+id that is not in the manifest prints a warning.
 
-The converter never upscales. It crops each render to the shot's aspect ratio
+The converter never upscales. It applies EXIF orientation, then crops each render to the shot's aspect ratio
 and writes WebP at quality 82. If the result is larger than 600 KB, it writes
 the file again at quality 75.
 

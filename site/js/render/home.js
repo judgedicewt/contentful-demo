@@ -1,24 +1,16 @@
 /** Home: full-height hero titled with the site name, model showcase strip, then the page sections. */
 import { html } from '../dom.js';
-import { clip, contentTypeOf, imageTag, isEntry, present } from './common.js';
+import { clip, imageTag, isEntry, present } from './common.js';
 import { renderSections } from './sections.js';
-
-/** The first text block's heading doubles as the hero strapline. */
-function strapline(entry) {
-  const block = present(entry.fields.sections).find((section) => contentTypeOf(section) === 'textBlock');
-  return block?.fields?.heading || '';
-}
 
 function hero(ctx, entry, siteName) {
   const f = entry.fields;
-  const line = strapline(entry);
   return html`
     <section class="hero hero--full hero--home theme-carbon" aria-labelledby="page-title" data-hero>
       ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true })}</div>` : ''}
       <div class="hero__content container">
         ${f.kicker ? html`<span class="eyebrow">${f.kicker}</span>` : ''}
         <h1 id="page-title" class="hero__title">${siteName}</h1>
-        ${line ? html`<p class="hero__strapline lead">${line}</p>` : ''}
       </div>
     </section>`;
 }
@@ -39,14 +31,33 @@ function showcaseCard(ctx, vehicle) {
     </li>`;
 }
 
+const orderOf = (value) => (typeof value === 'number' ? value : Number.POSITIVE_INFINITY);
+
+/**
+ * Showcase order: category order, then vehicle order. The query can only sort by
+ * vehicle order, so the grouping happens here. Unresolved categories sort last.
+ * Returns a new array; the input is left alone.
+ */
+export function sortShowcase(vehicles) {
+  return present(vehicles)
+    .map((vehicle, index) => ({ vehicle, index }))
+    .sort(
+      (a, b) =>
+        orderOf(a.vehicle.fields?.category?.fields?.order) - orderOf(b.vehicle.fields?.category?.fields?.order) ||
+        orderOf(a.vehicle.fields?.order) - orderOf(b.vehicle.fields?.order) ||
+        a.index - b.index,
+    )
+    .map(({ vehicle }) => vehicle);
+}
+
 /** Nothing at all when there are no vehicles, rather than an empty section. */
 function showcase(ctx, vehicles) {
-  const cards = present(vehicles).map((vehicle) => showcaseCard(ctx, vehicle)).filter(Boolean);
+  const cards = sortShowcase(vehicles).map((vehicle) => showcaseCard(ctx, vehicle)).filter(Boolean);
   if (!cards.length) return '';
   return html`
-    <section class="section showcase theme-carbon carousel" aria-roledescription="carousel" aria-label="Models">
+    <section class="section showcase theme-carbon carousel" aria-roledescription="carousel" aria-labelledby="showcase-title">
       <div class="container carousel__head">
-        <h2 class="carousel__title" data-reveal>Models</h2>
+        <h2 id="showcase-title" class="carousel__title" data-reveal>Models</h2>
         <div class="carousel__controls">
           <button type="button" class="carousel__button" data-carousel-prev aria-label="Previous models">&larr;</button>
           <button type="button" class="carousel__button" data-carousel-next aria-label="Next models">&rarr;</button>

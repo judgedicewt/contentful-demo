@@ -146,6 +146,11 @@ function enableDrag(track, on) {
     for (const fn of off) fn();
     off = [];
     track.classList?.remove('is-dragging');
+    // The click that follows pointerup is swallowed while `moved` is set; clear
+    // the flag once that window has passed so a later plain click still works.
+    setTimeout(() => {
+      moved = false;
+    }, 0);
   };
   const view = track.ownerDocument || null;
   on(track, 'pointerdown', (event) => {
@@ -157,6 +162,11 @@ function enableDrag(track, on) {
     startLeft = track.scrollLeft;
     const move = (e) => {
       if (!down) return;
+      // The button was released outside the window, so no pointerup reached us.
+      if (e.pointerType === 'mouse' && e.buttons === 0) {
+        end();
+        return;
+      }
       const dx = e.clientX - startX;
       if (!moved && Math.abs(dx) <= DRAG_THRESHOLD) return;
       moved = true;
@@ -172,6 +182,8 @@ function enableDrag(track, on) {
       () => view?.removeEventListener('pointercancel', end),
     ];
   });
+  // Native image/link dragging would hijack the gesture before pointermove.
+  on(track, 'dragstart', (event) => event.preventDefault());
   // A drag that ends over a link must not follow it.
   on(
     track,

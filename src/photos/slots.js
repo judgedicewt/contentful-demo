@@ -11,8 +11,10 @@ const VEHICLE_SLUGS = [
 
 const alt = VEHICLE_SLUGS.map((slug) => slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
 const LINEAGE = new RegExp(`^img-lineage-(${alt})$`);
-const CARD_SLOT = new RegExp(`^img-(${alt})-card$`);
-const HERO_SLOT = new RegExp(`^img-(${alt})-(?:hero|overview-\\d+|exterior|interior|mso)$`);
+// The second overview slide and the interior highlight use the card shot, so a
+// vehicle page does not show the hero crop three times.
+const CARD_SLOT = new RegExp(`^img-(${alt})-(?:card|overview-2|interior)$`);
+const HERO_SLOT = new RegExp(`^img-(${alt})-(?:hero|overview-\\d+|exterior|mso)$`);
 const STORY = /^img-story-(.+)-(?:hero|inline)$/;
 
 const FIXED = {
@@ -32,7 +34,10 @@ const FIXED = {
 };
 
 function shotIdFor(assetId) {
-  let m = LINEAGE.exec(assetId) || CARD_SLOT.exec(assetId);
+  // Lineage tiles are portrait crops: the hero's front three-quarter survives them best.
+  let m = LINEAGE.exec(assetId);
+  if (m) return `shot-${m[1]}-hero`;
+  m = CARD_SLOT.exec(assetId);
   if (m) return `shot-${m[1]}-card`;
   m = HERO_SLOT.exec(assetId);
   if (m) return `shot-${m[1]}-hero`;

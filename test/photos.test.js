@@ -4,7 +4,7 @@ import { PHOTO_SHOTS, SHOT_BY_ID, BASE_PROMPT } from '../src/photos/manifest.js'
 import { photoForAsset } from '../src/photos/slots.js';
 import { MANIFEST } from '../src/placeholders/manifest.js';
 import { buildAssetSeeds, ASSET_SEEDS, ASSET_GROUP, assetId } from '../src/seed/assets.js';
-import { planPhotos, convertPhoto } from '../scripts/generate-photos.js';
+import { planPhotos, convertPhoto, parseArgs, unknownForceIds, processShots } from '../scripts/generate-photos.js';
 
 test('PHOTO_SHOTS has 30 shots with unique ids and files under assets/photos/', () => {
   assert.equal(PHOTO_SHOTS.length, 30);
@@ -47,10 +47,10 @@ test('photoForAsset maps every manifest asset id', () => {
   }
   const expected = {
     'img-750s-hero': 'shot-750s-hero',
-    'img-750s-overview-2': 'shot-750s-hero',
+    'img-750s-overview-2': 'shot-750s-card',
     'img-750s-exterior': 'shot-750s-hero',
     'img-750s-card': 'shot-750s-card',
-    'img-lineage-f1': 'shot-f1-card',
+    'img-lineage-f1': 'shot-f1-hero',
     'img-story-w1-hero': 'shot-story-w1-hero',
     'img-story-w1-inline': 'shot-story-w1-hero',
     'img-home-hero': 'shot-home-hero',
@@ -63,7 +63,7 @@ test('photoForAsset maps every manifest asset id', () => {
   }
   // Longest slug wins, and unknown ids are null.
   assert.equal(photoForAsset('img-artura-spider-hero').id, 'shot-artura-spider-hero');
-  assert.equal(photoForAsset('img-750s-spider-interior').id, 'shot-750s-spider-hero');
+  assert.equal(photoForAsset('img-750s-spider-interior').id, 'shot-750s-spider-card');
   assert.equal(photoForAsset('img-nope-hero'), null);
   // Only og-default is unmapped in the manifest.
   const unmapped = MANIFEST.filter(({ id }) => photoForAsset(id) === null).map(({ id }) => id);
@@ -140,7 +140,7 @@ test('convertPhoto builds the ImageMagick command and never upscales', () => {
   const [call] = runConvert({ shotId: 'shot-750s-hero', inputWidth: 1920, inputHeight: 1080, sizes: [100000] });
   assert.deepEqual(call, [
     '/in/x.png', '-resize', '1920x1080^', '-gravity', 'center', '-extent', '1920x1080',
-    '-strip', '-quality', '82', '/out/x.webp',
+    '-auto-orient', '-strip', '-quality', '82', '/out/x.webp',
   ]);
 
   // 1376x768 input for a 1920x1080 shot: width is capped at 1376, which would need 774 rows,
@@ -168,4 +168,65 @@ test('convertPhoto re-runs at quality 75 when the output is over 600000 bytes', 
   assert.equal(calls[1][calls[1].indexOf('-quality') + 1], '75');
   const exact = runConvert({ shotId: 'shot-750s-hero', inputWidth: 1920, inputHeight: 1080, sizes: [600000] });
   assert.equal(exact.length, 1);
+});
+
+test('convertPhoto applies EXIF orientation before stripping metadata', () => {
+  const [call] = runConvert({ shotId: 'shot-750s-hero', inputWidth: 1920, inputHeight: 1080, sizes: [1] });
+  assert.equal(call.indexOf('-auto-orient') + 1, call.indexOf('-strip'));
+});
+
+test('parseArgs accepts = and space forms for --input and --force', () => {
+  assert.deepEqual(parseArgs(['--input=/in', '--force=a,b', '--prompts']), { input: '/in', force: ['a', 'b'], prompts: true });
+  assert.deepEqual(parseArgs(['--input', '/in dir', '--force', 'a,b']), { input: '/in dir', force: ['a', 'b'], prompts: false });
+  assert.equal(parseArgs(['--input=/a=b']).input, '/a=b');
+  assert.throws(() => parseArgs(['--input']), /--input needs a value/);
+  assert.throws(() => parseArgs(['--force', '--prompts']), /--force needs a value/);
+  assert.throws(() => parseArgs(['--nope']), /Unknown argument/);
+});
+
+test('unknownForceIds reports ids missing from the manifest', () => {
+  assert.deepEqual(unknownForceIds({ shots: PHOTO_SHOTS, force: ['shot-750s-hero', 'shot-nope'] }), ['shot-nope']);
+  assert.deepEqual(unknownForceIds({ shots: PHOTO_SHOTS }), []);
+});
+
+function shotsFixture({ existing = [], inputs = {}, identifyFails = [], force = [] }) {
+  const shots = ['shot-750s-hero', 'shot-750s-card', 'shot-w1-hero'].map((id) => SHOT_BY_ID.get(id));
+  const exists = new Set(existing.map((id) => SHOT_BY_ID.get(id).file));
+  const converted = [];
+  const result = processShots({
+    plan: planPhotos({ shots, fileExists: (file) => exists.has(file), force }),
+    findInput: (id) => inputs[id] || null,
+    identify: (input) => {
+      if (identifyFails.some((id) => input.includes(id))) throw new Error('identify: no decode delegate');
+      return { width: 1920, height: 1080 };
+    },
+    convert: (args) => converted.push(args[args.length - 1]),
+    statSize: () => 2048,
+    fileExists: (file) => exists.has(file),
+    formatSize: (bytes) => `${bytes / 1024} KB`,
+  });
+  return { ...result, converted };
+}
+
+test('processShots reports an identify failure as error and continues', () => {
+  const { rows, converted, stillMissing } = shotsFixture({
+    inputs: { 'shot-750s-hero': '/in/shot-750s-hero.png', 'shot-w1-hero': '/in/shot-w1-hero.png' },
+    identifyFails: ['shot-750s-hero'],
+  });
+  const byId = Object.fromEntries(rows.map(([id, status, detail]) => [id, { status, detail }]));
+  assert.equal(byId['shot-750s-hero'].status, 'error');
+  assert.match(byId['shot-750s-hero'].detail, /no decode delegate/);
+  assert.equal(byId['shot-750s-card'].status, 'missing');
+  assert.equal(byId['shot-w1-hero'].status, 'new', 'later shots still convert');
+  assert.equal(converted.length, 1);
+  assert.deepEqual(stillMissing.map((shot) => shot.id), ['shot-750s-hero', 'shot-750s-card']);
+});
+
+test('processShots counts a forced shot with no input as kept, not missing', () => {
+  const { rows, converted } = shotsFixture({ existing: ['shot-750s-hero'], force: ['shot-750s-hero'] });
+  const forced = rows.find(([id]) => id === 'shot-750s-hero');
+  assert.equal(forced[1], 'kept');
+  assert.match(forced[2], /forced, no input found/);
+  assert.equal(converted.length, 0);
+  assert.equal(rows.find(([id]) => id === 'shot-750s-card')[1], 'missing', 'unforced absent shots stay missing');
 });

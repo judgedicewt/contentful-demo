@@ -8,6 +8,7 @@ import { assetUrl } from '../site/js/cda.js';
 import { renderBreadcrumbs, renderHeader, renderFooter } from '../site/js/shell.js';
 import { registry } from '../site/js/render/index.js';
 import { imageTag, imageSrc } from '../site/js/render/common.js';
+import { sortShowcase } from '../site/js/render/home.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
 const site = load('site');
@@ -117,6 +118,42 @@ test('vehicle: overview carousel has slides and prev/next buttons', () => {
   assert.match(out, /Slide heading 1/);
   assert.match(out, /aria-label="Previous slide"/);
   assert.match(out, /aria-label="Next slide"/);
+});
+
+const imgSrcs = (markup) => [...String(markup).matchAll(/<img[^>]*src="([^"]+)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
+
+test('vehicle: overview slides use 16:9 crops that alternate focus left and right', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  const slides = [...out.matchAll(/<div class="carousel__media">[\s\S]*?<\/div>/g)].map((m) => imgSrcs(m[0])[0]);
+  assert.equal(slides.length, 2);
+  assert.match(slides[0], /[?&]f=left\b/);
+  assert.match(slides[1], /[?&]f=right\b/);
+  for (const src of slides) assert.match(src, /[?&]h=675\b/);
+});
+
+test('vehicle: highlight media is a 4:3 crop focused by area', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  const media = [...out.matchAll(/<li class="highlight"[^>]*>[\s\S]*?<\/li>/g)].map((m) => imgSrcs(m[0])[0]);
+  assert.equal(media.length, 3);
+  const areas = vehicles.full.fields.highlights.map((h) => h.fields.area);
+  assert.deepEqual(areas, ['exterior', 'exterior', 'interior']);
+  for (const [index, src] of media.entries()) {
+    assert.match(src, /[?&]w=800\b/);
+    assert.match(src, /[?&]h=600\b/);
+    assert.match(src, areas[index] === 'exterior' ? /[?&]f=left\b/ : /[?&]f=right\b/);
+  }
+});
+
+test('vehicle: lineage tiles keep a 3:4 crop focused left', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  const timeline = out.match(/<ol class="timeline">[\s\S]*?<\/ol>/)[0];
+  const srcs = imgSrcs(timeline);
+  assert.ok(srcs.length > 0);
+  for (const src of srcs) {
+    assert.match(src, /[?&]f=left\b/);
+    assert.match(src, /[?&]w=600\b/);
+    assert.match(src, /[?&]h=800\b/);
+  }
 });
 
 test('vehicle carousel has no inline handlers', () => {
@@ -437,7 +474,35 @@ test('home hero uses the taller variant', () => {
   assert.match(out, /class="hero hero--full hero--home theme-carbon"/);
   assert.match(out, /data-hero/);
   assert.match(out, /<h1[^>]*>McLaren<\/h1>/);
-  assert.match(out, /class="hero__strapline[^"]*"[^>]*>Engineered around the driver</);
+  assert.doesNotMatch(out, /hero__strapline/, 'the first text block heading is not repeated in the hero');
+});
+
+test('home showcase has an accessible name from its heading only', () => {
+  const { out } = renderView('home', homeData);
+  assert.match(out, /<section class="section showcase[^"]*"[^>]*aria-labelledby="showcase-title"/);
+  assert.doesNotMatch(out, /<section class="section showcase[^"]*"[^>]*aria-label=/);
+  assert.match(out, /<h2 id="showcase-title"/);
+  assert.match(out, /<ul class="carousel__track showcase__track"[^>]*aria-label="Models"/);
+});
+
+test('sortShowcase orders by category order, then vehicle order, without mutating', () => {
+  const v = (name, order, categoryOrder) => ({
+    sys: { type: 'Entry', id: name },
+    fields: { name, order, category: categoryOrder === undefined ? undefined : { sys: { type: 'Entry' }, fields: { order: categoryOrder } } },
+  });
+  const input = [v('motorsport', 1, 4), v('gt', 1, 2), v('spider', 4, 1), v('coupe', 3, 1), v('unresolved', 0)];
+  const before = input.map((item) => item.fields.name);
+  assert.deepEqual(sortShowcase(input).map((item) => item.fields.name), ['coupe', 'spider', 'gt', 'motorsport', 'unresolved']);
+  assert.deepEqual(input.map((item) => item.fields.name), before, 'input untouched');
+  assert.deepEqual(sortShowcase(undefined), []);
+});
+
+test('home showcase renders in category then vehicle order', () => {
+  const [a, b] = homeData.showcase;
+  const swap = (entry, order) => ({ ...entry, fields: { ...entry.fields, order } });
+  const { out } = renderView('home', { ...homeData, showcase: [swap(a, 9), swap(b, 1)] });
+  assert.ok(out.indexOf(b.fields.name) < out.lastIndexOf(a.fields.name));
+  assert.ok(out.indexOf('href="#/' + b.fields.slug + '"') < out.indexOf('href="#/' + a.fields.slug + '"'));
 });
 
 // ---------------------------------------------------------------------------

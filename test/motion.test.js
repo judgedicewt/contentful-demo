@@ -186,3 +186,77 @@ test('arrow keys move a focused carousel track', () => {
   assert.equal(prevented, 2);
   assert.deepEqual(scrolls.map((s) => s.left), [1400, 0]);
 });
+
+// --- drag-to-scroll ------------------------------------------------------------
+
+function dragFixture() {
+  const trackListeners = [];
+  const docListeners = [];
+  const doc = {
+    addEventListener: (type, fn) => docListeners.push({ type, fn }),
+    removeEventListener: (type, fn) => {
+      const index = docListeners.findIndex((item) => item.type === type && item.fn === fn);
+      if (index >= 0) docListeners.splice(index, 1);
+    },
+  };
+  const track = fakeEl({
+    scrollLeft: 100,
+    clientWidth: 1000,
+    scrollWidth: 2400,
+    ownerDocument: doc,
+    addEventListener: (type, fn, opts) => trackListeners.push({ type, fn, opts }),
+    removeEventListener: (type, fn) => {
+      const index = trackListeners.findIndex((item) => item.type === type && item.fn === fn);
+      if (index >= 0) trackListeners.splice(index, 1);
+    },
+  });
+  const root = fakeRoot({ '[data-carousel-track]': [track] });
+  const teardown = initMotion(root, { reducedMotion: false, observer: fakeObserverClass() });
+  const fire = (list, type, event) => list.filter((item) => item.type === type).forEach((item) => item.fn(event));
+  return { track, root, teardown, trackListeners, docListeners, fire };
+}
+
+const mouseDown = { pointerType: 'mouse', button: 0, clientX: 500 };
+
+test('dragstart on the track is cancelled and its listener is removed on teardown', () => {
+  const { trackListeners, fire, teardown } = dragFixture();
+  let prevented = 0;
+  fire(trackListeners, 'dragstart', { preventDefault: () => (prevented += 1) });
+  assert.equal(prevented, 1);
+  teardown();
+  assert.equal(trackListeners.length, 0, 'every track listener removed');
+});
+
+test('a mouse drag scrolls the track and suppresses the click that ends it', () => {
+  const { track, trackListeners, docListeners, fire } = dragFixture();
+  fire(trackListeners, 'pointerdown', mouseDown);
+  fire(docListeners, 'pointermove', { pointerType: 'mouse', buttons: 1, clientX: 400 });
+  assert.equal(track.scrollLeft, 200);
+  assert.equal(track.classList.contains('is-dragging'), true);
+  fire(docListeners, 'pointerup', {});
+  let prevented = 0;
+  fire(trackListeners, 'click', { preventDefault: () => (prevented += 1), stopPropagation() {} });
+  assert.equal(prevented, 1, 'the click right after a drag is swallowed');
+});
+
+test('the click-suppression flag is cleared after the drag ends', async () => {
+  const { trackListeners, docListeners, fire } = dragFixture();
+  fire(trackListeners, 'pointerdown', mouseDown);
+  fire(docListeners, 'pointermove', { pointerType: 'mouse', buttons: 1, clientX: 400 });
+  fire(docListeners, 'pointerup', {});
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  let prevented = 0;
+  fire(trackListeners, 'click', { preventDefault: () => (prevented += 1), stopPropagation() {} });
+  assert.equal(prevented, 0, 'a later plain click is left alone');
+});
+
+test('a mouse move with no buttons held ends the drag', () => {
+  const { track, trackListeners, docListeners, fire } = dragFixture();
+  fire(trackListeners, 'pointerdown', mouseDown);
+  fire(docListeners, 'pointermove', { pointerType: 'mouse', buttons: 1, clientX: 400 });
+  assert.equal(track.classList.contains('is-dragging'), true);
+  fire(docListeners, 'pointermove', { pointerType: 'mouse', buttons: 0, clientX: 300 });
+  assert.equal(track.classList.contains('is-dragging'), false, 'drag ended');
+  assert.equal(track.scrollLeft, 200, 'the buttonless move did not scroll');
+  assert.equal(docListeners.length, 0, 'document listeners removed');
+});
