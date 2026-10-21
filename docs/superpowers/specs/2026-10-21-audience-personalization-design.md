@@ -99,8 +99,9 @@ added.
 ## Visitor profile and signals
 
 `site/js/signals.js` owns everything the site knows about the visitor. It is
-the only module that reads or writes storage, so a CDP swap replaces this
-file.
+the only module that reads or writes the visitor profile, so a CDP swap replaces
+this file. The demo panel keeps its own open state in `sessionStorage`, under
+the key `mcl.panel`.
 
 ### Profile
 
@@ -341,10 +342,14 @@ tests.
 ## Files
 
 New: `site/js/signals.js`, `site/js/audience.js`, `site/js/panel.js`,
-`site/js/render/personalized.js`, `src/seed/audiences.js`, the tests above.
+`site/js/render/personalized.js`, `src/seed/audiences.js`,
+`test/signals.test.js`, `test/audience.test.js`, `test/panel.test.js`, the tests
+above.
 
-Changed: `src/content-model.js`, `src/seed/{pages,vehicles,sections,links,index}.js`,
-`site/js/cda.js` (a `getAudiences` query), `site/js/router.js` (include
+Changed: `src/content-model.js`,
+`src/seed/{pages,vehicles,sections,links,index}.js`, `site/js/cda.js` (a
+`getAudiences` query), `site/js/router.js` (include depth),
+`site/js/prefetch.js` (include depth), `scripts/verify-content.js` (include
 depth), `site/app.js` (boot loads audiences, signals, panel, `ctx.audiences`),
 `site/js/render/{sections,vehicle}.js`, `site/styles.css`, `site/index.html`
 (module preloads), `README.md`.
