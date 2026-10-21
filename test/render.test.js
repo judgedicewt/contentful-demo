@@ -7,6 +7,7 @@ import { routeFor, linkHref } from '../site/js/router.js';
 import { assetUrl } from '../site/js/cda.js';
 import { renderBreadcrumbs, renderHeader, renderFooter } from '../site/js/shell.js';
 import { registry } from '../site/js/render/index.js';
+import { imageTag, imageSrc } from '../site/js/render/common.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
 const site = load('site');
@@ -552,5 +553,98 @@ test('every template returns HTML that coerces to a string', () => {
     assert.equal(typeof String(out), 'string');
     assert.ok(String(out).length > 200);
     assert.doesNotMatch(String(out), BAD);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// image helper crops
+// ---------------------------------------------------------------------------
+
+const photoAsset = (overrides = {}) => ({
+  sys: { id: 'photo-1', type: 'Asset' },
+  fields: {
+    title: 'Studio photo',
+    description: 'A car in a studio',
+    file: {
+      url: '//images.ctfassets.net/space/photo-1/abc/photo.webp',
+      contentType: 'image/webp',
+      details: { image: { width: 2400, height: 1350 } },
+      ...overrides,
+    },
+  },
+});
+
+test('imageTag with aspect 4:3 requests a filled crop', () => {
+  const { ctx } = makeCtx();
+  const out = String(imageTag(ctx, photoAsset(), { w: 1200, aspect: '4:3' }));
+  const src = out.match(/src="([^"]+)"/)[1];
+  const params = new URL(src.replaceAll('&amp;', '&')).searchParams;
+  assert.equal(params.get('fit'), 'fill');
+  assert.equal(params.get('f'), 'center');
+  assert.equal(params.get('w'), '1200');
+  assert.equal(params.get('h'), '900');
+  assert.match(out, /width="1200" height="900"/);
+});
+
+test('imageTag with aspect and a focus', () => {
+  const { ctx } = makeCtx();
+  const out = String(imageTag(ctx, photoAsset(), { w: 800, aspect: '3:4', focus: 'bottom' }));
+  const params = new URL(out.match(/src="([^"]+)"/)[1].replaceAll('&amp;', '&')).searchParams;
+  assert.equal(params.get('f'), 'bottom');
+  assert.equal(params.get('h'), '1067');
+  assert.match(out, /width="800" height="1067"/);
+});
+
+test('imageTag aspect dimensions ignore the asset details', () => {
+  const { ctx } = makeCtx();
+  const noDetails = photoAsset({ details: undefined });
+  const out = String(imageTag(ctx, noDetails, { w: 1600, aspect: '16:9' }));
+  assert.match(out, /width="1600" height="900"/);
+  assert.doesNotMatch(out, /NaN/);
+});
+
+test('imageTag without image details still renders', () => {
+  const { ctx } = makeCtx();
+  for (const details of [undefined, {}, { image: {} }, { image: { width: 'x', height: null } }]) {
+    const out = String(imageTag(ctx, photoAsset({ details }), { w: 800 }));
+    assert.match(out, /<img[^>]* src="https:\/\/images\.ctfassets\.net/);
+    assert.doesNotMatch(out, /NaN|undefined/);
+    assert.doesNotMatch(out, /\swidth=|\sheight=/, 'no dimensions attributes without details');
+  }
+});
+
+test('imageTag without aspect keeps the natural-ratio URL', () => {
+  const { ctx } = makeCtx();
+  const src = String(imageSrc(ctx, photoAsset(), 800));
+  assert.doesNotMatch(src, /fit=|[?&]h=|[?&]f=/);
+  assert.match(src, /w=800/);
+});
+
+test('SVG assets never get fm=webp but do get fit when aspect is set', () => {
+  const { ctx } = makeCtx();
+  const svg = photoAsset({ url: '//images.ctfassets.net/space/svg-1/abc/placeholder.svg', contentType: 'image/svg+xml' });
+  const out = String(imageTag(ctx, svg, { w: 800, aspect: '4:3' }));
+  assert.doesNotMatch(out, /fm=webp/);
+  assert.match(out, /fit=fill/);
+  assert.match(out, /h=600/);
+  assert.doesNotMatch(String(imageTag(ctx, svg, { w: 800 })), /fm=webp/);
+});
+
+test('an unknown aspect is ignored rather than producing NaN', () => {
+  const { ctx } = makeCtx();
+  const out = String(imageTag(ctx, photoAsset(), { w: 800, aspect: 'wide' }));
+  assert.doesNotMatch(out, /NaN|fit=/);
+});
+
+test('cards and tiles crop their images, heroes stay natural', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: vehicles.variants });
+  assert.match(out.match(/<img[^>]*hero__image[^>]*>/)[0], /w=1920/);
+  assert.doesNotMatch(out.match(/<img[^>]*hero__image[^>]*>/)[0], /fit=fill/);
+  const { out: cat } = renderView('vehicleCategory', categoryData);
+  const cardImgs = cat.match(/<img[^>]*card__media[^>]*>/g) || [];
+  assert.ok(cardImgs.length > 0, 'category renders product card images');
+  for (const tag of cardImgs) {
+    assert.match(tag, /fit=fill/);
+    assert.match(tag, /h=600/);
   }
 });

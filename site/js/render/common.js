@@ -49,7 +49,21 @@ function isSvg(asset) {
   return /svg/i.test(asset?.fields?.file?.contentType || '') || /\.svg(\?|$)/i.test(asset?.fields?.file?.url || '');
 }
 
-/** Intrinsic `{ width, height }` of an image asset, scaled down to `w`. */
+const ASPECTS = { '16:9': [16, 9], '4:3': [4, 3], '3:4': [3, 4], '21:9': [21, 9], '1:1': [1, 1] };
+const FOCUSES = new Set(['center', 'top', 'bottom', 'left', 'right', 'faces']);
+
+/** `{ width, height }` for a known `aspect` at width `w`, else null. */
+function cropDimensions(aspect, w) {
+  const ratio = ASPECTS[aspect];
+  const width = Math.round(Number(w));
+  if (!ratio || !(width > 0)) return null;
+  return { width, height: Math.round((width * ratio[1]) / ratio[0]) };
+}
+
+/**
+ * Intrinsic `{ width, height }` of an image asset, scaled down to `w`; null when the
+ * asset has no usable `details.image` (e.g. an upload that is still processing).
+ */
 export function imageDimensions(asset, w) {
   const details = asset?.fields?.file?.details?.image;
   const width = Number(details?.width);
@@ -59,21 +73,30 @@ export function imageDimensions(asset, w) {
   return { width, height };
 }
 
-/** Delivery URL for an image asset at width `w` (WebP where the API can convert). */
-export function imageSrc(ctx, asset, w = 1200) {
-  const params = isSvg(asset) ? { w } : { w, fm: 'webp', q: 80 };
+/**
+ * Delivery URL for an image asset at width `w` (WebP where the API can convert).
+ * With a known `aspect` the image is cropped (`fit=fill`) around `focus`.
+ */
+export function imageSrc(ctx, asset, w = 1200, { aspect, focus } = {}) {
+  const crop = cropDimensions(aspect, w);
+  const params = crop
+    ? { fit: 'fill', f: FOCUSES.has(focus) ? focus : 'center', w: crop.width, h: crop.height }
+    : { w };
+  if (!isSvg(asset)) Object.assign(params, { fm: 'webp', q: 80 });
   return ctx.assetUrl(asset, params);
 }
 
 /**
  * `<img>` for an asset, or '' when the asset is missing. Lazy by default;
- * pass `eager: true` for the hero image.
+ * pass `eager: true` for the hero image. With `aspect` the width and height
+ * attributes are the cropped size; otherwise they come from the asset details
+ * and are left off when those are missing.
  */
-export function imageTag(ctx, asset, { w = 1200, className = '', eager = false, alt, sizes } = {}) {
+export function imageTag(ctx, asset, { w = 1200, className = '', eager = false, alt, sizes, aspect, focus } = {}) {
   if (!isEntry(asset)) return '';
-  const src = imageSrc(ctx, asset, w);
+  const src = imageSrc(ctx, asset, w, { aspect, focus });
   if (!src) return '';
-  const dims = imageDimensions(asset, w);
+  const dims = cropDimensions(aspect, w) || imageDimensions(asset, w);
   return html`<img${className ? html` class="${className}"` : ''} src="${src}" alt="${alt ?? altOf(asset)}"${
     dims ? html` width="${dims.width}" height="${dims.height}"` : ''
   }${sizes ? html` sizes="${sizes}"` : ''}${eager ? raw(' fetchpriority="high" decoding="async"') : raw(' loading="lazy" decoding="async"')}>`;

@@ -7,7 +7,7 @@ function promoCard(ctx, card) {
   const f = card.fields;
   return html`
     <article class="card promo-card">
-      ${isEntry(f.image) ? imageTag(ctx, f.image, { w: 800, className: 'card__media' }) : ''}
+      ${isEntry(f.image) ? imageTag(ctx, f.image, { w: 800, className: 'card__media', aspect: '4:3' }) : ''}
       <div class="card__body">
         <h3 class="card__title">${f.title}</h3>
         ${f.body ? html`<div class="card__text muted">${paragraphs(f.body)}</div>` : ''}

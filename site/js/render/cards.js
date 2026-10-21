@@ -15,7 +15,7 @@ export function vehicleCard(ctx, vehicle) {
       : '';
   return html`
     <article class="card product-card">
-      ${image ? html`<a class="card__media-link" href="${href}" tabindex="-1" aria-hidden="true">${imageTag(ctx, image, { w: 800, className: 'card__media' })}</a>` : ''}
+      ${image ? html`<a class="card__media-link" href="${href}" tabindex="-1" aria-hidden="true">${imageTag(ctx, image, { w: 800, className: 'card__media', aspect: '4:3' })}</a>` : ''}
       <div class="card__body">
         ${f.yearIntroduced && f.status === 'legacy' ? html`<span class="eyebrow">${String(f.yearIntroduced)}</span>` : ''}
         <h3 class="card__title"><a href="${href}">${f.name}</a></h3>
@@ -37,7 +37,7 @@ export function storyCard(ctx, story) {
   const date = formatDate(f.publishDate);
   return html`
     <article class="card story-card">
-      ${image ? html`<a class="card__media-link" href="${href}" tabindex="-1" aria-hidden="true">${imageTag(ctx, image, { w: 800, className: 'card__media' })}</a>` : ''}
+      ${image ? html`<a class="card__media-link" href="${href}" tabindex="-1" aria-hidden="true">${imageTag(ctx, image, { w: 800, className: 'card__media', aspect: '4:3' })}</a>` : ''}
       <div class="card__body">
         ${f.kicker || date
           ? html`<span class="eyebrow">${f.kicker}${f.kicker && date ? ' · ' : ''}${date ? html`<time datetime="${isoDate(f.publishDate)}">${date}</time>` : ''}</span>`
