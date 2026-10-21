@@ -361,3 +361,45 @@ test('provisionAssets skips an unchanged asset but re-uploads when the byte size
   assert.equal(changed.summary.updated, 1);
   assert.deepEqual(changed.uploads, [5]);
 });
+
+const allSeeds = () => SEED_GROUPS.flatMap((group) => group.entries);
+
+test('audience seeds: five audiences with the pinned keys and rules', () => {
+  const group = SEED_GROUPS.find((g) => g.name === 'audiences');
+  const audiences = group.entries.filter((e) => e.contentType === 'audience');
+  assert.deepEqual(audiences.map((e) => e.fields.key), ['supercar-fans', 'returning', 'trackday', 'uk', 'vip']);
+  const byKey = Object.fromEntries(audiences.map((e) => [e.fields.key, e]));
+  assert.deepEqual(byKey['supercar-fans'].links.interestCategories, ['cat-supercars']);
+  assert.equal(byKey.returning.fields.visitorType, 'returning');
+  assert.deepEqual(byKey.trackday.fields.campaigns, ['trackday']);
+  assert.deepEqual(byKey.uk.fields.regions, ['GB']);
+  assert.equal(byKey.vip.fields.source, 'external');
+  assert.equal(byKey.vip.links, undefined);
+  for (const rule of ['campaigns', 'regions', 'minVisits', 'visitorType']) assert.equal(byKey.vip.fields[rule], undefined);
+});
+
+test('personalized seeds wrap the home banner, the 750S MSO banner and the 750S enquiry CTA', () => {
+  const byId = new Map(allSeeds().map((e) => [e.id, e]));
+  const keysOf = (id) => byId.get(id).links.variants.map((v) => byId.get(byId.get(v).links.audience).fields.key);
+  const contentOf = (id) => byId.get(id).links.variants.map((v) => byId.get(v).links.content);
+  assert.deepEqual(byId.get('page-home').links.sections, ['text-home-intro', 'pc-home-banner', 'stories-latest', 'cta-home']);
+  assert.equal(byId.get('pc-home-banner').links.default, 'banner-mcl-6gt');
+  assert.deepEqual(keysOf('pc-home-banner'), ['supercar-fans', 'trackday']);
+  const coupe = byId.get('vehicle-750s');
+  assert.equal(coupe.links.msoBanner, 'pc-750s-mso-banner');
+  assert.equal(coupe.links.enquiryCta, 'pc-750s-enquiry-cta');
+  assert.equal(coupe.fields.enquiryUrl, '#/enquire/750s', 'the fallback stays');
+  assert.equal(byId.get('pc-750s-mso-banner').links.default, 'banner-mso-generic');
+  assert.deepEqual(keysOf('pc-750s-mso-banner'), ['returning']);
+  assert.equal(byId.get('pc-750s-enquiry-cta').links.default, 'link-cta-enquire-750s');
+  assert.deepEqual(keysOf('pc-750s-enquiry-cta'), ['uk']);
+  assert.deepEqual(contentOf('pc-750s-enquiry-cta'), ['link-cta-uk-retailer']);
+  assert.equal(byId.get('link-cta-uk-retailer').fields.externalUrl, '#/retailers');
+  const spider = byId.get('vehicle-750s-spider');
+  assert.equal(spider.links.msoBanner, 'banner-mso-generic');
+  assert.equal(spider.links.enquiryCta, undefined);
+});
+
+test('the full seed set validates against the content model, with every link resolving', () => {
+  assert.deepEqual(validateSeeds(SEED_GROUPS, CONTENT_TYPES), []);
+});

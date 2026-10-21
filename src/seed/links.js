@@ -96,6 +96,8 @@ const entries = [
   link('link-cta-vehicle-750s', 'Explore the 750S', { target: 'vehicle-750s', style: 'primary' }),
   link('link-cta-vehicle-artura-spider', 'Explore the Artura Spider', { target: 'vehicle-artura-spider', style: 'primary' }),
   link('link-cta-vehicle-w1', 'Explore the W1', { target: 'vehicle-w1', style: 'primary' }),
+  link('link-cta-enquire-750s', 'Enquire', { url: '#/enquire/750s', style: 'secondary' }),
+  link('link-cta-uk-retailer', 'Visit a UK retailer', { url: '#/retailers', style: 'secondary' }),
 
 ];
 
