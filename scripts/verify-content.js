@@ -126,6 +126,9 @@ remember(site.items);
 remember(site.includes?.Entry);
 const retailers = await cda({ content_type: 'retailer', limit: 1 });
 if (retailers.total < 1) problem('retailer', 'no retailers published');
+const enquiry = await cda({ content_type: 'enquiryForm', include: 0, limit: 2 });
+if (enquiry.total !== 1) problem('enquiryForm', `expected 1 entry, found ${enquiry.total}`);
+else if (!String(enquiry.items[0].fields.endpoint || '').startsWith('https://')) problem('enquiryForm', 'endpoint is not an https URL');
 
 // Internal links: every `#/...` string in published content must resolve to a
 // route, and slug-based routes must point at something that is published.
@@ -135,6 +138,7 @@ const slugSets = {
   vehicle: publishedSlugs.vehicle ?? new Set(),
   story: publishedSlugs.story ?? new Set(),
   category: publishedSlugs.vehicleCategory ?? new Set(),
+  enquire: publishedSlugs.vehicle ?? new Set(),
 };
 let internalLinks = 0;
 for (const entry of seenEntries.values()) {
@@ -142,7 +146,7 @@ for (const entry of seenEntries.values()) {
     internalLinks += 1;
     const route = matchRoute(value);
     if (route.name === 'notFound') problem(`link ${path}`, `${value} resolves to the 404 view`);
-    else if (slugSets[route.name] && !slugSets[route.name].has(route.params.slug)) {
+    else if (slugSets[route.name] && route.params.slug !== null && !slugSets[route.name].has(route.params.slug)) {
       problem(`link ${path}`, `${value} points at ${route.name} "${route.params.slug}", which is not published`);
     }
   }
@@ -159,7 +163,7 @@ for (const [type, slugs] of Object.entries(expected)) for (const s of slugs) {
 const width = Math.max(...rows.map((r) => r[1].length));
 console.log(`${'type'.padEnd(16)} ${'slug'.padEnd(width)} status`);
 for (const [t, s, st] of rows) console.log(`${t.padEnd(16)} ${s.padEnd(width)} ${st}`);
-console.log(`\n${rows.length} routes checked, ${site.total} siteSettings, ${retailers.total} retailers, ${internalLinks} internal links checked`);
+console.log(`\n${rows.length} routes checked, ${site.total} siteSettings, ${retailers.total} retailers, ${enquiry.total} enquiryForm, ${internalLinks} internal links checked`);
 if (problems.length) {
   console.error(`\n${problems.length} problem(s):`);
   for (const p of problems) console.error(`  - ${p}`);
