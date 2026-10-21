@@ -1,0 +1,193 @@
+{
+  "name": "McLaren enquiry to Workfront",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "hook": 200628,
+        "maxResults": "2"
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        },
+        "restore": {
+          "hook": {
+            "label": "Mclaren Request Webhook"
+          }
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "label": "Webhook",
+            "type": "hook",
+            "required": true,
+            "mappable": false
+          },
+          {
+            "name": "maxResults",
+            "label": "Maximum number of results",
+            "type": "number",
+            "mappable": false
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "workfront:createRecord",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": null
+      },
+      "mapper": {
+        "record_type": "OPTASK",
+        "projectID": "6ad8d2f90005295eaf29343ebd663ed8",
+        "name": "Enquiry: {{1.model}} - {{1.name}}",
+        "description": "Name: {{1.name}}\nEmail: {{1.email}}\nPhone: {{1.phone}}\nCountry: {{1.country}}\nModel: {{1.model}} ({{1.modelSlug}})\nMessage: {{1.message}}\nConsent: {{1.consent}}\nSource: {{1.source}}\nPage: {{1.pageUrl}}\nSubmitted: {{1.submittedAt}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        },
+        "restore": {
+          "parameters": {
+            "__IMTCONN__": {
+              "label": ""
+            }
+          },
+          "expect": {
+            "record_type": {
+              "label": "Issue"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "__IMTCONN__",
+            "label": "Connection",
+            "type": "account:workfront",
+            "required": true
+          }
+        ],
+        "expect": [
+          {
+            "name": "record_type",
+            "type": "select",
+            "label": "Record type",
+            "required": true
+          },
+          {
+            "name": "projectID",
+            "type": "text",
+            "label": "Project ID"
+          },
+          {
+            "name": "name",
+            "type": "text",
+            "label": "Name",
+            "required": true
+          },
+          {
+            "name": "description",
+            "type": "text",
+            "label": "Description"
+          }
+        ]
+      }
+    },
+    {
+      "id": 3,
+      "module": "gateway:WebhookRespond",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "status": "200",
+        "body": "{\"ok\":true,\"id\":\"{{2.ID}}\"}",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        },
+        "restore": {
+          "expect": {
+            "headers": {
+              "mode": "chose"
+            }
+          }
+        },
+        "expect": [
+          {
+            "name": "status",
+            "type": "uinteger",
+            "label": "Status",
+            "required": true,
+            "validate": {
+              "min": 100
+            }
+          },
+          {
+            "name": "body",
+            "type": "any",
+            "label": "Body"
+          },
+          {
+            "name": "headers",
+            "type": "array",
+            "label": "Custom headers",
+            "spec": [
+              {
+                "name": "key",
+                "label": "Key",
+                "type": "text",
+                "required": true,
+                "validate": {
+                  "max": 256
+                }
+              },
+              {
+                "name": "value",
+                "label": "Value",
+                "type": "text",
+                "required": true,
+                "validate": {
+                  "max": 4096
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "app.workfrontfusion.com"
+  }
+}

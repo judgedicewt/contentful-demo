@@ -167,6 +167,13 @@ The delivery token ends up in the page source. That's expected for Contentful
 delivery tokens, which can only read published content, but don't use a
 management or preview token here.
 
+## Enquiry form
+
+`#/enquire` and `#/enquire/<model-slug>` show an enquiry form whose copy and
+webhook URL come from the `enquiryForm` entry in Contentful. Each submission
+goes to an Adobe Workfront Fusion webhook that creates a request in a Workfront
+queue. To import the Fusion scenario, see [`docs/fusion-setup.md`](docs/fusion-setup.md).
+
 ## Hosting on GitHub Pages
 
 `.github/workflows/pages.yml` builds `site/config.js` and deploys `site/` on
