@@ -27,7 +27,8 @@ import { initMotion } from './js/motion.js';
 import { initEnquiry } from './js/enquiry.js';
 import { prefetchFamily, warmHeroImages } from './js/prefetch.js';
 import { createLocalProvider, createResolver } from './js/audience.js';
-import { load, recordBoot, recordView, viewFrom } from './js/signals.js';
+import { load, recordBoot, recordView, setOverrides, reset, viewFrom } from './js/signals.js';
+import { initPanel } from './js/panel.js';
 import { isFamilySwitch, SPINNER_DELAY_MS, HERO_DECODE_CAP_MS } from './js/swap.js';
 
 const mounts = {
@@ -51,8 +52,10 @@ const state = {
   requestId: 0,
   headSet: false,
   cancelPrefetch: () => {},
-  /** The last view shown, as `{ view, data }`, or null before the first view and after an error. */
+  /** The last view shown, as `{ view, data, route }`, or null before the first view and after an error. */
   current: null,
+  /** The demo panel controller, or null before boot mounts it. */
+  panel: null,
 };
 
 function setHead({ title, description } = {}) {
@@ -306,11 +309,12 @@ async function handleRoute(route, cda, preloaded) {
     if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
     if (!inPlace) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
-    state.current = { view, data };
+    state.current = { view, data, route };
     // Record the view only now: a superseded or failed request returned or threw above.
     // Recording never starts a render, so the next route sees the updated profile.
     const seen = viewFrom(view, data);
     if (seen) recordView(seen);
+    state.panel?.refresh();
   } catch (error) {
     if (!isCurrent()) return;
     console.error(error);
@@ -325,6 +329,23 @@ async function handleRoute(route, cda, preloaded) {
       document.body.classList.remove('is-loading');
     }
   }
+}
+
+/**
+ * Renders the current route again in place, for example after a demo panel
+ * control changes the profile. It reuses the loaded data and never records a
+ * view, scrolls, moves focus or prefetches. It does not bump the request id,
+ * so a navigation already in flight is not cancelled, and a navigation that
+ * starts later skips this swap.
+ */
+async function rerenderCurrent(cda) {
+  const current = state.current;
+  if (!current) return;
+  const requestId = state.requestId;
+  const isCurrent = () => requestId === state.requestId;
+  const renderer = registry[current.view] || registry.notFound || (() => renderNotFound(current.route));
+  const content = renderer(current.data, buildContext(cda, current.route));
+  await swapInPlace(content, isCurrent);
 }
 
 /** Route for a location hash; in-page anchors (`#main`) fall back to the home route. */
@@ -375,6 +396,19 @@ async function boot() {
   state.resolver = createResolver({ providers: [createLocalProvider(state.audiences)] });
 
   renderShell();
+
+  const mount = document.createElement('div');
+  mount.id = 'demo-panel';
+  document.body.append(mount);
+  state.panel = initPanel({
+    mount,
+    location: window.location,
+    storage: () => window.sessionStorage,
+    keydownTarget: document,
+    signals: { load, setOverrides, reset },
+    getModel: () => ({ profile: load(), audiences: state.audiences, matched: state.matched, unavailable: state.audiencesFailed }),
+    rerender: () => rerenderCurrent(cda),
+  });
 
   const dispatch = (route) => handleRoute(route, cda);
   onRouteChange(dispatch);
