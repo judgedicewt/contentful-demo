@@ -20,6 +20,7 @@ import { html, raw, escapeHtml } from './js/dom.js';
 import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
 import { initEnquiry } from './js/enquiry.js';
+import { prefetchFamily, warmHeroImages } from './js/prefetch.js';
 
 const mounts = {
   header: document.getElementById('header'),
@@ -28,7 +29,7 @@ const mounts = {
 };
 
 const config = window.CONTENTFUL_CONFIG;
-const state = { siteSettings: null, categories: [], requestId: 0, headSet: false };
+const state = { siteSettings: null, categories: [], requestId: 0, headSet: false, cancelPrefetch: () => {} };
 
 function setHead({ title, description } = {}) {
   state.headSet = true;
@@ -129,6 +130,15 @@ function bindShell() {
     toggle?.focus();
   });
   window.addEventListener('hashchange', closeMenus);
+  // The toggle event does not bubble, so listen in the capture phase.
+  document.addEventListener(
+    'toggle',
+    (event) => {
+      const menu = event.target;
+      if (menu?.matches?.('details[data-variant-menu]') && menu.open) warmHeroImages(menu);
+    },
+    true,
+  );
 }
 
 function renderShell() {
@@ -181,6 +191,8 @@ async function handleRoute(route, cda) {
     const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
     state.headSet = false;
     showMain(renderer(data, buildContext(cda, route)), { motion: true });
+    state.cancelPrefetch();
+    state.cancelPrefetch = view === 'vehicle' ? prefetchFamily(cda, data) : () => {};
     if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });

@@ -4,11 +4,13 @@
  * lineage, related stories, FAQs. Only sections with data are rendered, so
  * legacy vehicles with a handful of fields still produce a clean page.
  */
-import { html, raw } from '../dom.js';
+import { attrs, html, raw } from '../dom.js';
 import {
   anchor,
   applyHead,
   HERO_WIDTHS,
+  imageSrc,
+  imageSrcset,
   imageTag,
   isEntry,
   paragraphs,
@@ -84,12 +86,18 @@ function subNav(ctx, entry, variants) {
           ${family.length > 1
             ? html`
               <li>
-                <details class="subnav__menu" name="subnav-menu">
+                <details class="subnav__menu" name="subnav-menu" data-variant-menu>
                   <summary class="subnav__summary">Change model variant</summary>
                   <ul class="subnav__panel">
                     ${family.map((item) => {
                       const current = item === entry || item.sys?.id === entry.sys?.id;
-                      return html`<li><a href="${ctx.routeFor(item)}"${current ? raw(' aria-current="page"') : ''}>${item.fields.name}${current ? html` <span class="muted">(current)</span>` : ''}</a></li>`;
+                      const heroData = !current && isEntry(item.fields.heroImage)
+                        ? attrs({
+                          'data-hero-srcset': imageSrcset(ctx, item.fields.heroImage, HERO_WIDTHS) || null,
+                          'data-hero-src': imageSrc(ctx, item.fields.heroImage, 1920) || null,
+                        })
+                        : '';
+                      return html`<li><a href="${ctx.routeFor(item)}"${current ? raw(' aria-current="page"') : ''}${heroData}>${item.fields.name}${current ? html` <span class="muted">(current)</span>` : ''}</a></li>`;
                     })}
                   </ul>
                 </details>

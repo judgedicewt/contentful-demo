@@ -123,7 +123,13 @@ test('vehicle: variant switch lists parent and variants with the current one mar
   const parentView = renderView('vehicle', { entry: vehicles.full, variants: vehicles.variants }).out;
   const menu = parentView.match(/Change model variant[\s\S]*?<\/ul>/)[0];
   assert.match(menu, /<a href="#\/750s" aria-current="page">750S/);
-  assert.match(menu, /<a href="#\/750s-spider">750S Spider<\/a>/);
+  assert.match(menu, /<a href="#\/750s-spider"[^>]*>750S Spider<\/a>/);
+  assert.match(parentView, /<details class="subnav__menu"[^>]*data-variant-menu/);
+  const spiderLink = menu.match(/<a href="#\/750s-spider"[^>]*>/)[0];
+  assert.match(spiderLink, /data-hero-srcset="[^"]* 800w/);
+  assert.match(spiderLink, /data-hero-src="[^"]*w=1920/);
+  const currentLink = menu.match(/<a href="#\/750s"[^>]*>/)[0];
+  assert.doesNotMatch(currentLink, /data-hero-src/);
 
   const childMenu = renderView('vehicle', { entry: vehicles.spider, variants: [] }).out.match(/Change model variant[\s\S]*?<\/ul>/)[0];
   assert.ok(childMenu.indexOf('#/750s"') < childMenu.indexOf('#/750s-spider"'), 'parent listed first');
