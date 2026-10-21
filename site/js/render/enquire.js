@@ -31,15 +31,24 @@ function field({ name, label, type = 'text', autocomplete, required = false }) {
     </div>`;
 }
 
-function modelField(vehicles, selectedSlug) {
+/**
+ * Model select. The route vehicle is added when `vehicles` lacks it, so it is
+ * always preselected. With no options at all the select is optional and a hint
+ * explains why; `site/js/enquiry.js` skips the model rule in that case.
+ */
+function modelField(vehicles, routeVehicle) {
+  const selectedSlug = routeVehicle?.fields?.slug || '';
   const options = present(vehicles).filter((v) => v.fields.slug);
+  if (selectedSlug && !options.some((v) => v.fields.slug === selectedSlug)) options.push(routeVehicle);
+  const empty = options.length === 0;
   return html`
     <div class="form__field">
       <label for="model">Model</label>
-      <select id="model" name="model" required aria-describedby="model-error">
+      <select id="model" name="model"${empty ? '' : raw(' required')} aria-describedby="model-error">
         <option value=""${selectedSlug ? '' : raw(' selected')}>Select a model</option>
         ${options.map((v) => html`<option value="${v.fields.slug}"${v.fields.slug === selectedSlug ? raw(' selected') : ''}>${v.fields.name}</option>`)}
       </select>
+      ${empty ? html`<p class="form__hint">Models could not be loaded. Reload the page to try again.</p>` : ''}
       <p class="form__error" id="model-error"></p>
     </div>`;
 }
@@ -68,7 +77,7 @@ export function render(data, ctx) {
           ${field({ name: 'email', label: 'Email', type: 'email', autocomplete: 'email', required: true })}
           ${field({ name: 'phone', label: 'Phone (optional)', type: 'tel', autocomplete: 'tel' })}
           ${field({ name: 'country', label: 'Country', autocomplete: 'country-name', required: true })}
-          ${modelField(data?.vehicles, vehicle?.fields?.slug || '')}
+          ${modelField(data?.vehicles, vehicle)}
           <div class="form__field form__field--wide">
             <label for="message">Message (optional)</label>
             <textarea id="message" name="message" rows="5" maxlength="2000" aria-describedby="message-error"></textarea>

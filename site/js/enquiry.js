@@ -16,14 +16,18 @@ const FIELDS = ['name', 'email', 'phone', 'country', 'model', 'message', 'consen
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_MESSAGE = 2000;
 const SOURCE = 'contentful-demo';
+const HTTPS = /^https:\/\//;
 
-/** Checks a submission. Returns `{ ok, errors }`, with one message per failing field. */
-export function validate(values) {
+/**
+ * Checks a submission. Returns `{ ok, errors }`, with one message per failing
+ * field. Pass `requireModel: false` when the form has no models to choose from.
+ */
+export function validate(values, { requireModel = true } = {}) {
   const errors = {};
   if (!String(values.name ?? '').trim()) errors.name = 'Enter your name.';
   if (!EMAIL.test(String(values.email ?? '').trim())) errors.email = 'Enter a valid email address.';
   if (!String(values.country ?? '').trim()) errors.country = 'Enter your country.';
-  if (!String(values.model ?? '').trim()) errors.model = 'Choose a model.';
+  if (requireModel && !String(values.model ?? '').trim()) errors.model = 'Choose a model.';
   if (values.consent !== true) errors.consent = 'Tick the consent box to continue.';
   if (String(values.message ?? '').length > MAX_MESSAGE) errors.message = 'Keep your message under 2000 characters.';
   return { ok: Object.keys(errors).length === 0, errors };
@@ -74,6 +78,11 @@ function vehiclesFromSelect(form) {
     .map((option) => ({ fields: { slug: option.value, name: String(option.textContent ?? option.text ?? '').trim() } }));
 }
 
+/** True when the model select has at least one non-empty option to choose. */
+function hasModelOptions(form) {
+  return vehiclesFromSelect(form).length > 0;
+}
+
 export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Date(), location = globalThis.location } = {}) {
   const form = root?.querySelector?.('[data-enquiry-form]');
   if (!form) return NOOP;
@@ -118,7 +127,7 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
     if (sending) return;
     clearErrors();
     const values = readValues(form);
-    const { ok, errors } = validate(values);
+    const { ok, errors } = validate(values, { requireModel: hasModelOptions(form) });
     if (!ok) {
       showErrors(errors);
       return;
@@ -137,7 +146,9 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
         pageUrl: location?.href || '',
         now: now(),
       });
-      const response = await fetch(form.dataset.endpoint, {
+      const endpoint = form.dataset.endpoint || '';
+      if (!HTTPS.test(endpoint)) throw new Error('Enquiry endpoint is not an https URL');
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -145,9 +156,13 @@ export function initEnquiry(root, { fetch = globalThis.fetch, now = () => new Da
       if (!response.ok) throw new Error(`Enquiry endpoint responded ${response.status}`);
       setStatus('');
       showSuccess();
-    } catch {
+    } catch (error) {
+      console.warn(error);
       setStatus(form.dataset.errorBody || '');
-      if (button) button.disabled = false;
+      if (button) {
+        button.disabled = false;
+        button.focus?.();
+      }
     } finally {
       sending = false;
     }

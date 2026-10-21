@@ -88,6 +88,8 @@ const expected = {
 };
 
 const publishedSlugs = {};
+// Slugs of vehicles the site lists (current or motorsport); `#/enquire/<slug>` links must point at one.
+const currentVehicleSlugs = new Set();
 
 for (const [contentType, slugs] of Object.entries(expected)) {
   const payload = await all({ content_type: contentType, include: 4 });
@@ -107,6 +109,7 @@ for (const [contentType, slugs] of Object.entries(expected)) {
     }
     if (contentType !== 'vehicleCategory' && contentType !== 'page' && !entry.fields.heroImage) problem(`${contentType}/${slug}`, 'no heroImage');
     if (contentType === 'vehicle') {
+      if (['current', 'motorsport'].includes(entry.fields.status)) currentVehicleSlugs.add(slug);
       const specIds = (entry.fields.specifications ?? []).map((l) => l.sys.id);
       const specs = (payload.includes?.Entry ?? []).filter((e) => specIds.includes(e.sys.id));
       const featured = specs.filter((s) => s.fields.featured).length;
@@ -138,7 +141,7 @@ const slugSets = {
   vehicle: publishedSlugs.vehicle ?? new Set(),
   story: publishedSlugs.story ?? new Set(),
   category: publishedSlugs.vehicleCategory ?? new Set(),
-  enquire: publishedSlugs.vehicle ?? new Set(),
+  enquire: currentVehicleSlugs,
 };
 let internalLinks = 0;
 for (const entry of seenEntries.values()) {

@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { validate, buildPayload, initEnquiry } from '../site/js/enquiry.js';
 
@@ -12,6 +12,12 @@ test('validate accepts a complete submission and names each failure', () => {
   assert.equal(validate({ ...good, model: '' }).errors.model, 'Choose a model.');
   assert.equal(validate({ ...good, consent: false }).errors.consent, 'Tick the consent box to continue.');
   assert.equal(validate({ ...good, message: 'x'.repeat(2001) }).errors.message, 'Keep your message under 2000 characters.');
+});
+
+test('validate skips the model rule when the form has no models to choose', () => {
+  assert.equal(validate({ ...good, model: '' }, { requireModel: false }).errors.model, undefined);
+  assert.equal(validate({ ...good, model: '' }, { requireModel: true }).errors.model, 'Choose a model.');
+  assert.equal(validate({ ...good, model: '' }).errors.model, 'Choose a model.');
 });
 
 test('buildPayload trims, resolves the model name and stamps source and time', () => {
@@ -28,7 +34,7 @@ test('buildPayload trims, resolves the model name and stamps source and time', (
 
 // A hand-written stand-in for the rendered form: inputs by name, the status,
 // success, button and per-field error nodes, and a recorded submit listener.
-function fakeForm(values = good) {
+function fakeForm(values = good, { options } = {}) {
   const el = (extra = {}) => ({
     attrs: {},
     setAttribute(name, value) { this.attrs[name] = value; },
@@ -40,14 +46,14 @@ function fakeForm(values = good) {
   for (const [name, value] of Object.entries(values)) {
     elements[name] = el(name === 'consent' ? { checked: value } : { value });
   }
-  elements.model.options = [
+  elements.model.options = options || [
     { value: '', textContent: 'Select a model' },
     { value: '750s', textContent: '750S' },
   ];
   const errors = {};
   const status = { textContent: '' };
   const success = { hidden: true, heading: el(), querySelector(sel) { return sel === 'h2' ? this.heading : null; } };
-  const button = { disabled: false };
+  const button = { disabled: false, focus() { this.focused = true; } };
   const listeners = { submit: [], removed: [] };
   const form = {
     hidden: false,
@@ -110,25 +116,50 @@ test('a valid submit posts JSON to the endpoint, then shows the success panel', 
   assert.equal(form.success.heading.focused, true, 'focus moves to the success heading');
 });
 
-test('a non-OK response shows the error body and re-enables the button', async () => {
+test('a non-OK response shows the error body, re-enables the button and returns focus to it', async () => {
   const form = fakeForm();
+  const warn = mock.method(console, 'warn', () => {});
   initEnquiry(rootOf(form), deps(async () => ({ ok: false, status: 500 })));
   form.submit();
   await tick();
+  warn.mock.restore();
   assert.equal(form.status.textContent, 'Could not send. Try again.');
   assert.equal(form.button.disabled, false);
+  assert.equal(form.button.focused, true, 'focus returns to the button');
   assert.equal(form.hidden, false);
   assert.equal(form.success.hidden, true);
   assert.equal(form.elements.name.value, ' Ada ', 'values are kept');
 });
 
-test('a rejected fetch shows the error body and does not throw', async () => {
+test('a rejected fetch warns, shows the error body and does not throw', async () => {
   const form = fakeForm();
-  initEnquiry(rootOf(form), deps(async () => { throw new TypeError('network down'); }));
+  const failure = new TypeError('network down');
+  const warn = mock.method(console, 'warn', () => {});
+  initEnquiry(rootOf(form), deps(async () => { throw failure; }));
   assert.doesNotThrow(() => form.submit());
   await tick();
+  warn.mock.restore();
+  assert.deepEqual(warn.mock.calls.map((call) => call.arguments), [[failure]]);
   assert.equal(form.status.textContent, 'Could not send. Try again.');
   assert.equal(form.button.disabled, false);
+  assert.equal(form.button.focused, true);
+});
+
+test('an endpoint that is not https shows the error body and does not call fetch', async () => {
+  for (const endpoint of ['', 'http://hook.example/abc']) {
+    const form = fakeForm();
+    form.dataset.endpoint = endpoint;
+    let calls = 0;
+    const warn = mock.method(console, 'warn', () => {});
+    initEnquiry(rootOf(form), deps(async () => { calls += 1; return { ok: true }; }));
+    form.submit();
+    await tick();
+    warn.mock.restore();
+    assert.equal(calls, 0, `no request for "${endpoint}"`);
+    assert.equal(form.status.textContent, 'Could not send. Try again.');
+    assert.equal(form.button.disabled, false);
+    assert.equal(form.success.hidden, true);
+  }
 });
 
 test('a second submit while the first is pending does not call fetch again', async () => {
@@ -187,4 +218,26 @@ test('teardown removes the submit listener', () => {
   const [handler] = form.listeners.submit;
   teardown();
   assert.deepEqual(form.listeners.removed, [handler]);
+});
+
+test('with no models to choose, a submit without a model validates and posts', async () => {
+  const form = fakeForm({ ...good, model: '' }, { options: [{ value: '', textContent: 'Select a model' }] });
+  const calls = [];
+  initEnquiry(rootOf(form), deps(async (url, init) => { calls.push(JSON.parse(init.body)); return { ok: true }; }));
+  form.submit();
+  await tick();
+  assert.equal(form.errors.model?.textContent || '', '', 'no model error is written');
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].model, '');
+  assert.equal(form.success.hidden, false);
+});
+
+test('with models listed, a submit without a model still shows the model error', async () => {
+  const form = fakeForm({ ...good, model: '' });
+  let calls = 0;
+  initEnquiry(rootOf(form), deps(async () => { calls += 1; return { ok: true }; }));
+  form.submit();
+  await tick();
+  assert.equal(calls, 0);
+  assert.equal(form.errors.model.textContent, 'Choose a model.');
 });

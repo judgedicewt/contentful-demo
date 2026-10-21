@@ -23,24 +23,44 @@ You need:
 - The webhook named "Mclaren Request Webhook" (ID `200628`) in your Fusion
   organization. The blueprint refers to it by that ID.
 
+A webhook can be attached to only one scenario at a time. Webhook `200628`
+already belongs to the starter scenario "Integration Webhooks", so import the
+blueprint into that scenario instead of into a new one.
+
 ## Import the blueprint
 
-1. In Fusion, go to **Scenarios** and select **Create a new scenario**.
+1. In Fusion, go to **Scenarios** and open the scenario that owns
+   "Mclaren Request Webhook" (the starter scenario "Integration Webhooks").
 2. Open the scenario menu (the three dots at the bottom of the canvas) and
    select **Import Blueprint**.
-3. Choose `fusion/enquiry-scenario.blueprint.json` and select **Save**.
-4. Select the **Workfront** module. In **Connection**, choose your Workfront
-   connection. The blueprint doesn't carry a connection ID, so you must do this
-   step yourself.
+3. Choose `fusion/enquiry-scenario.blueprint.json`. The import replaces the
+   scenario's flow with the three modules in this guide.
+4. Select the **Workfront** module (module 2). In **Connection**, choose your
+   Workfront connection. The blueprint doesn't carry a connection ID, so you
+   must do this step yourself.
 5. Select the **Webhooks** module and confirm that **Webhook** is
    "Mclaren Request Webhook".
-6. Select **Run once**, then submit the form on the site. Confirm that the
-   issue appears in the Workfront queue and that the browser shows the success
-   message.
-7. Turn on **Scheduling** so the scenario runs on every submission.
+6. Select **Save**.
+7. Select **Run once**. Fusion first processes submissions that are already
+   queued at the webhook: a test enquiry named "Demo test" and one empty probe
+   request. The empty one fails on the Workfront step, and you can ignore it.
+   Then submit the form on the site and confirm that the issue appears in the
+   Workfront queue and that the browser shows the success message.
+8. Turn on **Scheduling** so the scenario runs on every submission.
 
 If the importer rejects a module, or a module opens with missing settings, use
 the hand-build steps in this guide instead.
+
+### Alternative: use a new scenario
+
+If you prefer to keep the starter scenario as it is, create a new scenario, but
+first free the webhook:
+
+1. Open the starter scenario, select its **Webhooks** module, and remove the
+   webhook from it (or delete the module). Fusion doesn't let two scenarios
+   share one webhook.
+2. In Fusion, go to **Scenarios** and select **Create a new scenario**.
+3. Follow the import steps above from step 2 onward, in the new scenario.
 
 ## Payload contract
 
@@ -92,7 +112,10 @@ The module identifiers in the blueprint (`workfront:createRecord` and
 blueprint conventions that Fusion uses. They weren't checked against a public
 export from a Fusion account, so your Fusion version might reject them. If it
 does, add the three modules yourself with these settings. The result behaves the
-same as the import.
+same as the import. Build them in the scenario that owns "Mclaren Request
+Webhook" (the starter scenario "Integration Webhooks"), because a webhook can be
+attached to only one scenario at a time. To build in a new scenario instead,
+first remove the webhook from the starter scenario.
 
 ### Module 1: Webhooks, Custom webhook
 
@@ -139,19 +162,23 @@ Submitted: {{1.submittedAt}}
 | Custom headers, Key | `Content-Type` |
 | Custom headers, Value | `application/json` |
 
+Run once, then check the response headers the browser receives. They should
+include `Access-Control-Allow-Origin`. Add that header to module 3 (Key
+`Access-Control-Allow-Origin`, Value `*`) only if it is missing.
+
 Connect the modules in order: 1, then 2, then 3. Turn on **Immediately as data
 arrives** in the scenario settings, which matches `instant: true` in the
 blueprint.
 
 ## Known limits
 
-- If the Workfront module fails, Fusion still answers the browser with its
-  default "Accepted" response after a delay, because the webhook response
-  module never runs. The browser treats that as success, so the person sees the
-  thank-you message even though no issue exists. Errors appear only in the
-  scenario's execution log, so check it after the first runs.
+- Fusion's error handling decides what the browser sees when the Workfront
+  step fails. Check this once by sending a submission while the Workfront
+  module is misconfigured, for example with no connection chosen. Errors appear
+  in the scenario's execution log, so check it after the first runs.
 - The scenario has no error-handling branch. The blueprint allows three
-  consecutive errors (`maxErrors: 3`) before Fusion pauses the scenario.
+  consecutive errors (`maxErrors: 3`). Confirm during **Run once** whether the
+  scenario turns off after an error, and turn it back on if it does.
 - The scenario doesn't store submissions anywhere else, doesn't email the
   person, and doesn't rate-limit requests or check for spam beyond the
   honeypot field on the form.

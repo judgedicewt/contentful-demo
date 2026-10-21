@@ -31,13 +31,13 @@
 
 | Task | Model | Why |
 |---|---|---|
-| 1 Content model and seed | Sonnet | Pattern-following edits with tests |
-| 2 CDA and router | Sonnet | Same |
-| 3 Renderer and styles | Sonnet | Markup contract, needs care with escaping |
-| 4 Behaviour module | Sonnet | Logic plus fake-DOM tests |
-| 5 Fusion blueprint and setup doc | Sonnet (blueprint), Haiku (doc prose) | JSON must be exact; prose is cheap |
+| 1 Content model and seed | standard tier | Pattern-following edits with tests |
+| 2 CDA and router | standard tier | Same |
+| 3 Renderer and styles | standard tier | Markup contract, needs care with escaping |
+| 4 Behaviour module | standard tier | Logic plus fake-DOM tests |
+| 5 Fusion blueprint and setup doc | standard tier (blueprint), fast tier (doc prose) | JSON must be exact; prose is cheap |
 | 6 Verify script, provisioning, live check | Orchestrator | Touches the shared space |
-| 7 Final review | Opus | Independent read of the whole diff |
+| 7 Final review | most capable tier | Independent read of the whole diff |
 
 ---
 
@@ -260,7 +260,7 @@ Page: {{1.pageUrl}}
 Submitted: {{1.submittedAt}}
 ```
 
-- [ ] **Step 4: Write `docs/fusion-setup.md`** (Haiku may draft the prose): import steps (Scenarios > Create > Import blueprint, choose the Workfront connection on module 2, run once, turn on), the payload contract table with an example JSON, the hand-build table (module, setting, value) for each of the three modules, and the known limits from the spec. Add a README section "Enquiry form" with two sentences and a link.
+- [ ] **Step 4: Write `docs/fusion-setup.md`** (a fast-tier model may draft the prose): import steps (Scenarios > Create > Import blueprint, choose the Workfront connection on module 2, run once, turn on), the payload contract table with an example JSON, the hand-build table (module, setting, value) for each of the three modules, and the known limits from the spec. Add a README section "Enquiry form" with two sentences and a link.
 - [ ] **Step 5: Run** `node --test test/fusion.test.js` and `npm test` → pass.
 - [ ] **Step 6: Commit** `Add Fusion blueprint and setup guide for enquiries`.
 
@@ -274,6 +274,6 @@ Submitted: {{1.submittedAt}}
 - [ ] **Step 3:** Push `main`, wait for the Pages deploy, open `#/enquire/750s` via CDP, submit one real enquiry with name `Demo test`, and confirm the Fusion response is 200 and the request appears in Workfront (ask the user to confirm the latter if the API key is not available here).
 - [ ] **Step 4: Commit** `Verify the enquiry form entry`.
 
-### Task 7: Final review (Opus)
+### Task 7: Final review (most capable tier)
 
 - [ ] Dispatch a reviewer over `git diff 86fa800..HEAD` with the spec and the Review focus list; fix confirmed findings; rerun `npm test` and `verify-content`; push.

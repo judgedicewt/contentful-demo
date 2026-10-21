@@ -809,3 +809,45 @@ test('enquire renderer works without a vehicle', () => {
   assert.match(out, /<h1[^>]*>Enquire<\/h1>/);
   assert.match(out, /href="#\/">Back home/);
 });
+
+const withFixture = (override) => structuredClone({ ...enquireData, ...override });
+const vehicleEntry = (slug, name) => ({ sys: { id: `v-${slug}`, type: 'Entry' }, fields: { slug, name } });
+
+test('enquire renderer escapes vehicle names and the endpoint', () => {
+  const { ctx } = makeCtx();
+  const data = withFixture({});
+  data.vehicles = [vehicleEntry('odd', 'Odd "Quote" <b>Car</b>')];
+  data.vehicle = null;
+  data.form.fields.endpoint = 'https://hook.example/x" onfocus="alert(1)';
+  const out = String(registry.enquire(data, ctx));
+  assert.match(out, /<option value="odd">Odd &quot;Quote&quot; &lt;b&gt;Car&lt;\/b&gt;<\/option>/);
+  assert.doesNotMatch(out, /<b>Car/);
+  assert.match(out, /data-endpoint="https:\/\/hook\.example\/x&quot; onfocus=&quot;alert\(1\)"/);
+  assert.doesNotMatch(out, /data-endpoint="[^"]*" onfocus=/);
+});
+
+test('enquire renderer adds a route vehicle that is missing from the list, preselected', () => {
+  const { ctx } = makeCtx();
+  const data = withFixture({});
+  data.vehicles = [vehicleEntry('gts', 'GTS')];
+  data.vehicle = vehicleEntry('750s', '750S');
+  const out = String(registry.enquire(data, ctx));
+  assert.match(out, /<option value="750s" selected>750S<\/option>/);
+  assert.match(out, /<option value="gts">GTS<\/option>/);
+  assert.equal((out.match(/<option value="750s"/g) || []).length, 1);
+  assert.match(out, /<select id="model" name="model" required/);
+  assert.doesNotMatch(out, /Models could not be loaded/);
+});
+
+test('enquire renderer with no models shows a hint and does not require the select', () => {
+  const { ctx } = makeCtx();
+  const data = withFixture({});
+  data.vehicles = [];
+  data.vehicle = null;
+  const out = String(registry.enquire(data, ctx));
+  const select = out.match(/<select[^>]*>[\s\S]*?<\/select>/)[0];
+  assert.doesNotMatch(select, /required/);
+  assert.equal((select.match(/<option/g) || []).length, 1);
+  assert.match(select, /<option value="" selected>Select a model<\/option>/);
+  assert.match(out, /<p class="form__hint">Models could not be loaded\. Reload the page to try again\.<\/p>/);
+});
