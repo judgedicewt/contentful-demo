@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { CONTENT_TYPES } from '../src/content-model.js';
+import { CONTENT_TYPES, DEFAULT_LOCALE, LOCALES } from '../src/content-model.js';
 import { assetFields, provisionAssets, sameAssetMetadata } from '../src/provision/assets.js';
 import { normaliseContentType, sameContentType } from '../src/provision/content-types.js';
 import { sameFields } from '../src/provision/entries.js';
@@ -100,6 +100,50 @@ test('buildEntryFields maps links and assets to Link objects', () => {
 
 test('the content model passes its own validation', () => {
   assert.deepEqual(validateContentModel(CONTENT_TYPES), []);
+});
+
+test('LOCALES declares ja-JP falling back to en-US', () => {
+  assert.equal(DEFAULT_LOCALE, 'en-US');
+  assert.deepEqual(LOCALES, [
+    { code: 'ja-JP', name: 'Japanese (Japan)', fallbackCode: 'en-US', optional: true, contentDeliveryApi: true, contentManagementApi: true },
+  ]);
+});
+
+test('exactly the human-readable text fields are localized', () => {
+  const EXPECTED = {
+    seoMetadata: ['title', 'description'],
+    link: ['label'],
+    linkGroup: ['heading'],
+    bannerButton: ['eyebrow', 'heading', 'body'],
+    vehicleCategory: ['name', 'intro'],
+    specification: ['label', 'value', 'unit'],
+    featureHighlight: ['title', 'body', 'tag'],
+    mediaSlide: ['heading', 'body'],
+    lineageEntry: ['title', 'body'],
+    faqItem: ['question', 'answer'],
+    textBlock: ['heading', 'body'],
+    imageBlock: ['caption'],
+    card: ['title', 'body'],
+    cardGrid: ['heading'],
+    ctaGroup: ['heading'],
+    story: ['title', 'kicker', 'standfirst'],
+    vehicle: ['name', 'shortDescription', 'tagline', 'statement', 'performanceHeading', 'performanceBody', 'lineageIntro'],
+    vehicleGrid: ['heading'],
+    storyGrid: ['heading'],
+    page: ['title', 'kicker'],
+    retailer: ['name', 'city', 'country', 'address'],
+    enquiryForm: ['title', 'intro', 'submitLabel', 'consentText', 'successTitle', 'successBody', 'errorBody'],
+    siteSettings: ['siteName', 'newsletterText'],
+  };
+  const actual = Object.fromEntries(
+    CONTENT_TYPES.map((type) => [type.id, type.fields.filter((f) => f.localized).map((f) => f.id)]).filter(([, ids]) => ids.length),
+  );
+  assert.deepEqual(actual, EXPECTED);
+  for (const type of CONTENT_TYPES) for (const field of type.fields) {
+    if (!field.localized) continue;
+    assert.ok(['Symbol', 'Text', 'RichText'].includes(field.type), `${type.id}.${field.id} is ${field.type}`);
+    assert.ok(!(field.validations || []).some((v) => v.in), `${type.id}.${field.id} is an enum`);
+  }
 });
 
 test('the content model covers every type in the design', () => {
@@ -290,7 +334,7 @@ test('sameContentType ignores API defaults and null flags', () => {
   const stored = JSON.parse(JSON.stringify(definition));
   stored.sys = { id: 'link', version: 2, publishedVersion: 1 };
   for (const field of stored.fields) {
-    field.localized = false;
+    field.localized = Boolean(field.localized);
     field.disabled = false;
     field.omitted = false;
     field.required = Boolean(field.required);
