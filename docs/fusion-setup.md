@@ -145,7 +145,7 @@ the webhook from the starter scenario.
 | Select forms to map | Leave empty |
 | Name | `Enquiry: {{1.model}} - {{1.name}}` |
 | Project ID | `6ad8d2f90005295eaf29343ebd663ed8` |
-| Description | The ten lines that follow, as one multi-line value |
+| Description | The eleven lines that follow, as one multi-line value |
 
 The Name, Project ID, and Description inputs appear only after you pick them
 under **Select fields to map**.
@@ -161,6 +161,7 @@ Consent: {{1.consent}}
 Source: {{1.source}}
 Page: {{1.pageUrl}}
 Submitted: {{1.submittedAt}}
+Locale: {{1.locale}}
 ```
 
 ### Module 3: Webhooks, Webhook response

@@ -74,6 +74,15 @@ const expected = {
   story: SEED_GROUPS.find((g) => g.name === 'stories').entries.filter((e) => e.contentType === 'story').map((e) => e.fields.slug),
 };
 
+// Cross-type slug uniqueness (routes share one namespace). Slugs come from the
+// seed data and are never localized, so this runs once, not per locale.
+const slugOwners = new Map();
+for (const [type, slugs] of Object.entries(expected)) for (const s of slugs) {
+  if (type === 'vehicleCategory') continue;
+  if (slugOwners.has(s)) problems.push(`slug/${s}: used by ${slugOwners.get(s)} and ${type}`);
+  slugOwners.set(s, type);
+}
+
 /** Fields that must hold Japanese script in the ja-JP pass, by content type. */
 const JAPANESE_FIELDS = { vehicleCategory: 'intro', story: 'standfirst' };
 
@@ -187,14 +196,6 @@ async function verifyLocale(locale) {
     }
   }
 
-  // Cross-type slug uniqueness (routes share one namespace).
-  const slugOwners = new Map();
-  for (const [type, slugs] of Object.entries(expected)) for (const s of slugs) {
-    if (type === 'vehicleCategory') continue;
-    if (slugOwners.has(s)) problem(`slug/${s}`, `used by ${slugOwners.get(s)} and ${type}`);
-    slugOwners.set(s, type);
-  }
-
   const width = Math.max(...rows.map((r) => r[1].length));
   console.log(`${'type'.padEnd(16)} ${'slug'.padEnd(width)} status`);
   for (const [t, s, st] of rows) console.log(`${t.padEnd(16)} ${s.padEnd(width)} ${st}`);
@@ -202,21 +203,27 @@ async function verifyLocale(locale) {
 }
 
 const locales = [DEFAULT_LOCALE, ...LOCALES.map((l) => l.code)];
-const totals = { routes: 0, siteSettings: 0, retailers: 0, enquiryForm: 0, internalLinks: 0 };
+// Singleton and route counts come from the default-locale pass; the other
+// passes repeat the same checks against their own text.
+let counts = null;
+let completed = 0;
 for (const locale of locales) {
-  console.log(`${locale === locales[0] ? '' : '\n'}locale ${locale}`);
+  console.log(`${locale === DEFAULT_LOCALE ? '' : '\n'}locale ${locale}`);
   try {
-    const counts = await verifyLocale(locale);
-    for (const key of Object.keys(totals)) totals[key] += counts[key];
+    const result = await verifyLocale(locale);
+    counts ??= result;
+    completed += 1;
   } catch (error) {
-    // An unknown locale makes the Delivery API answer 400; report it and carry on.
-    if (error.status !== 400) throw error;
+    // The Delivery API answers 400 "Unknown locale" until the locale is provisioned.
+    if (locale === DEFAULT_LOCALE || error.status !== 400 || !/unknown locale/i.test(error.message)) throw error;
     problems.push(`locale ${locale}: ${error.message} (is the locale provisioned?)`);
     console.log('skipped, the Delivery API rejected the locale');
   }
 }
 
-console.log(`\n${totals.routes} routes checked, ${totals.siteSettings} siteSettings, ${totals.retailers} retailers, ${totals.enquiryForm} enquiryForm, ${totals.internalLinks} internal links checked, ${locales.length} locales`);
+if (counts) {
+  console.log(`\n${counts.routes} routes checked, ${counts.siteSettings} siteSettings, ${counts.retailers} retailers, ${counts.enquiryForm} enquiryForm, ${counts.internalLinks} internal links checked, ${completed} of ${locales.length} locales`);
+}
 if (problems.length) {
   console.error(`\n${problems.length} problem(s):`);
   for (const p of problems) console.error(`  - ${p}`);
