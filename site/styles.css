@@ -1104,7 +1104,7 @@ body.is-loading .site-header::after {
   }
 }
 
-.hero--vehicle .hero__image {
+.hero--vehicle .hero__media {
   view-transition-name: vehicle-hero;
 }
 

@@ -4,7 +4,6 @@
  * from the client cache. Opening the variant menu warms the hero images
  * listed on its links.
  */
-import { familyRootId } from './router.js';
 
 /** Slugs of the other vehicles in the family of `data.entry`, root first, in menu order. */
 export function siblingSlugs(data) {

@@ -140,7 +140,7 @@ test('getEnquiryForm requests the singleton with include 1 and returns the first
   assert.equal(calls[0].searchParams.get('limit'), '1');
   assert.equal(calls[0].searchParams.get('include'), '1');
   // A fresh client, because the first response is cached by URL.
-  const emptyClient = createClient({ spaceId: "space", deliveryToken: "tok" }, { fetch: fakeFetch });
+  const emptyClient = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
   assert.equal(await emptyClient.getEnquiryForm(), null);
 });
 

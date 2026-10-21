@@ -300,6 +300,12 @@ async function handleRoute(route, cda, preloaded) {
   }
 }
 
+/** Route for a location hash; in-page anchors (`#main`) fall back to the home route. */
+function routeFromHash(hash) {
+  const matched = matchRoute(hash);
+  return matched.name === 'ignore' ? matchRoute('#/') : matched;
+}
+
 async function boot() {
   if (!config || !config.spaceId || !config.deliveryToken) {
     mounts.header.innerHTML = String(renderHeader(null, []));
@@ -317,8 +323,7 @@ async function boot() {
 
   // Start loading the first route now, so it overlaps the site settings and categories requests.
   const initialHash = window.location.hash || '#/';
-  const matched = matchRoute(initialHash);
-  const initial = matched.name === 'ignore' ? matchRoute('#/') : matched;
+  const initial = routeFromHash(initialHash);
   const preloaded = loadRoute(initial, cda);
   // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
   preloaded.catch(() => {});
@@ -338,8 +343,7 @@ async function boot() {
   if (currentHash === initialHash) {
     handleRoute(initial, cda, preloaded);
   } else {
-    const fresh = matchRoute(currentHash);
-    handleRoute(fresh.name === 'ignore' ? matchRoute('#/') : fresh, cda);
+    handleRoute(routeFromHash(currentHash), cda);
   }
 }
 
