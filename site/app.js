@@ -236,7 +236,12 @@ async function swapInPlace(content, isCurrent) {
   return applied;
 }
 
-async function handleRoute(route, cda) {
+/**
+ * Shows `route`. The optional `preloaded` argument is a promise from
+ * `loadRoute(route, cda)` that the caller started earlier, so the load can
+ * overlap other work.
+ */
+async function handleRoute(route, cda, preloaded) {
   // In-page anchors are not routes: keep the current view.
   if (route.name === 'ignore') return;
   const requestId = (state.requestId += 1);
@@ -255,7 +260,7 @@ async function handleRoute(route, cda) {
     }
   }, SPINNER_DELAY_MS);
   try {
-    const { view, data } = await loadRoute(route, cda);
+    const { view, data } = await (preloaded || loadRoute(route, cda));
     // Loading is done: the hero wait below must not trigger the indicator.
     clearTimeout(spinner);
     if (!isCurrent()) return;
@@ -310,6 +315,13 @@ async function boot() {
   const cda = createClient(config);
   bindShell();
 
+  // Start loading the first route now, so it overlaps the site settings and categories requests.
+  const matched = matchRoute(window.location.hash || '#/');
+  const initial = matched.name === 'ignore' ? matchRoute('#/') : matched;
+  const preloaded = loadRoute(initial, cda);
+  // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
+  preloaded.catch(() => {});
+
   const [settings, categories] = await Promise.allSettled([cda.getSiteSettings(), cda.getCategories()]);
   if (settings.status === 'fulfilled') state.siteSettings = settings.value;
   else console.warn('siteSettings unavailable:', settings.reason);
@@ -320,8 +332,7 @@ async function boot() {
 
   const dispatch = (route) => handleRoute(route, cda);
   onRouteChange(dispatch);
-  const initial = matchRoute(window.location.hash || '#/');
-  dispatch(initial.name === 'ignore' ? matchRoute('#/') : initial);
+  handleRoute(initial, cda, preloaded);
 }
 
 boot().catch((error) => {

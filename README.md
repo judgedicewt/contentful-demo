@@ -159,6 +159,14 @@ matches routes and loads data. `site/js/render/` holds one renderer per view
 and one per section type. `site/js/dom.js` provides a tagged template that
 escapes interpolated values.
 
+The client caches every Delivery API response for the life of the page, and
+a vehicle page prefetches the other variants in its family at idle. Switching
+between variants then updates the page in place: no loading state, the
+scroll position is kept, and browsers that support view transitions
+crossfade the hero. Module preload hints in `site/index.html` let the browser
+fetch all ES modules in parallel; `test/preload.test.js` fails if a module
+is added without one.
+
 The page reads its settings from `site/config.js`, which is generated and not
 committed. Run `npm run dev` to generate it from your environment and serve
 the site locally.
