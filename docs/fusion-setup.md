@@ -165,9 +165,9 @@ Submitted: {{1.submittedAt}}
 | Custom headers, Key | `Content-Type` |
 | Custom headers, Value | `application/json` |
 
-Run once, then check the response headers the browser receives. They should
-include `Access-Control-Allow-Origin`. Add that header to module 3 (Key
-`Access-Control-Allow-Origin`, Value `*`) only if it is missing.
+Fusion adds `Access-Control-Allow-Origin: *` to this module's reply on its
+own, as a live submission from the deployed site confirmed. Don't add the
+header to module 3, because a duplicate header breaks CORS.
 
 Connect the modules in order: 1, then 2, then 3. Turn on **Immediately as data
 arrives** in the scenario settings, which matches `instant: true` in the
