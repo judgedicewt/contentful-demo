@@ -110,6 +110,11 @@ test('vehicle: variant switch lists parent and variants with the current one mar
   const childMenu = renderView('vehicle', { entry: vehicles.spider, variants: [] }).out.match(/Change model variant[\s\S]*?<\/ul>/)[0];
   assert.ok(childMenu.indexOf('#/750s"') < childMenu.indexOf('#/750s-spider"'), 'parent listed first');
   assert.match(childMenu, /<a href="#\/750s-spider" aria-current="page">750S Spider/);
+
+  const familyMenu = renderView('vehicle', { entry: vehicles.spider, variants: vehicles.variants }).out.match(/Change model variant[\s\S]*?<\/ul>/)[0];
+  assert.equal((familyMenu.match(/<a href=/g) || []).length, 2, 'the current entry is not listed twice');
+  assert.ok(familyMenu.indexOf('#/750s"') < familyMenu.indexOf('#/750s-spider"'), 'root first');
+  assert.match(familyMenu, /<a href="#\/750s-spider" aria-current="page">750S Spider/);
 });
 
 test('vehicle: overview carousel has slides and prev/next buttons', () => {

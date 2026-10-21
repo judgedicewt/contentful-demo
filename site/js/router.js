@@ -171,6 +171,16 @@ async function loadPageData(cda, entry) {
 }
 
 /**
+ * Returns the `sys.id` that keys a vehicle family's variants query: the parent
+ * model when it resolved to an entry, otherwise the vehicle itself.
+ */
+export function familyRootId(vehicle) {
+  const parent = vehicle?.fields?.parentModel;
+  if (parent?.fields && parent.sys?.id) return parent.sys.id;
+  return vehicle?.sys?.id || '';
+}
+
+/**
  * Loads the data for a matched route. Returns `{ view, data }` where `view`
  * is a key of the render registry.
  */
@@ -211,7 +221,7 @@ export async function loadRoute(route, cda) {
     case 'page': {
       const vehicle = await cda.getBySlug('vehicle', params.slug, 4);
       if (vehicle) {
-        const variants = await cda.getVariants(vehicle.sys.id);
+        const variants = await cda.getVariants(familyRootId(vehicle));
         return { view: 'vehicle', data: { entry: vehicle, variants } };
       }
       const page = await cda.getBySlug('page', params.slug, 4);

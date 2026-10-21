@@ -53,10 +53,15 @@ function hero(ctx, entry) {
     </section>`;
 }
 
+/**
+ * Builds the variant menu: the family root, then the variants, then the
+ * current entry as a fallback, deduplicated by `sys.id`.
+ */
 function variantItems(entry, variants) {
+  const root = isEntry(entry.fields.parentModel) ? entry.fields.parentModel : entry;
   const seen = new Set();
   const items = [];
-  for (const candidate of [entry.fields.parentModel, entry, ...present(variants)]) {
+  for (const candidate of [root, ...present(variants), entry]) {
     if (!isEntry(candidate) || seen.has(candidate.sys?.id)) continue;
     seen.add(candidate.sys?.id);
     items.push(candidate);

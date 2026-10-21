@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { safeUrl } from '../site/js/dom.js';
-import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref } from '../site/js/router.js';
+import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref, familyRootId } from '../site/js/router.js';
 
 const entry = (type, fields = {}, id = `${type}-1`) => ({
   sys: { id, type: 'Entry', contentType: { sys: { type: 'Link', linkType: 'ContentType', id: type } } },
@@ -185,6 +185,26 @@ test('loadRoute tries a vehicle before a page and fetches variants', async () =>
   assert.equal(result.data.entry, coupe);
   assert.deepEqual(result.data.variants, [spider]);
   assert.deepEqual(cda.calls[0], ['getBySlug', 'vehicle', '750s']);
+});
+
+test('loadRoute keys the variants query on the family root, so a child variant lists its siblings', async () => {
+  const coupe = entry('vehicle', { slug: '750s' }, 'v-750s');
+  const spider = entry('vehicle', { slug: '750s-spider', parentModel: coupe }, 'v-750s-spider');
+  const cda = fakeCda({ vehicle: { '750s': coupe, '750s-spider': spider }, variants: { 'v-750s': [spider] } });
+  const result = await loadRoute(matchRoute('#/750s-spider'), cda);
+  assert.equal(result.view, 'vehicle');
+  assert.equal(result.data.entry, spider);
+  assert.deepEqual(result.data.variants, [spider]);
+  assert.deepEqual(cda.calls[1], ['getVariants', 'v-750s']);
+});
+
+test('familyRootId is the parent model when present, else the vehicle itself', () => {
+  const coupe = entry('vehicle', { slug: '750s' }, 'v-750s');
+  const spider = entry('vehicle', { slug: '750s-spider', parentModel: coupe }, 'v-750s-spider');
+  assert.equal(familyRootId(coupe), 'v-750s');
+  assert.equal(familyRootId(spider), 'v-750s');
+  assert.equal(familyRootId(entry('vehicle', { slug: 'x', parentModel: null }, 'v-x')), 'v-x');
+  assert.equal(familyRootId(null), '');
 });
 
 test('loadRoute falls back to a page with siblings and children', async () => {
