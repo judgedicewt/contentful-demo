@@ -48,4 +48,6 @@ export default {
   'link-cta-vehicle-750s': { label: '750Sを探索' },
   'link-cta-vehicle-artura-spider': { label: 'Artura Spiderを探索' },
   'link-cta-vehicle-w1': { label: 'W1を探索' },
+  'link-cta-enquire-750s': { label: 'お問い合わせ' },
+  'link-cta-uk-retailer': { label: 'イギリスの販売店を探す' },
 };
