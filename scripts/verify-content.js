@@ -6,7 +6,7 @@
  */
 import { loadConfig } from '../src/config.js';
 import { SEED_GROUPS } from '../src/seed/index.js';
-import { matchRoute } from '../site/js/router.js';
+import { matchRoute, CONTENT_INCLUDE } from '../site/js/router.js';
 
 const config = loadConfig();
 if (config.missing.length > 0) {
@@ -92,7 +92,7 @@ const publishedSlugs = {};
 const currentVehicleSlugs = new Set();
 
 for (const [contentType, slugs] of Object.entries(expected)) {
-  const payload = await all({ content_type: contentType, include: 4 });
+  const payload = await all({ content_type: contentType, include: CONTENT_INCLUDE });
   const bySlug = new Map(payload.items.map((e) => [e.fields.slug, e]));
   publishedSlugs[contentType] = new Set(bySlug.keys());
   const seen = new Set();

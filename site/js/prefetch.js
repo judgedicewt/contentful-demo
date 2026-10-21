@@ -4,6 +4,7 @@
  * from the client cache. Opening the variant menu warms the hero images
  * listed on its links.
  */
+import { CONTENT_INCLUDE } from './router.js';
 
 /** Slugs of the other vehicles in the family of `data.entry`, root first, in menu order. */
 export function siblingSlugs(data) {
@@ -33,8 +34,8 @@ function idleSchedule(fn) {
 }
 
 /**
- * Schedules a fetch of every sibling's full entry (include depth 4, matching
- * the route loader). Returns a cancel function. Failures are ignored: the
+ * Schedules a fetch of every sibling's full entry (at `CONTENT_INCLUDE` depth,
+ * matching the route loader). Returns a cancel function. Failures are ignored: the
  * route loader will fetch again on demand.
  */
 export function prefetchFamily(cda, data, { schedule = idleSchedule } = {}) {
@@ -43,7 +44,7 @@ export function prefetchFamily(cda, data, { schedule = idleSchedule } = {}) {
   return schedule(() => {
     for (const slug of slugs) {
       Promise.resolve()
-        .then(() => cda.getBySlug('vehicle', slug, 4))
+        .then(() => cda.getBySlug('vehicle', slug, CONTENT_INCLUDE))
         .catch(() => {});
     }
   });

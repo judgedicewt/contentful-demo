@@ -26,6 +26,8 @@ import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
 import { initEnquiry } from './js/enquiry.js';
 import { prefetchFamily, warmHeroImages } from './js/prefetch.js';
+import { createLocalProvider, createResolver } from './js/audience.js';
+import { load, recordBoot, recordView, viewFrom } from './js/signals.js';
 import { isFamilySwitch, SPINNER_DELAY_MS, HERO_DECODE_CAP_MS } from './js/swap.js';
 
 const mounts = {
@@ -38,6 +40,14 @@ const config = window.CONTENTFUL_CONFIG;
 const state = {
   siteSettings: null,
   categories: [],
+  /** Audience entries from the Delivery API, or an empty list when the fetch failed. */
+  audiences: [],
+  /** True when the audience fetch failed. Every render then shows defaults. */
+  audiencesFailed: false,
+  /** Resolves a visitor profile to audience keys, or null before the audiences load. */
+  resolver: null,
+  /** The audience keys used for the latest render. */
+  matched: new Set(),
   requestId: 0,
   headSet: false,
   cancelPrefetch: () => {},
@@ -161,7 +171,19 @@ function renderShell() {
   setHead({ title: '' });
 }
 
+/**
+ * Audience keys for one render, computed from the current profile. A failed
+ * audience fetch gives an empty set, so defaults render even when the stored
+ * profile has overrides.
+ */
+function matchAudiences() {
+  if (state.audiencesFailed || !state.resolver) return new Set();
+  return state.resolver.audiencesFor(load());
+}
+
 function buildContext(cda, route) {
+  const audiences = matchAudiences();
+  state.matched = audiences;
   return {
     siteSettings: state.siteSettings,
     categories: state.categories,
@@ -176,6 +198,7 @@ function buildContext(cda, route) {
     renderBreadcrumbs,
     setHead,
     route,
+    audiences,
   };
 }
 
@@ -284,6 +307,10 @@ async function handleRoute(route, cda, preloaded) {
     if (!inPlace) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
     state.current = { view, data };
+    // Record the view only now: a superseded or failed request returned or threw above.
+    // Recording never starts a render, so the next route sees the updated profile.
+    const seen = viewFrom(view, data);
+    if (seen) recordView(seen);
   } catch (error) {
     if (!isCurrent()) return;
     console.error(error);
@@ -320,6 +347,8 @@ async function boot() {
 
   const cda = createClient(config);
   bindShell();
+  // Record the campaign and visit count before the first route loads, so the first render sees them.
+  recordBoot(window.location, navigator);
 
   // Start loading the first route now, so it overlaps the site settings and categories requests.
   const initialHash = window.location.hash || '#/';
@@ -328,11 +357,22 @@ async function boot() {
   // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
   preloaded.catch(() => {});
 
-  const [settings, categories] = await Promise.allSettled([cda.getSiteSettings(), cda.getCategories()]);
+  const [settings, categories, audiences] = await Promise.allSettled([
+    cda.getSiteSettings(),
+    cda.getCategories(),
+    cda.getAudiences(),
+  ]);
   if (settings.status === 'fulfilled') state.siteSettings = settings.value;
   else console.warn('siteSettings unavailable:', settings.reason);
   if (categories.status === 'fulfilled') state.categories = categories.value;
   else console.warn('vehicleCategory entries unavailable:', categories.reason);
+  if (audiences.status === 'fulfilled') {
+    state.audiences = audiences.value;
+  } else {
+    console.warn('audiences unavailable:', audiences.reason);
+    state.audiencesFailed = true;
+  }
+  state.resolver = createResolver({ providers: [createLocalProvider(state.audiences)] });
 
   renderShell();
 
