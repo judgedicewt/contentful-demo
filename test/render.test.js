@@ -7,7 +7,7 @@ import { routeFor, linkHref } from '../site/js/router.js';
 import { assetUrl } from '../site/js/cda.js';
 import { renderBreadcrumbs, renderHeader, renderFooter } from '../site/js/shell.js';
 import { registry } from '../site/js/render/index.js';
-import { imageTag, imageSrc } from '../site/js/render/common.js';
+import { imageTag, imageSrc, imageSrcset, HERO_WIDTHS } from '../site/js/render/common.js';
 import { sortShowcase } from '../site/js/render/home.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
@@ -89,6 +89,24 @@ test('vehicle: hero, sub-nav, statement and head', () => {
   assert.match(out, /Watch the film/);
   assert.match(out, /href="https:\/\/example.com\/films\/750s"/);
   assert.deepEqual(heads, [{ title: '750S | McLaren supercar', description: 'The McLaren 750S.' }]);
+});
+
+test('vehicle: hero image offers a srcset of HERO_WIDTHS at 100vw', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  const heroImg = out.match(/<img[^>]*hero__image[^>]*>/)[0];
+  assert.match(heroImg, /srcset="[^"]*w=800&amp;[^"]* 800w, [^"]*w=1200&amp;[^"]* 1200w, [^"]*w=1600&amp;[^"]* 1600w, [^"]*w=1920&amp;[^"]* 1920w"/);
+  assert.match(heroImg, /sizes="100vw"/);
+  assert.match(heroImg, /src="[^"]*w=1920/);
+});
+
+test('imageSrcset skips SVG assets and imageTag then emits no srcset', () => {
+  const { ctx } = makeCtx();
+  const svg = { sys: { id: 'a' }, fields: { title: 'x', file: { url: 'https://images.ctfassets.net/s/a/b/c.svg', contentType: 'image/svg+xml' } } };
+  assert.equal(imageSrcset(ctx, svg, HERO_WIDTHS), '');
+  assert.doesNotMatch(String(imageTag(ctx, svg, { widths: HERO_WIDTHS })), /srcset=/);
+  const jpg = vehicles.full.fields.heroImage;
+  assert.equal(imageSrcset(ctx, jpg, [800, 1600]).split(', ').length, 2);
+  assert.match(String(imageTag(ctx, jpg, { w: 1200, widths: [800, 1200], sizes: '50vw' })), /sizes="50vw"/);
 });
 
 test('vehicle: breadcrumbs for a current model', () => {

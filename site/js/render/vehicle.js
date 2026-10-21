@@ -8,6 +8,7 @@ import { html, raw } from '../dom.js';
 import {
   anchor,
   applyHead,
+  HERO_WIDTHS,
   imageTag,
   isEntry,
   paragraphs,
@@ -44,7 +45,7 @@ function hero(ctx, entry) {
   const f = entry.fields;
   return html`
     <section class="hero hero--full hero--vehicle theme-carbon" aria-labelledby="vehicle-title" data-hero>
-      ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true, alt: '' })}</div>` : ''}
+      ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true, alt: '', widths: HERO_WIDTHS, sizes: '100vw' })}</div>` : ''}
       <div class="hero__content container">
         ${isEntry(f.category) ? html`<span class="eyebrow">${f.category.fields.name}</span>` : ''}
         <h1 id="vehicle-title" class="hero__title">${f.name}</h1>

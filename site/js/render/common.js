@@ -86,20 +86,32 @@ export function imageSrc(ctx, asset, w = 1200, { aspect, focus } = {}) {
   return ctx.assetUrl(asset, params);
 }
 
+/** Widths offered in the vehicle hero `srcset`. */
+export const HERO_WIDTHS = [800, 1200, 1600, 1920];
+
+/** `srcset` value for `widths`, each candidate at the same crop and focus; '' for SVG. */
+export function imageSrcset(ctx, asset, widths, { aspect, focus } = {}) {
+  if (!isEntry(asset) || isSvg(asset) || !Array.isArray(widths) || !widths.length) return '';
+  return widths.map((w) => `${imageSrc(ctx, asset, w, { aspect, focus })} ${w}w`).join(', ');
+}
+
 /**
  * `<img>` for an asset, or '' when the asset is missing. Lazy by default;
  * pass `eager: true` for the hero image. With `aspect` the width and height
  * attributes are the cropped size; otherwise they come from the asset details
- * and are left off when those are missing.
+ * and are left off when those are missing. With a non-empty `widths` array
+ * (and an asset that is not SVG) the tag also gets a `srcset` and `sizes`;
+ * `sizes` defaults to `100vw`.
  */
-export function imageTag(ctx, asset, { w = 1200, className = '', eager = false, alt, sizes, aspect, focus } = {}) {
+export function imageTag(ctx, asset, { w = 1200, className = '', eager = false, alt, sizes, aspect, focus, widths } = {}) {
   if (!isEntry(asset)) return '';
   const src = imageSrc(ctx, asset, w, { aspect, focus });
   if (!src) return '';
   const dims = cropDimensions(aspect, w) || imageDimensions(asset, w);
+  const srcset = imageSrcset(ctx, asset, widths, { aspect, focus });
   return html`<img${className ? html` class="${className}"` : ''} src="${src}" alt="${alt ?? altOf(asset)}"${
     dims ? html` width="${dims.width}" height="${dims.height}"` : ''
-  }${sizes ? html` sizes="${sizes}"` : ''}${eager ? raw(' fetchpriority="high" decoding="async"') : raw(' loading="lazy" decoding="async"')}>`;
+  }${srcset ? html` srcset="${srcset}" sizes="${sizes || '100vw'}"` : sizes ? html` sizes="${sizes}"` : ''}${eager ? raw(' fetchpriority="high" decoding="async"') : raw(' loading="lazy" decoding="async"')}>`;
 }
 
 /** Rich text field → trusted HTML (the renderer escapes all text). */
