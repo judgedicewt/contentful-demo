@@ -1064,6 +1064,92 @@ body.nav-open .site-nav {
 
 /* sections */
 
+/* Motion ------------------------------------------------------------------
+   Everything that hides or moves content lives inside the no-preference query,
+   so with reduced motion (or without JS adding .is-visible) nothing is hidden. */
+
+.carousel__controls[hidden] {
+  display: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero--full .hero__image {
+    animation: hero-zoom 6s ease-out both;
+  }
+
+  .hero__content > * {
+    animation: fade-up 0.6s ease-out both;
+  }
+
+  .hero__content > :nth-child(2) {
+    animation-delay: 0.12s;
+  }
+
+  .hero__content > :nth-child(3) {
+    animation-delay: 0.24s;
+  }
+
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  }
+
+  [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .subnav--product {
+    transition: padding 0.25s ease;
+  }
+
+  .subnav--product.is-compact .subnav__inner {
+    min-height: 0;
+    padding-block: 0.35rem;
+  }
+
+  .carousel__track {
+    cursor: grab;
+  }
+
+  .carousel__track.is-dragging {
+    cursor: grabbing;
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+    user-select: none;
+  }
+
+  @keyframes hero-zoom {
+    from {
+      transform: scale(1.06);
+    }
+
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* On narrow screens the product title only shows once the bar is compact. */
+@media (prefers-reduced-motion: no-preference) and (max-width: 767px) {
+  .subnav--product:not(.is-compact) .subnav__title {
+    display: none;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Section and template styles (owned by B3). Mobile first; breakpoints at
    768px and 1024px.

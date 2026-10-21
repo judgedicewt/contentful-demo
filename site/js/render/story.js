@@ -27,7 +27,7 @@ export function render(data, ctx) {
     ${f.standfirst
       ? html`
         <section class="section story-standfirst theme-white">
-          <div class="container container--narrow"><div class="lead">${paragraphs(f.standfirst)}</div></div>
+          <div class="container container--narrow"><div class="lead" data-reveal>${paragraphs(f.standfirst)}</div></div>
         </section>`
       : ''}
     ${renderSections(f.sections, ctx, { latestStories: data.latestStories })}
@@ -35,7 +35,7 @@ export function render(data, ctx) {
       ? html`
         <section class="section story-vehicles theme-mist">
           <div class="container">
-            <h2 class="section__title">Related models</h2>
+            <h2 class="section__title" data-reveal>Related models</h2>
             ${cardList(vehicles.map((vehicle) => vehicleCard(ctx, vehicle)))}
           </div>
         </section>`
@@ -44,7 +44,7 @@ export function render(data, ctx) {
       ? html`
         <section class="section story-grid theme-white">
           <div class="container">
-            <h2 class="section__title">More stories</h2>
+            <h2 class="section__title" data-reveal>More stories</h2>
             ${cardList(more.map((story) => storyCard(ctx, story)))}
           </div>
         </section>`

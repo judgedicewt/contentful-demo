@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MANIFEST, SIZES, KINDS, PALETTE_NAMES, SILHOUETTES } from '../src/placeholders/manifest.js';
 import { renderSvg } from '../src/placeholders/draw.js';
-import { ASSET_SEEDS, ASSET_GROUP, assetId } from '../src/seed/assets.js';
+import { ASSET_SEEDS, ASSET_GROUP, buildAssetSeeds, assetId } from '../src/seed/assets.js';
 
 const CURRENT = ['artura', 'artura-spider', '750s', '750s-spider', 'gts', 'w1', 'artura-gt4'];
 const CURRENT_PURPOSES = ['hero', 'card', 'overview-1', 'overview-2', 'exterior', 'interior', 'mso'];
@@ -103,8 +103,11 @@ test('renderSvg escapes label text', () => {
 });
 
 test('asset seeds mirror the manifest', () => {
+  // without any photo on disk every slot keeps its SVG placeholder
+  const seeds = buildAssetSeeds({ fileExists: () => false });
+  assert.equal(seeds.length, MANIFEST.length);
   assert.equal(ASSET_SEEDS.length, MANIFEST.length);
-  for (const [index, seed] of ASSET_SEEDS.entries()) {
+  for (const [index, seed] of seeds.entries()) {
     const entry = MANIFEST[index];
     assert.equal(seed.id, entry.id);
     assert.equal(seed.title, entry.label);

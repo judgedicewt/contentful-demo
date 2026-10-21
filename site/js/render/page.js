@@ -19,7 +19,7 @@ function hero(ctx, entry, title) {
   const f = entry.fields;
   const full = f.heroStyle === 'full';
   return html`
-    <section class="hero hero--${full ? 'full' : 'compact'} hero--page theme-carbon" aria-labelledby="page-title">
+    <section class="hero hero--${full ? 'full' : 'compact'} hero--page theme-carbon" aria-labelledby="page-title"${full ? raw(' data-hero') : ''}>
       ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true })}</div>` : ''}
       <div class="hero__content container">
         ${f.kicker ? html`<span class="eyebrow">${f.kicker}</span>` : ''}

@@ -119,6 +119,45 @@ test('vehicle: overview carousel has slides and prev/next buttons', () => {
   assert.match(out, /aria-label="Next slide"/);
 });
 
+test('vehicle carousel has no inline handlers', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  assert.doesNotMatch(out, /onclick=/i);
+  assert.doesNotMatch(out, /\bon[a-z]+="/i, 'no inline event handler attributes at all');
+  assert.match(out, /<button[^>]*data-carousel-prev[^>]*>/);
+  assert.match(out, /<button[^>]*data-carousel-next[^>]*>/);
+  const track = out.match(/<ul[^>]*data-carousel-track[^>]*>/)[0];
+  assert.match(track, /class="carousel__track"/);
+  assert.match(track, /tabindex="0"/);
+});
+
+test('vehicle hero and sections carry reveal marks', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  assert.match(out, /<section class="hero hero--full[^"]*"[^>]*data-hero/);
+  assert.ok((out.match(/data-reveal/g) || []).length >= 3, 'at least three reveal marks');
+  assert.match(out, /<h2 class="section__title"[^>]*data-reveal/, 'section headings reveal');
+});
+
+test('product bar carries data-compact-bar', () => {
+  const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
+  assert.match(out, /<nav class="subnav subnav--product"[^>]*data-compact-bar/);
+});
+
+test('page: a full hero is a motion hero, a compact one is not', () => {
+  const full = clone(pageData);
+  full.entry.fields.heroStyle = 'full';
+  assert.match(renderView('page', full).out, /hero--full[^"]*"[^>]*data-hero/);
+  const compact = clone(pageData);
+  compact.entry.fields.heroStyle = 'compact';
+  assert.doesNotMatch(renderView('page', compact).out, /data-hero/);
+});
+
+test('cards, card grids and story sections carry reveal marks', () => {
+  const stories = renderView('story', storyData).out;
+  assert.ok((stories.match(/data-reveal/g) || []).length >= 2);
+  const cat = renderView('vehicleCategory', categoryData).out;
+  assert.match(cat, /<li data-reveal>/, 'card list items reveal');
+});
+
 test('vehicle: exterior and interior tabs are radio driven and list highlights by area', () => {
   const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
   assert.match(out, /<input class="tabs__radio" type="radio" name="detail-area" id="detail-tab-exterior" checked>/);
@@ -141,7 +180,7 @@ test('vehicle: exterior and interior tabs are radio driven and list highlights b
 
 test('vehicle: featured specs become tiles in array order and the table is grouped', () => {
   const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
-  const tiles = out.match(/<ul class="spec-tiles">[\s\S]*?<\/ul>/)[0];
+  const tiles = out.match(/<ul class="spec-tiles"[^>]*>[\s\S]*?<\/ul>/)[0];
   assert.equal((tiles.match(/class="spec-tile"/g) || []).length, 3);
   assert.ok(tiles.indexOf('332') < tiles.indexOf('800') && tiles.indexOf('800') < tiles.indexOf('750'));
   assert.match(tiles, /<small class="spec-tile__unit">km\/h<\/small>/);
@@ -281,7 +320,7 @@ test('page: renders every section type in order and skips unknown types', () => 
   const { out } = renderView('page', pageData);
   const markers = [
     'Always on call', // textBlock header
-    'text-block__title">Contacts', // textBlock text
+    'text-block__title" data-reveal>Contacts', // textBlock text
     'image-block--full', // imageBlock full
     'image-block--contained', // imageBlock contained
     'banner--image', // bannerButton with image
@@ -291,7 +330,7 @@ test('page: renders every section type in order and skips unknown types', () => 
     'class="section vehicle-grid', // vehicleGrid
     'Curated stories', // storyGrid curated
     'Latest stories', // storyGrid fallback
-    'cta-group__title">Continue your journey', // ctaGroup
+    'cta-group__title" data-reveal>Continue your journey', // ctaGroup
   ];
   let last = -1;
   for (const marker of markers) {
@@ -379,7 +418,7 @@ test('story: hero, standfirst, sections, related vehicles and more stories', () 
   assert.match(out, /class="hero hero--compact hero--story/);
   assert.match(out, /<span class="eyebrow">Engineering · <time datetime="2026-02-12">12 February 2026<\/time><\/span>/);
   assert.match(out, /<h1[^>]*>750S: five key facts<\/h1>/);
-  assert.match(out, /<div class="lead"><p>Standfirst for 750S: five key facts\.<\/p><\/div>/);
+  assert.match(out, /<div class="lead" data-reveal><p>Standfirst for 750S: five key facts\.<\/p><\/div>/);
   assert.match(out, /The story opens here\./);
   assert.match(out, /Inline caption/);
   assert.match(out, /href="#\/750s"[^>]*>See the 750S</);

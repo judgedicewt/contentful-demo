@@ -28,7 +28,7 @@ function journey(ctx, vehicles) {
   return html`
     <section class="section cta-group theme-carbon">
       <div class="container">
-        <h2 class="cta-group__title">Continue your journey</h2>
+        <h2 class="cta-group__title" data-reveal>Continue your journey</h2>
         <div class="btn-group">
           ${anchor('#/mso', 'btn btn-secondary', 'Personalise with MSO')}
           ${story ? anchor(ctx.routeFor(story), 'btn btn-secondary', 'Read the latest story') : ''}

@@ -55,5 +55,5 @@ export function storyCard(ctx, story) {
 export function cardList(items, className = '') {
   const cells = items.filter(Boolean);
   if (!cells.length) return '';
-  return html`<ul class="grid-cards${className ? ` ${className}` : ''}">${cells.map((card) => html`<li>${card}</li>`)}</ul>`;
+  return html`<ul class="grid-cards${className ? ` ${className}` : ''}">${cells.map((card) => html`<li data-reveal>${card}</li>`)}</ul>`;
 }

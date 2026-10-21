@@ -10,7 +10,7 @@ export function render(entry, ctx) {
   return html`
     <section class="section vehicle-grid theme-mist">
       <div class="container">
-        ${f.heading ? html`<h2 class="section__title">${f.heading}</h2>` : ''}
+        ${f.heading ? html`<h2 class="section__title" data-reveal>${f.heading}</h2>` : ''}
         ${cardList(vehicles.map((vehicle) => vehicleCard(ctx, vehicle)))}
       </div>
     </section>`;

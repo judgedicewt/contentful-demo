@@ -11,7 +11,7 @@ export function render(entry, ctx) {
     return html`
       <section class="section text-block text-block--header ${theme}">
         <div class="container container--narrow">
-          ${f.heading ? html`<h2 class="text-block__title">${f.heading}</h2>` : ''}
+          ${f.heading ? html`<h2 class="text-block__title" data-reveal>${f.heading}</h2>` : ''}
           ${body ? html`<div class="text-block__lead lead richtext">${body}</div>` : ''}
         </div>
       </section>`;
@@ -19,7 +19,7 @@ export function render(entry, ctx) {
   return html`
     <section class="section text-block ${theme}">
       <div class="container container--narrow">
-        ${f.heading ? html`<h2 class="text-block__title">${f.heading}</h2>` : ''}
+        ${f.heading ? html`<h2 class="text-block__title" data-reveal>${f.heading}</h2>` : ''}
         ${body ? html`<div class="richtext">${body}</div>` : ''}
       </div>
     </section>`;

@@ -43,7 +43,7 @@ function breadcrumbs(ctx, entry) {
 function hero(ctx, entry) {
   const f = entry.fields;
   return html`
-    <section class="hero hero--full hero--vehicle theme-carbon" aria-labelledby="vehicle-title">
+    <section class="hero hero--full hero--vehicle theme-carbon" aria-labelledby="vehicle-title" data-hero>
       ${isEntry(f.heroImage) ? html`<div class="hero__media">${imageTag(ctx, f.heroImage, { w: 1920, className: 'hero__image', eager: true, alt: '' })}</div>` : ''}
       <div class="hero__content container">
         ${isEntry(f.category) ? html`<span class="eyebrow">${f.category.fields.name}</span>` : ''}
@@ -69,7 +69,7 @@ function subNav(ctx, entry, variants) {
   const family = variantItems(entry, variants);
   const downloads = present(f.downloads).filter((asset) => ctx.assetUrl(asset));
   return html`
-    <nav class="subnav subnav--product" aria-label="${f.name} navigation">
+    <nav class="subnav subnav--product" aria-label="${f.name} navigation" data-compact-bar>
       <div class="subnav__inner container">
         <span class="subnav__title">${f.name}</span>
         <ul class="subnav__list">
@@ -111,16 +111,11 @@ function statement(entry) {
   return html`
     <section class="section statement theme-carbon">
       <div class="container container--narrow">
-        <p class="statement__text">${f.statement}</p>
+        <p class="statement__text" data-reveal>${f.statement}</p>
         ${f.filmUrl ? html`<div class="btn-group">${anchor(f.filmUrl, 'btn btn-secondary', 'Watch the film')}</div>` : ''}
       </div>
     </section>`;
 }
-
-const SCROLL = (direction) =>
-  raw(
-    `var t=this.closest('.carousel').querySelector('.carousel__track');t.scrollBy({left:${direction}*t.clientWidth*0.8})`,
-  );
 
 function carousel(ctx, entry) {
   const slides = present(entry.fields.overviewSlides);
@@ -128,13 +123,13 @@ function carousel(ctx, entry) {
   return html`
     <section class="section carousel theme-midnight" aria-roledescription="carousel" aria-label="Overview">
       <div class="container carousel__head">
-        <h2 class="carousel__title">Overview</h2>
+        <h2 class="carousel__title" data-reveal>Overview</h2>
         <div class="carousel__controls">
-          <button type="button" class="carousel__button" data-carousel-prev aria-label="Previous slide" onclick="${SCROLL('-1')}">&larr;</button>
-          <button type="button" class="carousel__button" data-carousel-next aria-label="Next slide" onclick="${SCROLL('1')}">&rarr;</button>
+          <button type="button" class="carousel__button" data-carousel-prev aria-label="Previous slide">&larr;</button>
+          <button type="button" class="carousel__button" data-carousel-next aria-label="Next slide">&rarr;</button>
         </div>
       </div>
-      <ul class="carousel__track" tabindex="0" aria-label="Overview slides">
+      <ul class="carousel__track" data-carousel-track tabindex="0" aria-label="Overview slides">
         ${slides.map(
           (slide, index) => html`
             <li class="carousel__slide" id="overview-slide-${String(index + 1)}" aria-label="Slide ${String(index + 1)} of ${String(slides.length)}">
@@ -152,7 +147,7 @@ function carousel(ctx, entry) {
 function highlightItem(ctx, highlight) {
   const f = highlight.fields;
   return html`
-    <li class="highlight">
+    <li class="highlight" data-reveal>
       ${isEntry(f.image) ? html`<div class="highlight__media">${imageTag(ctx, f.image, { w: 800, aspect: '16:9' })}</div>` : ''}
       <div class="highlight__copy">
         ${f.tag ? html`<span class="eyebrow highlight__tag">${f.tag}</span>` : ''}
@@ -178,7 +173,7 @@ function inDetail(ctx, entry) {
     return html`
       <section class="section in-detail theme-white">
         <div class="container">
-          <h2 class="section__title">In detail</h2>
+          <h2 class="section__title" data-reveal>In detail</h2>
           <h3 class="eyebrow">${areas[0].title}</h3>
           ${panel(areas[0])}
         </div>
@@ -187,7 +182,7 @@ function inDetail(ctx, entry) {
   return html`
     <section class="section in-detail theme-white">
       <div class="container">
-        <h2 class="section__title">In detail</h2>
+        <h2 class="section__title" data-reveal>In detail</h2>
         <div class="tabs">
           <div class="tabs__group" role="radiogroup" aria-label="In detail">
             ${areas.map(
@@ -224,10 +219,10 @@ function specifications(ctx, entry) {
   return html`
     <section class="section specs theme-carbon">
       <div class="container">
-        <h2 class="section__title">Specifications</h2>
+        <h2 class="section__title" data-reveal>Specifications</h2>
         ${featured.length
           ? html`
-            <ul class="spec-tiles">
+            <ul class="spec-tiles" data-reveal>
               ${featured.map(
                 (spec) => html`
                   <li class="spec-tile">
@@ -239,7 +234,7 @@ function specifications(ctx, entry) {
           : ''}
         ${groups.length
           ? html`
-            <details class="spec-full">
+            <details class="spec-full" data-reveal>
               <summary class="spec-full__summary">Full specifications</summary>
               <table class="spec-table">
                 <caption class="visually-hidden">${f.name} full specifications</caption>
@@ -273,13 +268,13 @@ function lineage(ctx, entry) {
   return html`
     <section class="section lineage theme-mist">
       <div class="container">
-        <h2 class="section__title">Lineage</h2>
+        <h2 class="section__title" data-reveal>Lineage</h2>
         ${f.lineageIntro ? html`<div class="lineage__intro lead">${paragraphs(f.lineageIntro)}</div>` : ''}
         <ol class="timeline">
           ${items.map((item) => {
             const l = item.fields;
             return html`
-              <li class="timeline__item">
+              <li class="timeline__item" data-reveal>
                 <span class="timeline__year">${String(l.year ?? '')}</span>
                 <div class="timeline__body">
                   <h3 class="timeline__title">${l.title}</h3>
@@ -302,7 +297,7 @@ function relatedStories(ctx, entry) {
   return html`
     <section class="section story-grid theme-white">
       <div class="container">
-        <h2 class="section__title">Related stories</h2>
+        <h2 class="section__title" data-reveal>Related stories</h2>
         ${cardList(stories.map((story) => storyCard(ctx, story)))}
       </div>
     </section>`;
@@ -314,8 +309,8 @@ function faqs(ctx, entry) {
   return html`
     <section class="section faqs theme-carbon">
       <div class="container container--narrow">
-        <h2 class="section__title">FAQs</h2>
-        <div class="faq-list">
+        <h2 class="section__title" data-reveal>FAQs</h2>
+        <div class="faq-list" data-reveal>
           ${items.map(
             (item) => html`
               <details class="faq">

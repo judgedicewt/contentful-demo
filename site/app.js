@@ -18,6 +18,7 @@ import {
 } from './js/shell.js';
 import { html, raw, escapeHtml } from './js/dom.js';
 import { registry } from './js/render/index.js';
+import { initMotion } from './js/motion.js';
 
 const mounts = {
   header: document.getElementById('header'),
@@ -45,8 +46,14 @@ function setHead({ title, description } = {}) {
   }
 }
 
-function showMain(content) {
+let teardownMotion = () => {};
+
+/** Replaces the main content. Motion bound to the old content is torn down first. */
+function showMain(content, { motion = false } = {}) {
+  teardownMotion();
+  teardownMotion = () => {};
   mounts.main.innerHTML = String(content);
+  if (motion) teardownMotion = initMotion(mounts.main);
 }
 
 function closeMenus() {
@@ -166,7 +173,7 @@ async function handleRoute(route, cda) {
     }
     const renderer = registry[view] || registry.notFound || (() => renderNotFound(route));
     state.headSet = false;
-    showMain(renderer(data, buildContext(cda, route)));
+    showMain(renderer(data, buildContext(cda, route)), { motion: true });
     if (!state.headSet) setHead({ title: fallbackTitle(view, data) });
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });

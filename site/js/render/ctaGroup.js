@@ -9,7 +9,7 @@ export function render(entry, ctx) {
   return html`
     <section class="section cta-group theme-carbon">
       <div class="container">
-        <h2 class="cta-group__title">${f.heading || 'Continue your journey'}</h2>
+        <h2 class="cta-group__title" data-reveal>${f.heading || 'Continue your journey'}</h2>
         <div class="btn-group">${links.map((link) => linkButton(ctx, link, 'secondary'))}</div>
       </div>
     </section>`;
