@@ -108,6 +108,7 @@ test('the content model covers every type in the design', () => {
     'siteSettings', 'link', 'linkGroup', 'seoMetadata', 'vehicleCategory', 'vehicle', 'specification',
     'featureHighlight', 'mediaSlide', 'lineageEntry', 'faqItem', 'page', 'story', 'textBlock', 'imageBlock',
     'bannerButton', 'card', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup', 'retailer', 'enquiryForm',
+    'audience', 'contentVariant', 'personalizedContent',
   ];
   for (const id of expected) assert.ok(ids.includes(id), `missing content type ${id}`);
   assert.equal(ids.length, expected.length);

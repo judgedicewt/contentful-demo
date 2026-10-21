@@ -61,6 +61,7 @@ const defaultValue = (value) => ({ defaultValue: { [LOCALE]: value } });
 const SECTION_TYPES = ['textBlock', 'imageBlock', 'bannerButton', 'cardGrid', 'vehicleGrid', 'storyGrid', 'ctaGroup'];
 const STORY_SECTION_TYPES = ['textBlock', 'imageBlock', 'ctaGroup'];
 const LINK_TARGET_TYPES = ['page', 'vehicle', 'vehicleCategory', 'story'];
+const PERSONALIZED_TYPES = [...SECTION_TYPES, 'link'];
 
 export const CONTENT_TYPES = [
   {
@@ -263,6 +264,56 @@ export const CONTENT_TYPES = [
     ],
   },
   {
+    id: 'audience',
+    name: 'Audience',
+    description:
+      'A visitor segment that decides which content variant is shown, matched on interests, visitor type, visit count, campaign and region.',
+    displayField: 'name',
+    fields: [
+      { id: 'name', name: 'Name', type: 'Symbol', required: true },
+      {
+        id: 'key',
+        name: 'Key',
+        type: 'Symbol',
+        required: true,
+        validations: [{ unique: true }, { regexp: { pattern: '^[a-z0-9]+(-[a-z0-9]+)*$' } }],
+      },
+      { id: 'description', name: 'Description', type: 'Text' },
+      symbolIn('source', 'Source', ['local', 'external'], defaultValue('local')),
+      entryLinks('interestCategories', 'Interest categories', ['vehicleCategory']),
+      entryLinks('interestVehicles', 'Interest vehicles', ['vehicle']),
+      symbolIn('visitorType', 'Visitor type', ['any', 'first-time', 'returning'], defaultValue('any')),
+      { id: 'minVisits', name: 'Minimum visits', type: 'Integer' },
+      { id: 'campaigns', name: 'Campaigns', type: 'Array', items: { type: 'Symbol' } },
+      { id: 'regions', name: 'Regions', type: 'Array', items: { type: 'Symbol' } },
+      symbolIn('matchMode', 'Match mode', ['all', 'any'], defaultValue('all')),
+    ],
+  },
+  {
+    id: 'contentVariant',
+    name: 'Content variant',
+    description:
+      'One version of a personalized section, shown to visitors in its audience.',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      entryLink('audience', 'Audience', ['audience'], { required: true }),
+      entryLink('content', 'Content', PERSONALIZED_TYPES, { required: true }),
+    ],
+  },
+  {
+    id: 'personalizedContent',
+    name: 'Personalized content',
+    description:
+      'A slot that resolves to one of its variants for the current visitor, or to its default when none match; resolution never nests, so a variant cannot hold personalized content.',
+    displayField: 'title',
+    fields: [
+      { id: 'title', name: 'Title', type: 'Symbol', required: true },
+      entryLink('default', 'Default', PERSONALIZED_TYPES, { required: true }),
+      entryLinks('variants', 'Variants', ['contentVariant']),
+    ],
+  },
+  {
     id: 'story',
     name: 'Story',
     description:
@@ -282,7 +333,7 @@ export const CONTENT_TYPES = [
       { id: 'standfirst', name: 'Standfirst', type: 'Text' },
       imageAsset('heroImage', 'Hero image', { required: true }),
       imageAsset('cardImage', 'Card image'),
-      entryLinks('sections', 'Sections', STORY_SECTION_TYPES),
+      entryLinks('sections', 'Sections', [...STORY_SECTION_TYPES, 'personalizedContent']),
       entryLinks('relatedVehicles', 'Related vehicles', ['vehicle']),
       entryLink('seo', 'SEO', ['seoMetadata']),
     ],
@@ -315,6 +366,7 @@ export const CONTENT_TYPES = [
       { id: 'filmUrl', name: 'Film URL', type: 'Symbol', validations: [urlValidation] },
       { id: 'configureUrl', name: 'Configure URL', type: 'Symbol', validations: [urlValidation] },
       { id: 'enquiryUrl', name: 'Enquiry URL', type: 'Symbol', validations: [urlValidation] },
+      entryLink('enquiryCta', 'Enquiry CTA', ['link', 'personalizedContent']),
       { id: 'downloads', name: 'Downloads', type: 'Array', items: { type: 'Link', linkType: 'Asset', validations: [] } },
       entryLinks('overviewSlides', 'Overview slides', ['mediaSlide']),
       entryLinks('highlights', 'Highlights', ['featureHighlight']),
@@ -323,7 +375,7 @@ export const CONTENT_TYPES = [
       { id: 'performanceBody', name: 'Performance body', type: 'Text' },
       { id: 'lineageIntro', name: 'Lineage intro', type: 'Text' },
       entryLinks('lineage', 'Lineage', ['lineageEntry']),
-      entryLink('msoBanner', 'MSO banner', ['bannerButton']),
+      entryLink('msoBanner', 'MSO banner', ['bannerButton', 'personalizedContent']),
       entryLinks('relatedStories', 'Related stories', ['story']),
       entryLinks('faqs', 'FAQs', ['faqItem']),
       {
@@ -376,7 +428,7 @@ export const CONTENT_TYPES = [
       symbolIn('heroStyle', 'Hero style', ['full', 'compact'], defaultValue('compact')),
       entryLink('parent', 'Parent', ['page']),
       { id: 'order', name: 'Order', type: 'Integer' },
-      entryLinks('sections', 'Sections', SECTION_TYPES),
+      entryLinks('sections', 'Sections', [...SECTION_TYPES, 'personalizedContent']),
       entryLink('seo', 'SEO', ['seoMetadata']),
     ],
   },
