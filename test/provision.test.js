@@ -5,11 +5,11 @@ import { assetFields, provisionAssets, sameAssetMetadata } from '../src/provisio
 import { normaliseContentType, sameContentType } from '../src/provision/content-types.js';
 import { sameFields } from '../src/provision/entries.js';
 import { isNetworkError, isNotFound, isRateLimited, isRetryable, isServerError, rateLimitResetSeconds } from '../src/provision/errors.js';
-import { buildEntryFields } from '../src/provision/fields.js';
+import { buildEntryFields, needsTranslation } from '../src/provision/fields.js';
 import { ensureLocales } from '../src/provision/locales.js';
 import { createRequester, isPublished } from '../src/provision/requests.js';
-import { selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
-import { SEED_GROUPS } from '../src/seed/index.js';
+import { selectGroups, translationCoverage, validateContentModel, validateSeeds } from '../src/provision/validate.js';
+import { SEED_GROUPS, TRANSLATIONS } from '../src/seed/index.js';
 
 const richText = {
   nodeType: 'document',
@@ -432,4 +432,49 @@ test('ensureLocales updates a locale whose fallback differs and leaves a matchin
   assert.equal(stale.fallbackCode, 'en-US');
   const fresh = fakeEnvironment([{ ...LOCALES[0], update: async () => { throw new Error('must not update'); } }]);
   assert.deepEqual(await ensureLocales(fresh, LOCALES, { log: () => {}, request: (_, fn) => fn() }), { created: 0, updated: 0, unchanged: 1 });
+});
+
+test('needsTranslation is true for words and rich text, false for numbers', () => {
+  assert.equal(needsTranslation('Top speed'), true);
+  assert.equal(needsTranslation('7 speed'), true);
+  assert.equal(needsTranslation('750'), false);
+  assert.equal(needsTranslation('2.9'), false);
+  assert.equal(needsTranslation(''), false);
+  assert.equal(needsTranslation(12), false);
+  assert.equal(needsTranslation(richText), true);
+  assert.equal(needsTranslation({ lat: 1, lon: 2 }), false);
+});
+
+test('buildEntryFields merges overlay values under their locale', () => {
+  const translations = { 'ja-JP': { x: { label: '最高速度' } } };
+  const fields = buildEntryFields({ id: 'x', contentType: 'specification', fields: { label: 'Top speed', order: 2 }, links: { vehicle: 'v' } }, { translations });
+  assert.deepEqual(fields.label, { 'en-US': 'Top speed', 'ja-JP': '最高速度' });
+  assert.deepEqual(fields.order, { 'en-US': 2 });
+  assert.deepEqual(Object.keys(fields.vehicle), ['en-US']);
+  assert.deepEqual(buildEntryFields({ id: 'x', contentType: 'specification', fields: { label: 'Top speed' } }).label, { 'en-US': 'Top speed' });
+});
+
+test('validateSeeds reports untranslated and unknown overlay keys', () => {
+  const groups = validGroups();
+  const bad = { 'ja-JP': { 'cat-supercars': { name: 'スーパーカー', slug: 'x' }, 'no-such-entry': { name: 'y' } } };
+  const kinds = validateSeeds(groups, CONTENT_TYPES, { translations: bad }).map((p) => `${p.kind}:${p.id}:${p.field ?? ''}`);
+  assert.ok(kinds.includes('unknown-translation-field:cat-supercars:slug'));
+  assert.ok(kinds.includes('unknown-translation-entry:no-such-entry:'));
+  assert.ok(kinds.includes('untranslated:vehicle-750s:name'));
+  assert.ok(!kinds.includes('untranslated:cat-supercars:name'));
+  assert.ok(!kinds.includes('untranslated:vehicle-750s:order'));
+});
+
+test('translationCoverage counts fields that need translation per group', () => {
+  const groups = validGroups();
+  const rows = translationCoverage(groups, CONTENT_TYPES, { 'ja-JP': { 'cat-supercars': { name: 'スーパーカー' } } });
+  const vehicles = rows.find((r) => r.group === 'vehicles' && r.locale === 'ja-JP');
+  assert.equal(vehicles.translated, 1);
+  assert.ok(vehicles.total > 1);
+  assert.equal(rows.find((r) => r.group === 'media').total, 0);
+});
+
+test('the repository seeds, overlays and model validate together', () => {
+  const problems = validateSeeds(SEED_GROUPS, CONTENT_TYPES, { translations: TRANSLATIONS }).filter((p) => p.kind !== 'untranslated');
+  assert.deepEqual(problems, []);
 });

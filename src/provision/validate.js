@@ -7,6 +7,7 @@
  * Every problem is `{ group, kind, id, field, message }`; `formatProblem`
  * renders one for the console.
  */
+import { needsTranslation } from './fields.js';
 
 const SYMBOL_MAX = 256;
 const TEXT_MAX = 50000;
@@ -98,8 +99,14 @@ function allValidations(field) {
  * All groups contribute to the set of known entry and asset IDs, so a link
  * from one group to another is fine. Problems are reported for the groups
  * selected by `only` (default: all).
+ *
+ * `translations` is `{ [locale]: { [entryId]: { [fieldId]: value } } }`. When
+ * given, an overlay entry no seed declares (`unknown-translation-entry`,
+ * reported under group "translations"), an overlay field that is not a
+ * localized field of the type (`unknown-translation-field`), and a localized
+ * seed field with words but no overlay value (`untranslated`) are problems.
  */
-export function validateSeeds(seedGroups, contentTypes, { only, fileExists } = {}) {
+export function validateSeeds(seedGroups, contentTypes, { only, fileExists, translations } = {}) {
   const problems = [];
   const typesById = new Map(contentTypes.map((type) => [type.id, type]));
 
@@ -142,6 +149,14 @@ export function validateSeeds(seedGroups, contentTypes, { only, fileExists } = {
     }
   });
 
+  for (const [locale, overlay] of Object.entries(translations ?? {})) {
+    for (const entryId of Object.keys(overlay ?? {})) {
+      if (!entriesById.has(entryId)) {
+        problems.push({ group: 'translations', kind: 'unknown-translation-entry', id: entryId, message: `${locale} overlay has no matching seed entry` });
+      }
+    }
+  }
+
   // Pass 2: validate each selected group.
   const uniqueValues = new Map(); // `${contentType}.${field}` -> Map(value -> entryId)
   const selected = wanted ? seedGroups.filter((group) => wanted.includes(group?.name)) : seedGroups;
@@ -150,10 +165,69 @@ export function validateSeeds(seedGroups, contentTypes, { only, fileExists } = {
     const groupName = group?.name;
     const ctx = { problems, typesById, entriesById, assetsById, uniqueValues, groupName, fileExists };
     for (const asset of group?.assets ?? []) validateAssetSeed(asset, ctx);
-    for (const entry of group?.entries ?? []) validateEntrySeed(entry, ctx);
+    for (const entry of group?.entries ?? []) {
+      validateEntrySeed(entry, ctx);
+      validateEntryTranslations(entry, translations, ctx);
+    }
   }
 
   return problems;
+}
+
+/** The localized `fields` of an entry seed whose values have words to translate: `[fieldId, ...]`. */
+function translatableFieldIds(seed, typesById) {
+  const type = typesById.get(seed?.contentType);
+  if (!type) return [];
+  const localized = new Set(type.fields.filter((field) => field.localized).map((field) => field.id));
+  return Object.entries(seed.fields ?? {})
+    .filter(([fieldId, value]) => localized.has(fieldId) && needsTranslation(value))
+    .map(([fieldId]) => fieldId);
+}
+
+function validateEntryTranslations(seed, translations, { problems, typesById, groupName }) {
+  const type = typesById.get(seed?.contentType);
+  if (!type || typeof seed.id !== 'string') return;
+  const localized = new Set(type.fields.filter((field) => field.localized).map((field) => field.id));
+  const needed = translatableFieldIds(seed, typesById);
+  for (const [locale, overlay] of Object.entries(translations ?? {})) {
+    const values = overlay?.[seed.id] ?? {};
+    for (const [fieldId, value] of Object.entries(values)) {
+      if (value === undefined) continue;
+      if (!localized.has(fieldId)) {
+        const reason = type.fields.some((field) => field.id === fieldId) ? 'is not localized' : 'is not a field';
+        problems.push({ group: groupName, kind: 'unknown-translation-field', id: seed.id, field: fieldId, message: `${locale} overlay field "${fieldId}" ${reason} on content type "${type.id}"` });
+      }
+    }
+    for (const fieldId of needed) {
+      if (values[fieldId] === undefined) {
+        problems.push({ group: groupName, kind: 'untranslated', id: seed.id, field: fieldId, message: `no ${locale} translation` });
+      }
+    }
+  }
+}
+
+/**
+ * Counts, per selected group and locale, the localized seed fields that need
+ * a translation (`total`) and how many of them the overlay provides
+ * (`translated`). Returns `[{ group, locale, translated, total }]`.
+ */
+export function translationCoverage(seedGroups, contentTypes, translations, { only } = {}) {
+  const typesById = new Map(contentTypes.map((type) => [type.id, type]));
+  const rows = [];
+  for (const group of selectGroups(seedGroups, only)) {
+    for (const [locale, overlay] of Object.entries(translations ?? {})) {
+      let total = 0;
+      let translated = 0;
+      for (const seed of group.entries ?? []) {
+        for (const fieldId of translatableFieldIds(seed, typesById)) {
+          total += 1;
+          if (overlay?.[seed.id]?.[fieldId] !== undefined) translated += 1;
+        }
+      }
+      rows.push({ group: group.name, locale, translated, total });
+    }
+  }
+  return rows;
 }
 
 function validateAssetSeed(asset, { problems, groupName, fileExists }) {

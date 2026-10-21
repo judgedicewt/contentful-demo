@@ -10,7 +10,8 @@
  *   node scripts/setup.js --only=<group>  one seed group (comma-separate for several); skips locales and content types
  *   node scripts/setup.js --dry-run       validate the model and seeds, no API calls; exit 1 on problems
  *
- * Seeds come from src/seed/index.js (`SEED_GROUPS`). Before writing anything,
+ * Seeds come from src/seed/index.js (`SEED_GROUPS`), with Japanese overlays
+ * from `TRANSLATIONS`. Before writing anything,
  * the run validates the model and seeds the same way --dry-run does and
  * aborts on problems.
  */
@@ -25,7 +26,7 @@ import { provisionEntries } from '../src/provision/entries.js';
 import { describeError } from '../src/provision/errors.js';
 import { ensureLocales } from '../src/provision/locales.js';
 import { createRequester } from '../src/provision/requests.js';
-import { formatProblem, selectGroups, validateContentModel, validateSeeds } from '../src/provision/validate.js';
+import { formatProblem, selectGroups, translationCoverage, validateContentModel, validateSeeds } from '../src/provision/validate.js';
 
 const flags = parseFlags(process.argv.slice(2));
 if (flags.help) {
@@ -33,19 +34,23 @@ if (flags.help) {
   process.exit(0);
 }
 
-const { SEED_GROUPS } = await import('../src/seed/index.js');
+const { SEED_GROUPS, TRANSLATIONS } = await import('../src/seed/index.js');
 const fileExists = (file) => existsSync(resolve(PROJECT_ROOT, file));
 
 // Validation runs for both dry and real runs.
 const problems = validateContentModel(CONTENT_TYPES);
 if (!flags.typesOnly) {
-  problems.push(...validateSeeds(SEED_GROUPS, CONTENT_TYPES, { only: flags.only, fileExists }));
+  problems.push(...validateSeeds(SEED_GROUPS, CONTENT_TYPES, { only: flags.only, fileExists, translations: TRANSLATIONS }));
 }
 
 console.log(`${flags.dryRun ? 'Dry run: ' : ''}${CONTENT_TYPES.length} content types${flags.typesOnly ? '' : describeGroups(SEED_GROUPS, flags.only)}`);
 if (!flags.typesOnly) {
   for (const group of selectGroups(SEED_GROUPS, flags.only)) {
     console.log(`  group ${group.name.padEnd(16)} ${String(group.assets?.length ?? 0).padStart(3)} assets ${String(group.entries?.length ?? 0).padStart(4)} entries`);
+  }
+  for (const row of translationCoverage(SEED_GROUPS, CONTENT_TYPES, TRANSLATIONS, { only: flags.only })) {
+    if (row.group === 'assets') continue;
+    console.log(`  ${row.locale} coverage  ${row.group.padEnd(16)} ${row.translated}/${row.total} fields`);
   }
 }
 
@@ -85,7 +90,7 @@ try {
   }
 
   if (!flags.typesOnly) {
-    const result = await provisionEntries(environment, SEED_GROUPS, { only: flags.only, log: console.log, request });
+    const result = await provisionEntries(environment, SEED_GROUPS, { only: flags.only, log: console.log, request, translations: TRANSLATIONS });
     console.log(`\nAssets:  ${summarise(result.assets)}`);
     console.log(`Entries: ${summarise(result.entries)}`);
     if (result.failures.length > 0) {

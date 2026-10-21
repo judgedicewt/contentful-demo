@@ -22,7 +22,7 @@ import { createRequester, isArchived, isPublished } from './requests.js';
 import { selectGroups } from './validate.js';
 
 export async function provisionEntries(environment, seedGroups, options = {}) {
-  const { only, log = console.log, rootDir } = options;
+  const { only, log = console.log, rootDir, translations } = options;
   const request = options.request ?? createRequester({ log });
   const groups = selectGroups(seedGroups, only);
   const summary = {
@@ -38,7 +38,7 @@ export async function provisionEntries(environment, seedGroups, options = {}) {
       await provisionAssets(environment, group.assets, { log, request, rootDir, summary: summary.assets });
     }
     for (const seed of group.entries ?? []) {
-      const result = await writeEntry(environment, seed, { request, log });
+      const result = await writeEntry(environment, seed, { request, log, translations });
       if (result.action === 'unchanged') {
         summary.entries.unchanged += 1;
         log(`  unchanged ${seed.contentType}/${seed.id} (v${result.entry.sys.publishedVersion})`);
@@ -64,8 +64,8 @@ export async function provisionEntries(environment, seedGroups, options = {}) {
 }
 
 /** Creates or updates one entry as a draft. Returns `{ action, entry }`. */
-async function writeEntry(environment, seed, { request }) {
-  const fields = buildEntryFields(seed);
+async function writeEntry(environment, seed, { request, translations }) {
+  const fields = buildEntryFields(seed, { translations });
   let entry = null;
   try {
     entry = await request(`get entry ${seed.id}`, () => environment.getEntry(seed.id));

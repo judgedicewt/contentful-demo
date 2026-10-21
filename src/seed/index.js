@@ -13,5 +13,9 @@ import { SECTIONS_GROUP } from './sections.js';
 import { SITE_GROUP } from './site.js';
 import { STORIES_GROUP } from './stories.js';
 import { VEHICLE_SEED_GROUPS } from './vehicles.js';
+import { JA_JP } from './ja-JP/index.js';
 
 export const SEED_GROUPS = [ASSET_GROUP, ...VEHICLE_SEED_GROUPS, LINKS_GROUP, SECTIONS_GROUP, STORIES_GROUP, PAGES_GROUP, RETAILERS_GROUP, SITE_GROUP, ENQUIRY_GROUP];
+
+/** Translation overlays by locale: `{ [locale]: { [entryId]: { [fieldId]: value } } }`. */
+export const TRANSLATIONS = { 'ja-JP': JA_JP };
