@@ -11,7 +11,8 @@
  *   /current-models/:slug       → category
  *   /post/:slug                 → story
  *   /retailers                  → retailers
- *   /configure/..., /enquire/..., /contact, /legal/..., /placeholder/...,
+ *   /enquire, /enquire/:slug    → enquire (falls back to placeholder if the form entry is missing)
+ *   /configure/..., /contact, /legal/..., /placeholder/...,
  *   /mcl-6gt                    → placeholder (demo stand-ins for real integrations)
  *   #anything-else              → ignore (in-page anchors such as #main; not a route)
  *   /:a, /:a/:b                 → page (slug is the full path; the loader
@@ -24,7 +25,7 @@ import { safeUrl } from './dom.js';
 export const DEFAULT_CATEGORY_SLUG = 'supercars';
 
 /** First path segments whose destinations are placeholder routes in the demo. */
-export const PLACEHOLDER_KINDS = new Set(['configure', 'enquire', 'contact', 'legal', 'placeholder', 'mcl-6gt']);
+export const PLACEHOLDER_KINDS = new Set(['configure', 'contact', 'legal', 'placeholder', 'mcl-6gt']);
 
 /** Normalises a hash (or path) into an array of decoded segments. */
 export function segmentsOf(hash) {
@@ -69,6 +70,11 @@ export function matchRoute(hash) {
   }
   if (first === 'retailers' && segments.length === 1) {
     return { name: 'retailers', params: {} };
+  }
+  if (first === 'enquire') {
+    return segments.length <= 2
+      ? { name: 'enquire', params: { slug: second ?? null } }
+      : { name: 'notFound', params: { path: segments.join('/') } };
   }
   if (PLACEHOLDER_KINDS.has(first)) {
     return { name: 'placeholder', params: { path: segments.join('/'), kind: first, slug: second ?? null } };
@@ -212,8 +218,27 @@ export async function loadRoute(route, cda) {
       if (!page) return { view: 'notFound', data: { route } };
       return { view: 'page', data: await loadPageData(cda, page) };
     }
+    case 'enquire': {
+      const slug = params.slug ?? null;
+      const [form, vehicle, vehicles] = await Promise.allSettled([
+        cda.getEnquiryForm(),
+        slug ? cda.getBySlug('vehicle', slug, 1) : Promise.resolve(null),
+        cda.getCurrentVehicles(),
+      ]);
+      const settled = (result, fallback) => (result.status === 'fulfilled' ? result.value ?? fallback : fallback);
+      const formEntry = settled(form, null);
+      const vehicleEntry = settled(vehicle, null);
+      if (!formEntry) {
+        const path = slug ? `enquire/${slug}` : 'enquire';
+        return {
+          view: 'placeholder',
+          data: { route: { ...route, params: { kind: 'enquire', slug, path } }, vehicle: vehicleEntry },
+        };
+      }
+      return { view: 'enquire', data: { route, form: formEntry, vehicle: vehicleEntry, vehicles: settled(vehicles, []) } };
+    }
     case 'placeholder': {
-      const wantsVehicle = (params.kind === 'configure' || params.kind === 'enquire') && params.slug;
+      const wantsVehicle = params.kind === 'configure' && params.slug;
       const vehicle = wantsVehicle ? await cda.getBySlug('vehicle', params.slug, 1) : null;
       return { view: 'placeholder', data: { route, vehicle } };
     }

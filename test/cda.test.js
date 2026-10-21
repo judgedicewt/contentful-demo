@@ -123,6 +123,25 @@ test('createClient requests the Delivery API and resolves results', async () => 
   assert.equal(calls[6].searchParams.get('include'), '2', 'category resolves');
 });
 
+test('getEnquiryForm requests the singleton with include 1 and returns the first item or null', async () => {
+  const calls = [];
+  const payloads = [
+    { items: [{ sys: { id: 'f1', type: 'Entry' }, fields: { title: 'Enquire' } }], includes: {} },
+    { items: [], includes: {} },
+  ];
+  const fakeFetch = async (url) => {
+    calls.push(new URL(url));
+    return { ok: true, status: 200, json: async () => payloads.shift() };
+  };
+  const client = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
+  const form = await client.getEnquiryForm();
+  assert.equal(form.fields.title, 'Enquire');
+  assert.equal(calls[0].searchParams.get('content_type'), 'enquiryForm');
+  assert.equal(calls[0].searchParams.get('limit'), '1');
+  assert.equal(calls[0].searchParams.get('include'), '1');
+  assert.equal(await client.getEnquiryForm(), null);
+});
+
 test('createClient treats an unknown content type as an empty result and throws on other errors', async () => {
   const warnings = [];
   const responses = [

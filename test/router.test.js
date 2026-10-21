@@ -83,8 +83,6 @@ test('matchRoute: in-page anchors such as the skip link are ignored, not 404s', 
 
 test('matchRoute: placeholder destinations at any depth', () => {
   assert.deepEqual(matchRoute('#/configure/750s'), { name: 'placeholder', params: { path: 'configure/750s', kind: 'configure', slug: '750s' } });
-  assert.deepEqual(matchRoute('#/enquire/artura-spider'), { name: 'placeholder', params: { path: 'enquire/artura-spider', kind: 'enquire', slug: 'artura-spider' } });
-  assert.deepEqual(matchRoute('#/enquire'), { name: 'placeholder', params: { path: 'enquire', kind: 'enquire', slug: null } });
   assert.deepEqual(matchRoute('#/contact'), { name: 'placeholder', params: { path: 'contact', kind: 'contact', slug: null } });
   assert.deepEqual(matchRoute('#/legal/privacy'), { name: 'placeholder', params: { path: 'legal/privacy', kind: 'legal', slug: 'privacy' } });
   assert.deepEqual(matchRoute('#/placeholder/winter-ball'), { name: 'placeholder', params: { path: 'placeholder/winter-ball', kind: 'placeholder', slug: 'winter-ball' } });
@@ -278,7 +276,7 @@ test('loadRoute: ignore does nothing and fetches nothing', async () => {
   assert.deepEqual(cda.calls, []);
 });
 
-test('loadRoute: placeholder resolves the vehicle for configure and enquire only', async () => {
+test('loadRoute: placeholder resolves the vehicle for configure only', async () => {
   const gts = entry('vehicle', { slug: 'gts', name: 'GTS' }, 'v-gts');
   const cda = fakeCda({ vehicle: { gts } });
 
@@ -288,20 +286,67 @@ test('loadRoute: placeholder resolves the vehicle for configure and enquire only
   assert.equal(configure.data.route.params.kind, 'configure');
   assert.deepEqual(cda.includes[0], ['vehicle', 'gts', 1]);
 
-  const enquire = await loadRoute(matchRoute('#/enquire/gts'), cda);
-  assert.equal(enquire.data.vehicle, gts);
-
   const unknown = await loadRoute(matchRoute('#/configure/unknown'), cda);
   assert.equal(unknown.view, 'placeholder');
   assert.equal(unknown.data.vehicle, null);
 
   const before = cda.calls.length;
-  for (const hash of ['#/enquire', '#/contact', '#/legal/privacy', '#/placeholder/gts', '#/mcl-6gt']) {
+  for (const hash of ['#/contact', '#/legal/privacy', '#/placeholder/gts', '#/mcl-6gt']) {
     const result = await loadRoute(matchRoute(hash), cda);
     assert.equal(result.view, 'placeholder', hash);
     assert.equal(result.data.vehicle, null, hash);
   }
   assert.equal(cda.calls.length, before, 'no fetches for kinds without a vehicle');
+});
+
+test('matchRoute: enquire is a real route, configure stays a placeholder', () => {
+  assert.deepEqual(matchRoute('#/enquire'), { name: 'enquire', params: { slug: null } });
+  assert.deepEqual(matchRoute('#/enquire/750s'), { name: 'enquire', params: { slug: '750s' } });
+  assert.equal(matchRoute('#/enquire/a/b').name, 'notFound');
+  assert.equal(matchRoute('#/configure/750s').name, 'placeholder');
+});
+
+test('loadRoute: enquire loads form, vehicle and current vehicles; falls back to placeholder without a form', async () => {
+  const form = entry('enquiryForm', { title: 'Enquire' });
+  const car = entry('vehicle', { slug: '750s', name: '750S' });
+  const cda = {
+    getEnquiryForm: async () => form,
+    getBySlug: async (type, slug) => (slug === '750s' ? car : null),
+    getCurrentVehicles: async () => [car],
+  };
+  const ok = await loadRoute({ name: 'enquire', params: { slug: '750s' } }, cda);
+  assert.equal(ok.view, 'enquire');
+  assert.deepEqual([ok.data.form, ok.data.vehicle, ok.data.vehicles], [form, car, [car]]);
+  const unknown = await loadRoute({ name: 'enquire', params: { slug: 'nope' } }, cda);
+  assert.equal(unknown.data.vehicle, null);
+  const noForm = await loadRoute({ name: 'enquire', params: { slug: '750s' } }, { ...cda, getEnquiryForm: async () => null });
+  assert.equal(noForm.view, 'placeholder');
+  assert.equal(noForm.data.route.params.kind, 'enquire');
+  assert.equal(noForm.data.vehicle, car);
+});
+
+test('loadRoute: enquire tolerates rejected calls and skips the vehicle lookup without a slug', async () => {
+  const form = entry('enquiryForm', { title: 'Enquire' });
+  const boom = async () => {
+    throw new Error('down');
+  };
+  const bySlugCalls = [];
+  const cda = {
+    getEnquiryForm: async () => form,
+    getBySlug: async (...args) => {
+      bySlugCalls.push(args);
+      return null;
+    },
+    getCurrentVehicles: boom,
+  };
+  const noSlug = await loadRoute({ name: 'enquire', params: { slug: null } }, cda);
+  assert.equal(noSlug.view, 'enquire');
+  assert.deepEqual([noSlug.data.vehicle, noSlug.data.vehicles], [null, []]);
+  assert.deepEqual(bySlugCalls, []);
+  const degraded = await loadRoute({ name: 'enquire', params: { slug: '750s' } }, { ...cda, getEnquiryForm: boom, getBySlug: boom });
+  assert.equal(degraded.view, 'placeholder');
+  assert.deepEqual(degraded.data.route.params, { kind: 'enquire', slug: '750s', path: 'enquire/750s' });
+  assert.equal(degraded.data.vehicle, null);
 });
 
 test('loadRoute: categories load with include depth 3 so featuredBanner.cta.target resolves', async () => {

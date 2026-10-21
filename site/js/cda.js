@@ -165,6 +165,11 @@ export function createClient(config = {}, options = {}) {
     return items[0] || null;
   }
 
+  async function getEnquiryForm() {
+    const items = await getEntries({ content_type: 'enquiryForm', include: 1, limit: 1 });
+    return items[0] || null;
+  }
+
   function getCategories() {
     return getEntries({ content_type: 'vehicleCategory', order: 'fields.order', include: 2, limit: 50 });
   }
@@ -229,6 +234,7 @@ export function createClient(config = {}, options = {}) {
     getEntries,
     getEntry,
     getSiteSettings,
+    getEnquiryForm,
     getCategories,
     getBySlug,
     getVehiclesInCategory,
