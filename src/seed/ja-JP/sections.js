@@ -43,7 +43,7 @@ export default {
     body: doc(
       h2('チームへのご連絡'),
       p('電話窓口は24時間体制です。登録番号と現在地をお伝えください。これらの番号はプレースホルダーです。'),
-      ul('イギリス: +44 (0)00 0000 0001', 'ヨーロッパ: +00 00 0000 0002', '北米: +1 (000) 000-0003', '中東: +971 (0)0 000 0004'),
+      ul('イギリス：+44 (0)00 0000 0001', 'ヨーロッパ：+00 00 0000 0002', '北米：+1 (000) 000-0003', '中東：+971 (0)0 000 0004'),
     ),
   },
   'text-experiences-intro': {
@@ -102,24 +102,24 @@ export default {
     heading: 'MSOのストーリー',
   },
   'cta-home': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-models': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-ownership': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-roadside': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-experiences': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-legacy': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
   'cta-mso': {
-    heading: '旅の続き',
+    heading: '旅を続ける',
   },
 };

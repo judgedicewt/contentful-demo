@@ -31,3 +31,16 @@ number of paragraphs, headings, and list items, so the layout stays comparable.
 Only localized fields belong in an overlay. Never translate slugs, order,
 status, bodyStyle, heroStyle, variant, theme, layout, area, group, style, URLs,
 phone numbers, dates, numbers, booleans, locations, or links.
+
+## Resolved terms
+
+One term per concept across every overlay:
+
+- Hypercars: ハイパーカー. The "ultimate badge" in lineage copy stays アルティメット.
+- Enquire: お問い合わせ (links, enquiry form, vehicle CTAs). Contact and Contact us: 連絡先.
+- Register interest: 関心を登録. Discover: 詳しく見る. Continue your journey: 旅を続ける.
+- Carbon tub: カーボンモノコック. Folding hard top: 折りたたみ式ハードトップ.
+- Car model lines stay in Latin script: Super Series, Sports Series, Longtail, Coupé, Spider.
+- Site name and every SEO title suffix: マクラーレン・オートモーティブ デモ.
+- Write Latin names and numbers directly against Japanese text, with no spaces.
+- Page titles of the form "Parent: Child" use a full-width colon (：).
