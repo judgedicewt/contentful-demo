@@ -19,6 +19,7 @@ import {
 import { html, raw, escapeHtml } from './js/dom.js';
 import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
+import { initEnquiry } from './js/enquiry.js';
 
 const mounts = {
   header: document.getElementById('header'),
@@ -47,13 +48,19 @@ function setHead({ title, description } = {}) {
 }
 
 let teardownMotion = () => {};
+let teardownEnquiry = () => {};
 
-/** Replaces the main content. Motion bound to the old content is torn down first. */
+/** Replaces the main content. Behaviour bound to the old content is torn down first. */
 function showMain(content, { motion = false } = {}) {
   teardownMotion();
   teardownMotion = () => {};
+  teardownEnquiry();
+  teardownEnquiry = () => {};
   mounts.main.innerHTML = String(content);
-  if (motion) teardownMotion = initMotion(mounts.main);
+  if (motion) {
+    teardownMotion = initMotion(mounts.main);
+    teardownEnquiry = initEnquiry(mounts.main);
+  }
 }
 
 function closeMenus() {
