@@ -200,6 +200,11 @@ export function createClient(config = {}, options = {}) {
       return items[0] || null;
     }
 
+    /** Every audience entry, used to resolve which personalized variants a visitor sees. */
+    function getAudiences() {
+      return getEntries({ content_type: 'audience', include: 1, limit: 100 });
+    }
+
     function getCategories() {
       return getEntries({ content_type: 'vehicleCategory', order: 'fields.order', include: 2, limit: 50 });
     }
@@ -266,6 +271,7 @@ export function createClient(config = {}, options = {}) {
       getEntry,
       getSiteSettings,
       getEnquiryForm,
+      getAudiences,
       getCategories,
       getBySlug,
       getVehiclesInCategory,

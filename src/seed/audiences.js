@@ -1,0 +1,58 @@
+/**
+ * Audience personalization: audience, contentVariant and personalizedContent
+ * entries. Personalized slots resolve to one variant for the visitor, or to
+ * their default when none match.
+ *
+ * ID conventions:
+ *   aud-<key>                  audiences, keyed by the audience key
+ *   variant-<slot>-<key>       content variants, one per slot and audience
+ *   pc-<slot>                  personalized content slots
+ */
+
+const LOCAL = { source: 'local', matchMode: 'all' };
+
+const audience = (key, name, fields, links) => ({
+  id: `aud-${key}`,
+  contentType: 'audience',
+  fields: { key, name, ...fields },
+  ...(links ? { links } : {}),
+});
+
+const variant = (id, title, key, content) => ({
+  id,
+  contentType: 'contentVariant',
+  fields: { title },
+  links: { audience: `aud-${key}`, content },
+});
+
+const personalized = (id, title, defaultId, variants) => ({
+  id,
+  contentType: 'personalizedContent',
+  fields: { title },
+  links: { default: defaultId, variants },
+});
+
+const entries = [
+  // Audiences
+  audience('supercar-fans', 'Supercar fans', LOCAL, { interestCategories: ['cat-supercars'] }),
+  audience('returning', 'Returning visitors', { ...LOCAL, visitorType: 'returning' }),
+  audience('trackday', 'Track day prospects', { ...LOCAL, campaigns: ['trackday'] }),
+  audience('uk', 'UK visitors', { ...LOCAL, regions: ['GB'] }),
+  audience('vip', 'VIP guests', { source: 'external' }),
+
+  // Content variants
+  variant('variant-home-banner-supercar-fans', 'Home banner for supercar fans', 'supercar-fans', 'banner-supercar-fans'),
+  variant('variant-home-banner-trackday', 'Home banner for track day prospects', 'trackday', 'banner-trackday'),
+  variant('variant-750s-mso-returning', '750S MSO banner for returning visitors', 'returning', 'banner-mso-returning'),
+  variant('variant-750s-enquiry-uk', '750S enquiry CTA for UK visitors', 'uk', 'link-cta-uk-retailer'),
+
+  // Personalized content slots
+  personalized('pc-home-banner', 'Home banner', 'banner-mcl-6gt', [
+    'variant-home-banner-supercar-fans',
+    'variant-home-banner-trackday',
+  ]),
+  personalized('pc-750s-mso-banner', '750S MSO banner', 'banner-mso-generic', ['variant-750s-mso-returning']),
+  personalized('pc-750s-enquiry-cta', '750S enquiry CTA', 'link-cta-enquire-750s', ['variant-750s-enquiry-uk']),
+];
+
+export const AUDIENCES_GROUP = { name: 'audiences', assets: [], entries };

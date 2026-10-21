@@ -239,6 +239,7 @@ const currentSeeds = CURRENT.map((v) =>
       specifications: SPECIFICATIONS_BY_VEHICLE[v.slug],
       lineage: LINEAGE_BY_VEHICLE[v.slug],
       msoBanner: 'banner-mso-generic',
+      ...(v.slug === '750s' ? { msoBanner: 'pc-750s-mso-banner', enquiryCta: 'pc-750s-enquiry-cta' } : {}),
       relatedStories: v.stories,
       faqs: FAQS_BY_VEHICLE[v.slug],
     },

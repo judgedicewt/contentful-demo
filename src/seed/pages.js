@@ -7,7 +7,7 @@ const PAGES = [
     slug: 'home',
     heroStyle: 'full',
     hero: 'img-home-hero',
-    sections: ['text-home-intro', 'banner-mcl-6gt', 'stories-latest', 'cta-home'],
+    sections: ['text-home-intro', 'pc-home-banner', 'stories-latest', 'cta-home'],
     description: 'Supercars, Grand Tourers and Hypercars engineered around the driver.',
   },
   {

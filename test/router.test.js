@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { safeUrl } from '../site/js/dom.js';
-import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref, familyRootId, withLang, hashForLang } from '../site/js/router.js';
+import { matchRoute, routeFor, linkHref, loadRoute, segmentsOf, isExternalHref, familyRootId, withLang, hashForLang, CONTENT_INCLUDE } from '../site/js/router.js';
 
 const entry = (type, fields = {}, id = `${type}-1`) => ({
   sys: { id, type: 'Entry', contentType: { sys: { type: 'Link', linkType: 'ContentType', id: type } } },
@@ -448,4 +448,45 @@ test('routeFor and linkHref prefix hash routes for ja', () => {
   assert.equal(linkHref(entry('link', { target: entry('story', { slug: 's' }) }), 'ja'), '#/ja/post/s');
   assert.equal(linkHref(entry('link', { externalUrl: '#/retailers' })), '#/retailers');
   assert.equal(linkHref(entry('link', { externalUrl: '#/ja/retailers' }), 'ja'), '#/ja/retailers');
+});
+
+test('loadRoute: home, modular pages, stories and vehicles load at include depth 6', async () => {
+  const cda = fakeCda({
+    page: { home: entry('page', { slug: 'home' }, 'p-home'), legacy: entry('page', { slug: 'legacy' }, 'p-legacy') },
+    vehicle: { '750s': entry('vehicle', { slug: '750s' }, 'v-750s') },
+    story: { 'five-facts': entry('story', { slug: 'five-facts' }, 's-1') },
+  });
+  for (const hash of ['#/', '#/750s', '#/legacy', '#/post/five-facts']) await loadRoute(matchRoute(hash), cda);
+  assert.equal(CONTENT_INCLUDE, 6);
+  assert.deepEqual(cda.includes, [
+    ['page', 'home', 6],
+    ['vehicle', '750s', 6],
+    ['vehicle', 'legacy', 6],
+    ['page', 'legacy', 6],
+    ['story', 'five-facts', 6],
+  ]);
+});
+
+test('loadRoute fetches the latest stories for a storyGrid nested in a personalized section', async () => {
+  const grid = () => entry('storyGrid', { stories: [] });
+  const textBlock = entry('richTextSection', {});
+  const inDefault = entry('personalizedContent', { default: grid(), variants: [] }, 'pc-default');
+  const inVariant = entry(
+    'personalizedContent',
+    { default: textBlock, variants: [entry('contentVariant', { audience: entry('audience', { key: 'uk' }), content: grid() })] },
+    'pc-variant',
+  );
+  const withoutGrid = entry('personalizedContent', { default: textBlock, variants: [entry('contentVariant', { content: textBlock })] }, 'pc-none');
+  const latest = [entry('story', { slug: 'latest' })];
+  const load = async (sections) => {
+    const cda = fakeCda({ page: { home: entry('page', { slug: 'home', sections }, 'p-home') }, stories: latest });
+    const result = await loadRoute(matchRoute('#/'), cda);
+    return { result, fetched: cda.calls.some((call) => call[0] === 'getStories') };
+  };
+
+  const a = await load([inDefault]);
+  assert.equal(a.fetched, true, 'a grid in the default');
+  assert.deepEqual(a.result.data.latestStories, latest);
+  assert.equal((await load([inVariant])).fetched, true, 'a grid in a variant');
+  assert.equal((await load([withoutGrid])).fetched, false, 'no grid anywhere');
 });

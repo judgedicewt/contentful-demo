@@ -8,6 +8,7 @@ import { attrs, html, raw } from '../dom.js';
 import {
   anchor,
   applyHead,
+  contentTypeOf,
   HERO_WIDTHS,
   imageSrc,
   imageSrcset,
@@ -21,6 +22,8 @@ import {
 import { cardList, storyCard } from './cards.js';
 import { render as renderBanner } from './bannerButton.js';
 import { STRINGS } from '../i18n.js';
+import { renderSection } from './sections.js';
+import { renderPersonalized } from './personalized.js';
 
 const SPEC_GROUPS = ['performance', 'powertrain', 'dimensions', 'weight'];
 const AREAS = ['exterior', 'interior'];
@@ -73,6 +76,29 @@ function variantItems(entry, variants) {
   return items;
 }
 
+/** A `link` entry as the enquire button, or '' for any other type. */
+function renderCtaLink(link, ctx) {
+  if (!isEntry(link) || contentTypeOf(link) !== 'link') return '';
+  return anchor(ctx.linkHref(link), 'btn btn-secondary btn--sm', link.fields.label);
+}
+
+/**
+ * The enquire slot. The `enquiryCta` link (directly or through a personalized
+ * wrapper) replaces the button when it resolves. Otherwise the `enquiryUrl`
+ * button is used, or nothing when that is unset.
+ */
+function enquiryItem(ctx, entry) {
+  const f = entry.fields;
+  if (isEntry(f.enquiryCta)) {
+    const cta = f.enquiryCta;
+    const markup = contentTypeOf(cta) === 'personalizedContent'
+      ? renderPersonalized(cta, ctx, renderCtaLink)
+      : renderCtaLink(cta, ctx);
+    if (String(markup)) return html`<li>${markup}</li>`;
+  }
+  return f.enquiryUrl ? html`<li>${anchor(ctx.href(f.enquiryUrl), 'btn btn-secondary btn--sm', ctx.t('enquire'))}</li>` : '';
+}
+
 function subNav(ctx, entry, variants) {
   const f = entry.fields;
   const family = variantItems(entry, variants);
@@ -83,7 +109,7 @@ function subNav(ctx, entry, variants) {
         <span class="subnav__title">${f.name}</span>
         <ul class="subnav__list">
           ${f.configureUrl ? html`<li>${anchor(ctx.href(f.configureUrl), 'btn btn-primary btn--sm', ctx.t('configure'))}</li>` : ''}
-          ${f.enquiryUrl ? html`<li>${anchor(ctx.href(f.enquiryUrl), 'btn btn-secondary btn--sm', ctx.t('enquire'))}</li>` : ''}
+          ${enquiryItem(ctx, entry)}
           ${family.length > 1
             ? html`
               <li>
@@ -341,11 +367,19 @@ function faqs(ctx, entry) {
     </section>`;
 }
 
+/** The MSO banner. A personalized wrapper resolves per audience; a bannerButton renders as before. */
+function msoBanner(ctx, entry) {
+  const banner = entry.fields.msoBanner;
+  if (!isEntry(banner)) return '';
+  return contentTypeOf(banner) === 'personalizedContent'
+    ? renderPersonalized(banner, ctx, renderSection)
+    : renderBanner(banner, ctx);
+}
+
 export function render(data, ctx) {
   const entry = data.entry;
   const f = entry.fields;
   applyHead(ctx, entry, { title: f.name, description: f.shortDescription });
-  const banner = isEntry(f.msoBanner) ? renderBanner(f.msoBanner, ctx) : '';
   return html`
     ${breadcrumbs(ctx, entry)}
     ${hero(ctx, entry)}
@@ -354,7 +388,7 @@ export function render(data, ctx) {
     ${carousel(ctx, entry)}
     ${inDetail(ctx, entry)}
     ${specifications(ctx, entry)}
-    ${banner}
+    ${msoBanner(ctx, entry)}
     ${lineage(ctx, entry)}
     ${relatedStories(ctx, entry)}
     ${faqs(ctx, entry)}`;

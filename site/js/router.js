@@ -180,12 +180,27 @@ export function currentRoute() {
   return matchRoute(window.location.hash || '#/');
 }
 
-/** Sections of a page or story that are storyGrids with no curated stories. */
+/**
+ * The sections a renderer can show for `section`: the section itself, or for a
+ * personalizedContent entry the default and every variant's content.
+ */
+function candidateSections(section) {
+  if (contentTypeOf(section) !== 'personalizedContent') return [section];
+  const variants = Array.isArray(section.fields?.variants) ? section.fields.variants : [];
+  return [section.fields?.default, ...variants.map((variant) => variant?.fields?.content)];
+}
+
+/**
+ * Sections of a page or story that are storyGrids with no curated stories,
+ * including those inside a personalized section's default or variants.
+ */
 function needsLatestStories(entry) {
   const sections = entry?.fields?.sections;
   if (!Array.isArray(sections)) return false;
-  return sections.some(
-    (section) => contentTypeOf(section) === 'storyGrid' && !(section.fields?.stories || []).length,
+  return sections.some((section) =>
+    candidateSections(section).some(
+      (candidate) => contentTypeOf(candidate) === 'storyGrid' && !(candidate.fields?.stories || []).length,
+    ),
   );
 }
 
@@ -200,6 +215,14 @@ async function loadPageData(cda, entry) {
   ]);
   return { entry, siblings, children, latestStories };
 }
+
+/**
+ * Include depth for the home, modular page, story and vehicle queries. It is
+ * 6 because the personalized wrapper adds two link levels (the section, then a
+ * variant) to the deepest existing chain of 4. The sibling prefetch must use
+ * the same value, because the client caches by full URL.
+ */
+export const CONTENT_INCLUDE = 6;
 
 /**
  * Returns the `sys.id` that keys a vehicle family's variants query: the parent
@@ -223,7 +246,7 @@ export async function loadRoute(route, cda) {
     case 'redirect':
       return { view: 'redirect', data: { to: params.to } };
     case 'home': {
-      const entry = await cda.getBySlug('page', 'home');
+      const entry = await cda.getBySlug('page', 'home', CONTENT_INCLUDE);
       if (!entry) return { view: 'notFound', data: { route } };
       // A showcase failure must not break the home page: it just loses the strip.
       const [pageData, showcase] = await Promise.allSettled([loadPageData(cda, entry), cda.getCurrentVehicles()]);
@@ -240,7 +263,7 @@ export async function loadRoute(route, cda) {
       return { view: 'vehicleCategory', data: { entry, vehicles } };
     }
     case 'story': {
-      const entry = await cda.getBySlug('story', params.slug, 4);
+      const entry = await cda.getBySlug('story', params.slug, CONTENT_INCLUDE);
       if (!entry) return { view: 'notFound', data: { route } };
       const latestStories = await cda.getStories(4);
       return { view: 'story', data: { entry, latestStories } };
@@ -250,12 +273,12 @@ export async function loadRoute(route, cda) {
       return { view: 'retailers', data: { retailers } };
     }
     case 'page': {
-      const vehicle = await cda.getBySlug('vehicle', params.slug, 4);
+      const vehicle = await cda.getBySlug('vehicle', params.slug, CONTENT_INCLUDE);
       if (vehicle) {
         const variants = await cda.getVariants(familyRootId(vehicle));
         return { view: 'vehicle', data: { entry: vehicle, variants } };
       }
-      const page = await cda.getBySlug('page', params.slug, 4);
+      const page = await cda.getBySlug('page', params.slug, CONTENT_INCLUDE);
       if (!page) return { view: 'notFound', data: { route } };
       return { view: 'page', data: await loadPageData(cda, page) };
     }

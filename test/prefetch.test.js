@@ -13,7 +13,7 @@ test('siblingSlugs lists the rest of the family, root first, without the current
   assert.deepEqual(siblingSlugs(null), []);
 });
 
-test('prefetchFamily fetches each sibling at include depth 4 through the scheduler and can be cancelled', async () => {
+test('prefetchFamily fetches each sibling at include depth 6 through the scheduler and can be cancelled', async () => {
   const calls = [];
   const cda = { getBySlug: async (...args) => { calls.push(args); return null; } };
   let run;
@@ -23,7 +23,7 @@ test('prefetchFamily fetches each sibling at include depth 4 through the schedul
   assert.deepEqual(calls, [], 'nothing fetched before the scheduler fires');
   run();
   await Promise.resolve();
-  assert.deepEqual(calls, [['vehicle', '750s', 4]]);
+  assert.deepEqual(calls, [['vehicle', '750s', 6]]);
   cancel();
   assert.equal(cancelled.length, 1);
   assert.equal(typeof prefetchFamily(cda, { entry: vehicles.legacy, variants: [] }, { schedule }), 'function', 'no siblings still returns a cancel');

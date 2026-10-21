@@ -36,6 +36,9 @@ import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
 import { initEnquiry } from './js/enquiry.js';
 import { prefetchFamily, warmHeroImages } from './js/prefetch.js';
+import { createLocalProvider, createResolver } from './js/audience.js';
+import { load, recordBoot, recordView, setOverrides, reset, viewFrom } from './js/signals.js';
+import { initPanel } from './js/panel.js';
 import { isFamilySwitch, SPINNER_DELAY_MS, HERO_DECODE_CAP_MS } from './js/swap.js';
 
 const mounts = {
@@ -54,11 +57,21 @@ const state = {
   client: null,
   siteSettings: null,
   categories: [],
+  /** Audience entries from the Delivery API, or an empty list when the fetch failed. */
+  audiences: [],
+  /** True when the audience fetch failed. Every render then shows defaults. */
+  audiencesFailed: false,
+  /** Resolves a visitor profile to audience keys, or null before the audiences load. */
+  resolver: null,
+  /** The audience keys used for the latest render. */
+  matched: new Set(),
   requestId: 0,
   headSet: false,
   cancelPrefetch: () => {},
-  /** The last view shown, as `{ view, data }`, or null before the first view and after an error. */
+  /** The last view shown, as `{ view, data, route }`, or null before the first view and after an error. */
   current: null,
+  /** The demo panel controller, or null before boot mounts it. */
+  panel: null,
 };
 
 function setHead({ title, description } = {}) {
@@ -213,8 +226,20 @@ function updateLangLinks(hash) {
   }
 }
 
+/**
+ * Audience keys for one render, computed from the current profile. A failed
+ * audience fetch gives an empty set, so defaults render even when the stored
+ * profile has overrides.
+ */
+function matchAudiences() {
+  if (state.audiencesFailed || !state.resolver) return new Set();
+  return state.resolver.audiencesFor(load());
+}
+
 function buildContext(client, route) {
   const lang = route.lang;
+  const audiences = matchAudiences();
+  state.matched = audiences;
   return {
     siteSettings: state.siteSettings,
     categories: state.categories,
@@ -233,6 +258,7 @@ function buildContext(client, route) {
     renderBreadcrumbs,
     setHead,
     route,
+    audiences,
   };
 }
 
@@ -349,7 +375,17 @@ async function handleRoute(route, preloaded) {
     updateLangLinks(hash);
     if (!inPlace) window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     mounts.main.focus({ preventScroll: true });
-    state.current = { view, data };
+    state.current = { view, data, route };
+    // Record the view only now: a superseded or failed request returned or threw above.
+    // Recording never starts a render, so the next route sees the updated profile.
+    // A failure here must not replace the rendered page, so it only logs.
+    try {
+      const seen = viewFrom(view, data);
+      if (seen) recordView(seen);
+      state.panel?.refresh();
+    } catch (recordError) {
+      console.warn('view recording or panel refresh failed:', recordError);
+    }
   } catch (error) {
     if (!isCurrent()) return;
     console.error(error);
@@ -365,6 +401,23 @@ async function handleRoute(route, preloaded) {
       document.body.classList.remove('is-loading');
     }
   }
+}
+
+/**
+ * Renders the current route again in place, for example after a demo panel
+ * control changes the profile. It reuses the loaded data and never records a
+ * view, scrolls, moves focus or prefetches. It does not bump the request id,
+ * so a navigation already in flight is not cancelled, and a navigation that
+ * starts later skips this swap.
+ */
+async function rerenderCurrent() {
+  const current = state.current;
+  if (!current) return;
+  const requestId = state.requestId;
+  const isCurrent = () => requestId === state.requestId;
+  const renderer = registry[current.view] || registry.notFound || (() => renderNotFound(current.route));
+  const content = renderer(current.data, buildContext(clientFor(current.route.lang), current.route));
+  await swapInPlace(content, isCurrent);
 }
 
 /** Route for a location hash; in-page anchors (`#main`) fall back to the home route. */
@@ -393,6 +446,8 @@ async function boot() {
 
   rootClient = createClient(config);
   bindShell();
+  // Record the campaign and visit count before the first route loads, so the first render sees them.
+  recordBoot(window.location, navigator);
 
   // Start loading the first route now, so it overlaps the site settings and categories requests.
   const initialHash = window.location.hash || '#/';
@@ -401,7 +456,32 @@ async function boot() {
   // handleRoute awaits this later; mark it handled so an early failure is not reported as unhandled.
   preloaded.catch(() => {});
 
+  // Audiences come through the same locale-bound client the first route uses, so they share its cache.
+  const audiencesLoading = Promise.allSettled([clientFor(initial.lang).getAudiences()]);
+
   await ensureShell(initial.lang, routeHash(initialHash));
+
+  const [audiences] = await audiencesLoading;
+  if (audiences.status === 'fulfilled') {
+    state.audiences = audiences.value;
+  } else {
+    console.warn('audiences unavailable:', audiences.reason);
+    state.audiencesFailed = true;
+  }
+  state.resolver = createResolver({ providers: [createLocalProvider(state.audiences)] });
+
+  const mount = document.createElement('div');
+  mount.id = 'demo-panel';
+  document.body.append(mount);
+  state.panel = initPanel({
+    mount,
+    location: window.location,
+    storage: () => window.sessionStorage,
+    keydownTarget: document,
+    signals: { load, setOverrides, reset },
+    getModel: () => ({ profile: load(), audiences: state.audiences, matched: state.matched, unavailable: state.audiencesFailed }),
+    rerender: () => rerenderCurrent(),
+  });
 
   onRouteChange(handleRoute);
   // The hash may have changed while the shell loaded, before the listener existed. Then discard the preload.

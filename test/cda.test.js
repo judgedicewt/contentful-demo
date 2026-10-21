@@ -215,3 +215,35 @@ test('forLocale adds the locale to every request and shares the cache', async ()
   assert.equal(base.config.locale, undefined);
   assert.equal(typeof ja.forLocale, 'function');
 });
+
+test('a locale-bound client has getAudiences and requests with its locale', async () => {
+  const urls = [];
+  const fakeFetch = async (url) => { urls.push(new URL(url)); return { ok: true, status: 200, json: async () => ({ items: [], includes: {} }) }; };
+  const ja = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch }).forLocale('ja-JP');
+  assert.equal(typeof ja.getAudiences, 'function');
+  await ja.getAudiences();
+  assert.equal(urls[0].searchParams.get('content_type'), 'audience');
+  assert.equal(urls[0].searchParams.get('locale'), 'ja-JP');
+});
+
+test('getAudiences requests audience entries at include 1 with limit 100', async () => {
+  const calls = [];
+  const fakeFetch = async (url) => {
+    calls.push(new URL(url));
+    return { ok: true, status: 200, json: async () => ({ items: [{ sys: { id: 'aud-uk', type: 'Entry' }, fields: { key: 'uk', name: 'United Kingdom' } }], includes: {} }) };
+  };
+  const client = createClient({ spaceId: 'space', deliveryToken: 'tok' }, { fetch: fakeFetch });
+  const audiences = await client.getAudiences();
+  assert.equal(audiences[0].fields.key, 'uk');
+  assert.equal(calls[0].searchParams.get('content_type'), 'audience');
+  assert.equal(calls[0].searchParams.get('include'), '1');
+  assert.equal(calls[0].searchParams.get('limit'), '100');
+});
+
+test('getAudiences returns an empty list, with one warning, before the audience type exists', async () => {
+  const warnings = [];
+  const fakeFetch = async () => ({ ok: false, status: 400, statusText: 'Bad Request', json: async () => ({ details: { errors: [{ name: 'unknownContentType' }] } }) });
+  const client = createClient({ spaceId: 's', deliveryToken: 't' }, { fetch: fakeFetch, warn: (m) => warnings.push(m) });
+  assert.deepEqual(await client.getAudiences(), []);
+  assert.equal(warnings.length, 1);
+});

@@ -142,6 +142,30 @@ const entries = [
     cta: 'link-cta-explore-mcl-6gt',
     theme: 'carbon',
   }),
+  banner('banner-supercar-fans', {
+    eyebrow: 'Supercars',
+    heading: 'Your next supercar is waiting',
+    body: 'The 750S is drawn for the driver. Explore the performance, the design and the detail that set it apart.',
+    image: 'img-750s-hero',
+    cta: 'link-cta-vehicle-750s',
+    theme: 'carbon',
+  }),
+  banner('banner-trackday', {
+    eyebrow: 'Experiences',
+    heading: 'Take it to the circuit',
+    body: 'Spend a day on a circuit with McLaren engineers and professional drivers. Places are limited, so register your interest early.',
+    image: 'img-experience-track-day',
+    cta: 'link-cta-register-track-day',
+    theme: 'carbon',
+  }),
+  banner('banner-mso-returning', {
+    eyebrow: 'Customise',
+    heading: 'Welcome back to MSO',
+    body: 'Pick up where you left off. Revisit your favourite materials and finishes, then build a new specification with our specialists.',
+    image: 'img-mso-banner',
+    cta: 'link-cta-customise',
+    theme: 'colnbrook',
+  }),
 
   // Experience cards and grid
   card('card-winter-ball', {

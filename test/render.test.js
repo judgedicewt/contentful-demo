@@ -10,6 +10,8 @@ import { renderBreadcrumbs, renderHeader, renderFooter, renderError, renderNotFo
 import { registry } from '../site/js/render/index.js';
 import { imageTag, imageSrc, imageSrcset, formatDate, HERO_WIDTHS } from '../site/js/render/common.js';
 import { sortShowcase } from '../site/js/render/home.js';
+import { pick, stampPersonalization } from '../site/js/render/personalized.js';
+import { renderSections } from '../site/js/render/sections.js';
 
 const load = (name) => JSON.parse(readFileSync(new URL(`./fixtures/render-${name}.json`, import.meta.url), 'utf8'));
 const site = load('site');
@@ -943,4 +945,118 @@ test('page sub-navigation strips a full-width colon title prefix', () => {
   const child = { sys: { id: 'c', contentType: { sys: { id: 'page' } } }, fields: { title: 'レガシー：2010年代', slug: 'legacy-2010s', parent, sections: [] } };
   const out = String(registry.page({ entry: child, siblings: [child], children: [] }, ctx));
   assert.match(out, /class="subnav__link" href="#\/ja\/legacy-2010s" aria-current="page">2010年代</);
+});
+
+// ---------------------------------------------------------------------------
+// personalized content
+// ---------------------------------------------------------------------------
+
+const typed = (type, fields, id) => ({ sys: { id, type: 'Entry', contentType: { sys: { type: 'Link', linkType: 'ContentType', id: type } } }, fields });
+const audienceOf = (key) => typed('audience', { name: key, key }, `aud-${key}`);
+const variantOf = (key, content) => typed('contentVariant', { title: `For ${key}`, audience: audienceOf(key), content }, `var-${key}`);
+const wrapperOf = (id, fallback, variants = []) => typed('personalizedContent', { title: `Slot ${id}`, default: fallback, variants }, id);
+const bannerOf = (heading) => typed('bannerButton', { heading, theme: 'carbon' }, `banner-${heading}`);
+const linkOf = (label, url, id) => typed('link', { label, externalUrl: url, style: 'secondary' }, id);
+const recorder = () => { const log = []; return { log, warn: (message) => log.push(message) }; };
+const joined = (list, ctx) => renderSections(list, ctx).map(String).join('');
+
+test('pick returns the first variant whose audience is active, else the default', () => {
+  const slot = wrapperOf('w1', bannerOf('Default'), [variantOf('uk', bannerOf('UK')), variantOf('returning', bannerOf('Returning'))]);
+  const both = pick(slot, new Set(['returning', 'uk']));
+  assert.equal(both.variant, 'uk');
+  assert.equal(both.content.fields.heading, 'UK');
+  assert.equal(pick(slot, new Set(['returning'])).variant, 'returning');
+  assert.deepEqual(pick(slot, new Set()), { content: slot.fields.default, variant: null });
+  assert.equal(pick(slot, undefined).content, slot.fields.default);
+});
+
+test('pick skips broken variants and nested wrappers with one warning each', () => {
+  const { log, warn } = recorder();
+  const slot = wrapperOf('w2', bannerOf('Default'), [
+    null,
+    typed('contentVariant', { title: 'No audience', audience: null, content: bannerOf('A') }, 'v-a'),
+    typed('contentVariant', { title: 'No content', audience: audienceOf('uk'), content: null }, 'v-b'),
+    variantOf('uk', wrapperOf('inner', bannerOf('Inner'))),
+    variantOf('uk', bannerOf('Good')),
+  ]);
+  const picked = pick(slot, new Set(['uk']), { warn });
+  assert.equal(picked.content.fields.heading, 'Good');
+  assert.equal(picked.variant, 'uk');
+  assert.equal(log.length, 4);
+  assert.ok(log.some((message) => /nested/i.test(message)));
+});
+
+test('pick returns no content and one warning when the default does not resolve', () => {
+  const { log, warn } = recorder();
+  const unresolved = wrapperOf('w3', null, [variantOf('uk', bannerOf('UK'))]);
+  assert.deepEqual(pick(unresolved, new Set(), { warn }), { content: null, variant: null });
+  assert.equal(log.length, 1);
+  assert.equal(pick(unresolved, new Set(['uk']), { warn }).variant, 'uk', 'a matching variant does not need the default');
+  const nested = wrapperOf('w4', wrapperOf('inner', bannerOf('Inner')));
+  assert.equal(pick(nested, new Set(), { warn }).content, null);
+  assert.equal(log.length, 2);
+});
+
+test('stampPersonalization marks the first opening tag, even after leading whitespace', () => {
+  const { ctx } = makeCtx();
+  const slot = wrapperOf('pc-1', bannerOf('Default'));
+  const markup = registry.bannerButton(slot.fields.default, ctx);
+  assert.match(String(markup), /^\s+<section /);
+  const stamped = String(stampPersonalization(markup, slot, null));
+  assert.match(stamped, /^\s*<section data-personalized="pc-1" data-variant="default" data-personalized-title="Slot pc-1" class="banner /);
+  assert.equal((stamped.match(/data-personalized=/g) || []).length, 1);
+  assert.match(String(stampPersonalization(markup, slot, 'uk')), /data-variant="uk"/);
+  assert.equal(String(stampPersonalization(html`   `, slot, null)), '', 'empty markup stays empty');
+  assert.equal(String(stampPersonalization(html`plain text`, slot, null)), 'plain text', 'markup with no element tag comes back unchanged');
+  const quoted = wrapperOf('pc-2', bannerOf('x'));
+  quoted.fields.title = 'A "quoted" slot';
+  assert.match(String(stampPersonalization(html`<a href="#/">x</a>`, quoted, null)), /data-personalized-title="A &quot;quoted&quot; slot"/);
+});
+
+test('stampPersonalization returns empty for a plain string, which is never trusted', () => {
+  const slot = wrapperOf('pc-3', bannerOf('x'));
+  assert.equal(String(stampPersonalization('plain text', slot, null)), '');
+  assert.equal(String(stampPersonalization('<section>x</section>', slot, null)), '');
+});
+
+test('renderSections resolves a personalizedContent section from ctx.audiences', () => {
+  const slot = wrapperOf('pc-home', bannerOf('Default banner'), [variantOf('trackday', bannerOf('Trackday banner'))]);
+  const intro = typed('textBlock', { heading: 'Intro', body: { nodeType: 'document', data: {}, content: [] }, variant: 'header' }, 'tb');
+  const fired = joined([intro, slot], makeCtx({ audiences: new Set(['trackday']) }).ctx);
+  assert.match(fired, /Intro[\s\S]*Trackday banner/);
+  assert.match(fired, /data-personalized="pc-home" data-variant="trackday"/);
+  assert.doesNotMatch(fired, /Default banner/);
+  const fallback = joined([slot], makeCtx().ctx);
+  assert.match(fallback, /Default banner/);
+  assert.match(fallback, /data-variant="default"/);
+  assert.equal(joined([wrapperOf('pc-empty', typed('ctaGroup', { heading: 'x', links: [] }, 'cta'))], makeCtx().ctx), '', 'empty markup stays empty');
+  assert.equal(joined([wrapperOf('pc-link', linkOf('L', '#/x', 'l'))], makeCtx().ctx), '', 'a link has no section renderer');
+});
+
+test('vehicle: a personalized MSO banner resolves per audience', () => {
+  const entry = clone(vehicles.full);
+  entry.fields.msoBanner = wrapperOf('pc-mso', entry.fields.msoBanner, [variantOf('returning', bannerOf('Welcome back'))]);
+  const returning = renderView('vehicle', { entry, variants: [] }, { audiences: new Set(['returning']) }).out;
+  assert.match(returning, /data-personalized="pc-mso" data-variant="returning"[^>]*>/);
+  assert.match(returning, /Welcome back/);
+  assert.doesNotMatch(returning, /Make it yours/);
+  const base = renderView('vehicle', { entry, variants: [] }, { audiences: new Set() }).out;
+  assert.match(base, /Make it yours/);
+  assert.match(base, /data-variant="default"/);
+});
+
+test('vehicle: enquiryCta replaces the Enquire button and enquiryUrl is the fallback', () => {
+  const withCta = (cta) => { const entry = clone(vehicles.full); entry.fields.enquiryCta = cta; return entry; };
+  const quiet = { warn: () => {} };
+  const slot = wrapperOf('pc-cta', linkOf('Enquire now', '#/enquire/750s', 'l-default'), [variantOf('uk', linkOf('Visit a UK retailer', '#/retailers', 'l-uk'))]);
+  const uk = renderView('vehicle', { entry: withCta(slot), variants: [] }, { audiences: new Set(['uk']) }).out;
+  assert.match(uk, /<a data-personalized="pc-cta" data-variant="uk" data-personalized-title="Slot pc-cta" class="btn btn-secondary btn--sm" href="#\/retailers">Visit a UK retailer<\/a>/);
+  assert.doesNotMatch(uk, /href="#\/enquire\/750s"[^>]*>Enquire</);
+  const base = renderView('vehicle', { entry: withCta(slot), variants: [] }, { audiences: new Set() }).out;
+  assert.match(base, /data-variant="default"[^>]*>Enquire now</);
+  const direct = renderView('vehicle', { entry: withCta(linkOf('Talk to us', '#/contact', 'l-direct')), variants: [] }).out;
+  assert.match(direct, /class="btn btn-secondary btn--sm" href="#\/contact">Talk to us</);
+  assert.doesNotMatch(direct, /data-personalized/);
+  const unresolved = renderView('vehicle', { entry: withCta(wrapperOf('pc-none', null)), variants: [] }, quiet).out;
+  assert.match(unresolved, /href="#\/enquire\/750s"[^>]*>Enquire</, 'an empty slot falls back to enquiryUrl');
 });
