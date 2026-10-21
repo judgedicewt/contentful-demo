@@ -93,8 +93,8 @@ function renderNavItem(link, index, categories, lang) {
 
 /** Language switcher: the current route in each language; the current one carries aria-current. */
 function renderLangSwitch(lang, hash) {
-  const link = (code, text) => html`<a href="${hashForLang(hash, code)}" hreflang="${code}" lang="${code}" data-lang-link="${code}"${lang === code ? raw(' aria-current="true"') : ''}>${text}</a>`;
-  return html`<nav class="lang-switch" aria-label="${t('language', lang)}">${link('en', 'EN')}${link('ja', '日本語')}</nav>`;
+  const link = (code, text, name) => html`<a href="${hashForLang(hash, code)}" hreflang="${code}" lang="${code}" data-lang-link="${code}" aria-label="${name}"${lang === code ? raw(' aria-current="true"') : ''}>${text}</a>`;
+  return html`<nav class="lang-switch" aria-label="${t('language', lang)}">${link('en', 'EN', 'English')}${link('ja', '日本語', '日本語')}</nav>`;
 }
 
 /** Header: wordmark, main navigation with Models dropdown, retailer link, language switcher. */

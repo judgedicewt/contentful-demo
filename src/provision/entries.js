@@ -98,6 +98,25 @@ async function writeEntry(environment, seed, { request, translations }) {
   return { action: 'updated', entry: updated };
 }
 
+/**
+ * Drops locale values that are empty arrays, then fields left with no locales.
+ * The Management API does not round-trip an empty array, so an unnormalised
+ * comparison would update and republish such an entry on every run.
+ */
+function withoutEmptyArrays(fields) {
+  const result = {};
+  for (const [name, locales] of Object.entries(fields ?? {})) {
+    const kept = Object.fromEntries(
+      Object.entries(locales ?? {}).filter(([, value]) => !(Array.isArray(value) && value.length === 0)),
+    );
+    if (Object.keys(kept).length > 0) result[name] = kept;
+  }
+  return result;
+}
+
 export function sameFields(stored, desired) {
-  return isDeepStrictEqual(toComparable(stored ?? {}), toComparable(desired));
+  return isDeepStrictEqual(
+    withoutEmptyArrays(toComparable(stored ?? {})),
+    withoutEmptyArrays(toComparable(desired ?? {})),
+  );
 }

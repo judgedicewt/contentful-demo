@@ -895,10 +895,10 @@ test('Japanese context renders chrome strings in Japanese and prefixed routes', 
   const { ctx } = makeCtx({ lang: 'ja' });
   const out = String(registry.vehicle({ entry: vehicles.full, variants: vehicles.variants }, ctx));
   assert.ok(out.includes(STRINGS.ja.specifications));
-  assert.ok(out.includes(STRINGS.ja.change_model_variant) || !out.includes('Change model variant'));
+  assert.ok(out.includes(STRINGS.ja.change_model_variant));
   assert.ok(!out.includes('>Specifications<'));
   assert.ok(out.includes('href="#/ja"'));
-  assert.ok(!/href="#\/(?!ja)/.test(out), 'every internal href carries the ja prefix');
+  assert.ok(!/href="#\/(?!ja(\/|"))/.test(out), 'every internal href carries the ja prefix');
   const form = String(registry.enquire(enquireData, ctx));
   assert.ok(form.includes('data-lang="ja"'));
   assert.ok(form.includes(STRINGS.ja.full_name));
@@ -907,11 +907,11 @@ test('Japanese context renders chrome strings in Japanese and prefixed routes', 
 test('header switcher links to the same route in the other language', () => {
   const out = String(renderHeader(site.siteSettings, site.categories, { lang: 'ja', hash: '#/ja/750s' }));
   assert.ok(out.includes('<nav class="lang-switch"'));
-  assert.ok(out.includes('href="#/750s" hreflang="en" lang="en" data-lang-link="en"'));
-  assert.ok(out.includes('href="#/ja/750s" hreflang="ja" lang="ja" data-lang-link="ja" aria-current="true"'));
-  assert.ok(out.includes(`lang="ja" data-lang-link="ja" aria-current="true">日本語<`));
+  assert.ok(out.includes('href="#/750s" hreflang="en" lang="en" data-lang-link="en" aria-label="English"'));
+  assert.ok(out.includes('href="#/ja/750s" hreflang="ja" lang="ja" data-lang-link="ja" aria-label="日本語" aria-current="true"'));
+  assert.ok(out.includes(`lang="ja" data-lang-link="ja" aria-label="日本語" aria-current="true">日本語<`));
   const en = String(renderHeader(site.siteSettings, site.categories));
-  assert.ok(en.includes('data-lang-link="en" aria-current="true"'));
+  assert.ok(en.includes('data-lang-link="en" aria-label="English" aria-current="true"'));
   assert.ok(en.includes('>Skip to content<'));
 });
 
@@ -925,7 +925,7 @@ test('Japanese shell, error and not-found panels use Japanese strings and prefix
   const footer = String(renderFooter(site.siteSettings, { lang: 'ja' }));
   assert.ok(footer.includes(STRINGS.ja.demo_footer_note));
   assert.ok(!footer.includes('Demo site.'));
-  assert.ok(!/href="#\/(?!ja)/.test(footer));
+  assert.ok(!/href="#\/(?!ja(\/|"))/.test(footer));
   const crumbs = String(renderBreadcrumbs([{ label: 'A' }], { lang: 'ja' }));
   assert.ok(crumbs.includes(`aria-label="${STRINGS.ja.breadcrumb}"`));
   const err = String(renderError(new Error('boom'), undefined, { lang: 'ja' }));
@@ -934,7 +934,7 @@ test('Japanese shell, error and not-found panels use Japanese strings and prefix
   const nf = String(renderNotFound({ lang: 'ja', params: { slug: 'x' } }));
   assert.ok(nf.includes(STRINGS.ja.page_not_found));
   assert.ok(nf.includes('href="#/ja"'));
-  assert.ok(!/href="#\/(?!ja)/.test(nf));
+  assert.ok(!/href="#\/(?!ja(\/|"))/.test(nf));
 });
 
 test('page sub-navigation strips a full-width colon title prefix', () => {

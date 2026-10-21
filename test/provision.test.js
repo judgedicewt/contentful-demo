@@ -352,6 +352,10 @@ test('sameFields and sameAssetMetadata decide when a write can be skipped', () =
   const desired = buildEntryFields({ id: 'x', contentType: 'specification', fields: { label: 'a', unit: undefined } });
   assert.ok(sameFields({ label: { 'en-US': 'a' } }, desired));
   assert.ok(!sameFields({ label: { 'en-US': 'b' } }, desired));
+  // the Management API drops empty arrays, so they must not force an update
+  assert.ok(sameFields({ heading: { 'en-US': 'x' } }, { heading: { 'en-US': 'x' }, stories: { 'en-US': [] } }));
+  assert.ok(!sameFields({ stories: { 'en-US': [{ sys: { id: 'a' } }] } }, { stories: { 'en-US': [{ sys: { id: 'b' } }] } }));
+  assert.ok(!sameFields({ stories: { 'en-US': [{ sys: { id: 'a' } }] } }, { stories: { 'en-US': [] } }));
 
   const seed = { id: 'img', title: 'T', description: 'D', file: 'assets/placeholders/img.svg', contentType: 'image/svg+xml' };
   const fields = assetFields(seed, 'img.svg', 'upload-1');

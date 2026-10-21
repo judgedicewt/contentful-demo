@@ -49,9 +49,10 @@ export function segmentsOf(hash) {
     });
 }
 
-/** Prefixes a hash route (`#/...`) with the `ja` segment when `lang` is `'ja'`; anything else is returned unchanged. */
+/** Prefixes a hash route (`#/...`) with the `ja` segment when `lang` is `'ja'`; anything else, including a route that already has the prefix, is returned unchanged. */
 export function withLang(href, lang) {
   if (lang !== 'ja' || typeof href !== 'string' || !href.startsWith('#/')) return href;
+  if (/^#\/ja(\/|$)/i.test(href)) return href;
   return href === '#/' ? '#/ja' : `#/ja/${href.slice(2)}`;
 }
 

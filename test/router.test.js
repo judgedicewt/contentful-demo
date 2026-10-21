@@ -429,6 +429,9 @@ test('withLang and hashForLang', () => {
   assert.equal(withLang('#/750s', 'ja'), '#/ja/750s');
   assert.equal(withLang('#/750s', 'en'), '#/750s');
   assert.equal(withLang('https://example.com/#/x', 'ja'), 'https://example.com/#/x');
+  assert.equal(withLang('#/ja/750s', 'ja'), '#/ja/750s');
+  assert.equal(withLang('#/ja', 'ja'), '#/ja');
+  assert.equal(withLang('#/jaguar', 'ja'), '#/ja/jaguar');
   assert.equal(hashForLang('#/ja/enquire/750s', 'en'), '#/enquire/750s');
   assert.equal(hashForLang('#/enquire/750s', 'ja'), '#/ja/enquire/750s');
   assert.equal(hashForLang('#/ja', 'en'), '#/');
@@ -444,4 +447,5 @@ test('routeFor and linkHref prefix hash routes for ja', () => {
   assert.equal(linkHref(entry('link', { externalUrl: 'https://example.com' }), 'ja'), 'https://example.com');
   assert.equal(linkHref(entry('link', { target: entry('story', { slug: 's' }) }), 'ja'), '#/ja/post/s');
   assert.equal(linkHref(entry('link', { externalUrl: '#/retailers' })), '#/retailers');
+  assert.equal(linkHref(entry('link', { externalUrl: '#/ja/retailers' }), 'ja'), '#/ja/retailers');
 });
