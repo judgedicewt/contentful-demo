@@ -19,6 +19,7 @@ const homeData = load('home');
 const hubData = load('hub');
 const storyData = load('story');
 const retailersData = load('retailers');
+const enquireData = load('enquire');
 
 /** Builds a render context from the real modules with a recording setHead. */
 function makeCtx(overrides = {}) {
@@ -782,4 +783,29 @@ test('cards and tiles crop their images, heroes stay natural', () => {
     assert.match(tag, /fit=fill/);
     assert.match(tag, /h=600/);
   }
+});
+
+test('enquire renderer emits the form contract and preselects the route vehicle', () => {
+  const { ctx, heads } = makeCtx();
+  const out = String(registry.enquire({ ...enquireData, route: { name: 'enquire', params: { slug: '750s' } } }, ctx));
+  assert.match(out, /<form[^>]*data-enquiry-form[^>]*data-endpoint="https:\/\/hook\.fusion\.adobe\.com\/[^"]+"/);
+  for (const name of ['name', 'email', 'phone', 'country', 'model', 'message', 'consent', 'website']) {
+    assert.match(out, new RegExp(`name="${name}"`), `field ${name}`);
+  }
+  assert.match(out, /<option value="750s" selected>750S<\/option>/);
+  assert.match(out, /<option value="gts">GTS<\/option>/);
+  assert.match(out, /data-enquiry-status/);
+  assert.match(out, /data-enquiry-success[^>]*hidden/);
+  assert.match(out, /id="email-error"/);
+  assert.doesNotMatch(out, /<script>alert/);
+  assert.match(out, /&lt;script&gt;/);
+  assert.equal(heads.at(-1).title, 'Enquire about 750S');
+});
+
+test('enquire renderer works without a vehicle', () => {
+  const { ctx } = makeCtx();
+  const out = String(registry.enquire({ ...enquireData, vehicle: null, route: { name: 'enquire', params: { slug: null } } }, ctx));
+  assert.match(out, /<option value="" selected>Select a model<\/option>/);
+  assert.match(out, /<h1[^>]*>Enquire<\/h1>/);
+  assert.match(out, /href="#\/">Back home/);
 });
