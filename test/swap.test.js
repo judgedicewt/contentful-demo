@@ -29,4 +29,5 @@ test('styles name the hero and title for view transitions', () => {
   const css = readFileSync(new URL('../site/styles.css', import.meta.url), 'utf8');
   assert.match(css, /view-transition-name: vehicle-hero/);
   assert.match(css, /view-transition-name: vehicle-title/);
+  assert.match(css, /body\.is-loading/);
 });

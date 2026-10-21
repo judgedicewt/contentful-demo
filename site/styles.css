@@ -1081,6 +1081,29 @@ body.nav-open .site-nav {
   view-transition-name: site-footer;
 }
 
+/* Loading bar: a vehicle page keeps its content while the next page loads, so
+   a thin bar along the bottom edge of the sticky header shows progress. */
+body.is-loading .site-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--papaya), var(--papaya)) no-repeat;
+  background-size: 40% 100%;
+  animation: loading-bar 1.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes loading-bar {
+  from {
+    background-position: -67% 0;
+  }
+
+  to {
+    background-position: 167% 0;
+  }
+}
+
 .hero--vehicle .hero__image {
   view-transition-name: vehicle-hero;
 }
@@ -1094,6 +1117,11 @@ body.nav-open .site-nav {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+
+  body.is-loading .site-header::after {
+    animation: none;
+    background-size: 100% 100%;
   }
 }
 

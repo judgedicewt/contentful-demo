@@ -212,16 +212,28 @@ function waitForHero(markup) {
   return Promise.race([decoded, capped]);
 }
 
-/** Replaces the main content without a loading state, crossfading when the browser can. */
-async function swapInPlace(content) {
+/**
+ * Replaces the main content without a loading state, crossfading when the
+ * browser can. Returns false, leaving the page untouched, when `isCurrent`
+ * reports that a newer navigation has taken over.
+ */
+async function swapInPlace(content, isCurrent) {
   const markup = String(content);
   await waitForHero(markup);
-  const apply = () => showMain(markup, { motion: true });
+  if (!isCurrent()) return false;
+  let applied = false;
+  const apply = () => {
+    // The view transition runs this callback asynchronously, so check again.
+    if (!isCurrent()) return;
+    showMain(markup, { motion: true });
+    applied = true;
+  };
   if (typeof document.startViewTransition === 'function' && !prefersReducedMotion()) {
     await document.startViewTransition(apply).updateCallbackDone;
   } else {
     apply();
   }
+  return applied;
 }
 
 async function handleRoute(route, cda) {
@@ -229,12 +241,23 @@ async function handleRoute(route, cda) {
   if (route.name === 'ignore') return;
   const requestId = (state.requestId += 1);
   const isCurrent = () => requestId === state.requestId;
-  // Fast loads never show the loading indicator.
+  // A vehicle page that may be followed by another vehicle keeps its content
+  // while loading, so a slow load never collapses the page or resets the scroll.
+  const keepContent = state.current?.view === 'vehicle' && route.name === 'page';
+  // Fast loads never show a loading indicator.
   const spinner = setTimeout(() => {
-    if (isCurrent()) showMain(renderLoading());
+    if (!isCurrent()) return;
+    if (keepContent) {
+      mounts.main.setAttribute('aria-busy', 'true');
+      document.body.classList.add('is-loading');
+    } else {
+      showMain(renderLoading());
+    }
   }, SPINNER_DELAY_MS);
   try {
     const { view, data } = await loadRoute(route, cda);
+    // Loading is done: the hero wait below must not trigger the indicator.
+    clearTimeout(spinner);
     if (!isCurrent()) return;
     if (view === 'redirect') {
       navigate(data.to, { replace: true });
@@ -245,9 +268,8 @@ async function handleRoute(route, cda) {
     state.headSet = false;
     const content = renderer(data, buildContext(cda, route));
     if (inPlace) {
-      await swapInPlace(content);
-      // The swap yields, so a newer navigation may have started in the meantime.
-      if (!isCurrent()) return;
+      // The swap yields, so a newer navigation may take over. It then skips the swap.
+      if (!(await swapInPlace(content, isCurrent))) return;
     } else {
       showMain(content, { motion: true });
     }
@@ -265,6 +287,11 @@ async function handleRoute(route, cda) {
     setHead({ title: 'Error' });
   } finally {
     clearTimeout(spinner);
+    // A newer request owns the indicator, and clears it when it finishes.
+    if (isCurrent()) {
+      mounts.main.removeAttribute('aria-busy');
+      document.body.classList.remove('is-loading');
+    }
   }
 }
 
