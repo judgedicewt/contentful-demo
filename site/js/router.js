@@ -15,7 +15,7 @@
  *   /retailers                  → retailers
  *   /enquire, /enquire/:slug    → enquire (falls back to placeholder if the form entry is missing)
  *   /configure/..., /contact, /legal/..., /placeholder/...,
- *   /mcl-6gt                    → placeholder (demo stand-ins for real integrations)
+ *   /nova-6gt                   → placeholder (demo stand-ins for real integrations)
  *   #anything-else              → ignore (in-page anchors such as #main; not a route)
  *   /:a, /:a/:b                 → page (slug is the full path; the loader
  *                                 tries a vehicle with that slug first)
@@ -28,7 +28,7 @@ import { DEFAULT_LANG } from './i18n.js';
 export const DEFAULT_CATEGORY_SLUG = 'supercars';
 
 /** First path segments whose destinations are placeholder routes in the demo. */
-export const PLACEHOLDER_KINDS = new Set(['configure', 'contact', 'legal', 'placeholder', 'mcl-6gt']);
+export const PLACEHOLDER_KINDS = new Set(['configure', 'contact', 'legal', 'placeholder', 'nova-6gt']);
 
 /** Normalises a hash (or path) into an array of decoded segments. */
 export function segmentsOf(hash) {

@@ -60,7 +60,7 @@ function validGroups() {
         {
           id: 'retailer-london',
           contentType: 'retailer',
-          fields: { name: 'McLaren London', city: 'London', country: 'United Kingdom', location: { lat: 51.5, lon: -0.12 }, website: 'https://example.com' },
+          fields: { name: 'Strada Nova London', city: 'London', country: 'United Kingdom', location: { lat: 51.5, lon: -0.12 }, website: 'https://example.com' },
         },
       ],
     },
@@ -500,7 +500,7 @@ test('audience seeds: five audiences with the pinned keys and rules', () => {
   for (const rule of ['campaigns', 'regions', 'minVisits', 'visitorType']) assert.equal(byKey.vip.fields[rule], undefined);
 });
 
-test('personalized seeds wrap the home hero, the home banner, the 750S MSO banner and the 750S enquiry CTA', () => {
+test('personalized seeds wrap the home hero, the home banner, the 750S Su Misura banner and the 750S enquiry CTA', () => {
   const byId = new Map(allSeeds().map((e) => [e.id, e]));
   const keysOf = (id) => byId.get(id).links.variants.map((v) => byId.get(byId.get(v).links.audience).fields.key);
   const contentOf = (id) => byId.get(id).links.variants.map((v) => byId.get(v).links.content);

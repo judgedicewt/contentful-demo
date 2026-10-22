@@ -16,7 +16,7 @@
       "intro": "Tell us which model you are interested in. <script>alert(1)</script>",
       "endpoint": "https://hook.fusion.adobe.com/7hpg8v3lxbu7msjazssngoim6ea9bkhp",
       "submitLabel": "Send enquiry",
-      "consentText": "I agree to McLaren Automotive contacting me about this enquiry. This is a demo: submissions create a request in a test Workfront queue.",
+      "consentText": "I agree to Strada Nova Automobili contacting me about this enquiry. This is a demo: submissions create a request in a test Workfront queue.",
       "successTitle": "Thank you",
       "successBody": "Your enquiry has been received and a request has been raised with our team.",
       "errorBody": "We could not send your enquiry. Please try again in a moment."

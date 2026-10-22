@@ -1,7 +1,7 @@
 /**
  * Placeholder view for demo destinations that have no real page yet:
  * `#/configure/*`, `#/enquire/*`, `#/contact`, `#/legal/*`,
- * `#/placeholder/*` and `#/mcl-6gt`. Data: `{ route, vehicle }`, where
+ * `#/placeholder/*` and `#/nova-6gt`. Data: `{ route, vehicle }`, where
  * `vehicle` is the resolved vehicle for configure/enquire links, or null.
  */
 import { html } from '../dom.js';

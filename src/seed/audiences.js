@@ -43,7 +43,7 @@ const entries = [
   // Content variants
   variant('variant-home-banner-supercar-fans', 'Home banner for supercar fans', 'supercar-fans', 'banner-supercar-fans'),
   variant('variant-home-banner-trackday', 'Home banner for track day prospects', 'trackday', 'banner-trackday'),
-  variant('variant-750s-mso-returning', '750S MSO banner for returning visitors', 'returning', 'banner-mso-returning'),
+  variant('variant-750s-mso-returning', '750S Su Misura banner for returning visitors', 'returning', 'banner-mso-returning'),
   variant('variant-750s-enquiry-uk', '750S enquiry CTA for UK visitors', 'uk', 'link-cta-uk-retailer'),
   variant('variant-home-hero-vip', 'Home hero for VIP guests', 'vip', 'banner-hero-vip'),
   variant('variant-home-hero-trackday', 'Home hero for track day prospects', 'trackday', 'banner-hero-trackday'),
@@ -63,7 +63,7 @@ const entries = [
     'variant-home-banner-supercar-fans',
     'variant-home-banner-trackday',
   ]),
-  personalized('pc-750s-mso-banner', '750S MSO banner', 'banner-mso-generic', ['variant-750s-mso-returning']),
+  personalized('pc-750s-mso-banner', '750S Su Misura banner', 'banner-mso-generic', ['variant-750s-mso-returning']),
   personalized('pc-750s-enquiry-cta', '750S enquiry CTA', 'link-cta-enquire-750s', ['variant-750s-enquiry-uk']),
 ];
 

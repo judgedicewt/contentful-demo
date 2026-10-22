@@ -26,7 +26,7 @@ test('matchRoute: categories', () => {
 });
 
 test('matchRoute: stories', () => {
-  for (const slug of ['750s-five-key-facts', 'artura-spider-performance', 'w1-designed-by-air', 'mso-project-placeholder']) {
+  for (const slug of ['750s-five-key-facts', 'artura-spider-performance', 'w1-designed-by-air', 'su-misura-project']) {
     assert.deepEqual(matchRoute(`#/post/${slug}`), { name: 'story', params: { slug }, lang: 'en' });
   }
 });
@@ -43,7 +43,7 @@ test('matchRoute: pages and vehicles share the page route with the full path as 
     'ownership',
     'ownership/roadside-assistance',
     'experiences',
-    'mso',
+    'su-misura',
     'artura',
     'artura-spider',
     '750s',
@@ -86,7 +86,7 @@ test('matchRoute: placeholder destinations at any depth', () => {
   assert.deepEqual(matchRoute('#/contact'), { name: 'placeholder', params: { path: 'contact', kind: 'contact', slug: null }, lang: 'en' });
   assert.deepEqual(matchRoute('#/legal/privacy'), { name: 'placeholder', params: { path: 'legal/privacy', kind: 'legal', slug: 'privacy' }, lang: 'en' });
   assert.deepEqual(matchRoute('#/placeholder/winter-ball'), { name: 'placeholder', params: { path: 'placeholder/winter-ball', kind: 'placeholder', slug: 'winter-ball' }, lang: 'en' });
-  assert.deepEqual(matchRoute('#/mcl-6gt'), { name: 'placeholder', params: { path: 'mcl-6gt', kind: 'mcl-6gt', slug: null }, lang: 'en' });
+  assert.deepEqual(matchRoute('#/nova-6gt'), { name: 'placeholder', params: { path: 'nova-6gt', kind: 'nova-6gt', slug: null }, lang: 'en' });
   const deep = matchRoute('#/configure/750s/extra/segments');
   assert.equal(deep.name, 'placeholder');
   assert.equal(deep.params.path, 'configure/750s/extra/segments');
@@ -231,7 +231,7 @@ test('loadRoute: home, category, story, retailers, redirect, notFound', async ()
   const supercars = entry('vehicleCategory', { slug: 'supercars' }, 'cat-supercars');
   const artura = entry('vehicle', { slug: 'artura' }, 'v-artura');
   const story = entry('story', { slug: 'w1-designed-by-air' }, 's-w1');
-  const retailer = entry('retailer', { name: 'McLaren London' });
+  const retailer = entry('retailer', { name: 'Strada Nova London' });
   const latest = [entry('story', { slug: 'latest' })];
   const cda = fakeCda({
     page: { home },
@@ -311,7 +311,7 @@ test('loadRoute: placeholder resolves the vehicle for configure only', async () 
   assert.equal(unknown.data.vehicle, null);
 
   const before = cda.calls.length;
-  for (const hash of ['#/contact', '#/legal/privacy', '#/placeholder/gts', '#/mcl-6gt']) {
+  for (const hash of ['#/contact', '#/legal/privacy', '#/placeholder/gts', '#/nova-6gt']) {
     const result = await loadRoute(matchRoute(hash), cda);
     assert.equal(result.view, 'placeholder', hash);
     assert.equal(result.data.vehicle, null, hash);

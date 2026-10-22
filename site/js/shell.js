@@ -8,6 +8,7 @@
  *   [data-dropdown-toggle]  opens the dropdown that follows it (aria-expanded)
  *   [data-nav-close]        closes the mobile menu
  */
+import { brandLockup, brandMark, BRAND_NAME } from './brand.js';
 import { html, raw } from './dom.js';
 import { routeFor, linkHref, isExternalHref, withLang, hashForLang } from './router.js';
 import { t, DEFAULT_LANG, LANGS, STRINGS } from './i18n.js';
@@ -100,7 +101,7 @@ function renderLangSwitch(lang, hash) {
 /** Header: wordmark, main navigation with Models dropdown, retailer link, language switcher. */
 export function renderHeader(siteSettings, categories = [], { lang = DEFAULT_LANG, hash = '#/' } = {}) {
   const fields = siteSettings?.fields || {};
-  const siteName = fields.siteName || 'McLaren';
+  const siteName = fields.siteName || BRAND_NAME;
   let navigation = (fields.mainNavigation || []).filter(Boolean);
   const cats = (categories || []).filter((category) => category && category.fields);
   if (navigation.length === 0 && cats.length > 0) {
@@ -112,7 +113,7 @@ export function renderHeader(siteSettings, categories = [], { lang = DEFAULT_LAN
     <a class="skip-link" href="#main">${t('skip_to_content', lang)}</a>
     <header class="site-header">
       <div class="site-header__inner">
-        <a class="wordmark" href="${withLang('#/', lang)}" aria-label="${t('site_home', lang, { siteName })}">${siteName}</a>
+        <a class="wordmark" href="${withLang('#/', lang)}" aria-label="${t('site_home', lang, { siteName })}">${brandLockup({ name: siteName })}</a>
         <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
           <span class="nav-toggle__bars" aria-hidden="true"></span>
           <span class="nav-toggle__label">${t('menu', lang)}</span>
@@ -145,7 +146,7 @@ function renderLinkGroup(group, lang) {
 /** Footer: link groups, social links, newsletter text, legal links. */
 export function renderFooter(siteSettings, { lang = DEFAULT_LANG } = {}) {
   const fields = siteSettings?.fields || {};
-  const siteName = fields.siteName || 'McLaren';
+  const siteName = fields.siteName || BRAND_NAME;
   const groups = (fields.footerGroups || []).filter(Boolean);
   const social = (fields.socialLinks || []).filter(Boolean);
   const legal = (fields.legalLinks || []).filter(Boolean);
@@ -176,6 +177,7 @@ export function renderFooter(siteSettings, { lang = DEFAULT_LANG } = {}) {
                 : ''}
             </div>`
           : ''}
+        <a class="footer__brand" href="${withLang('#/', lang)}" aria-label="${t('site_home', lang, { siteName })}">${brandLockup({ className: 'brand-lockup brand-lockup--footer', name: siteName })}</a>
         <div class="footer__bottom">
           <p class="footer__copyright">&copy; ${String(year)} ${siteName}. ${fields.locale ? html`<span class="footer__locale">${fields.locale}</span>` : ''}</p>
           ${legal.length
@@ -208,7 +210,7 @@ export function renderBreadcrumbs(trail = [], { lang = DEFAULT_LANG } = {}) {
 export function renderLoading(message = 'Loading') {
   return html`
     <div class="status status--loading" role="status" aria-live="polite">
-      <span class="spinner" aria-hidden="true"></span>
+      ${brandMark({ className: 'brand-mark status__mark' })}
       <span>${message}…</span>
     </div>`;
 }

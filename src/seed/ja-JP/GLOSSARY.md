@@ -2,7 +2,9 @@
 
 ## Glossary
 
-Use マクラーレン for McLaren. Keep model names, MSO, GTS, W1, Artura, Senna,
+Use ストラーダ・ノヴァ for Strada Nova, ストラーダ・ノヴァ・アウトモビリ for
+Strada Nova Automobili, and スー・ミズーラ for Su Misura, the bespoke division.
+Keep model names, GTS, W1, Artura, Senna,
 Speedtail, GT4, F1, P1, LT, Spider, and Coupé in Latin script. Use these terms:
 スーパーカー, グランドツアラー, アルティメット (Ultimate Series),
 モータースポーツ, レガシー, オーナーシップ, and エクスペリエンス.
@@ -41,6 +43,6 @@ One term per concept across every overlay:
 - Register interest: 関心を登録. Discover: 詳しく見る. Continue your journey: 旅を続ける.
 - Carbon tub: カーボンモノコック. Folding hard top: 折りたたみ式ハードトップ.
 - Car model lines stay in Latin script: Super Series, Sports Series, Longtail, Coupé, Spider.
-- Site name and every SEO title suffix: マクラーレン・オートモーティブ デモ.
+- Site name and every SEO title suffix: ストラーダ・ノヴァ.
 - Write Latin names and numbers directly against Japanese text, with no spaces.
 - Page titles of the form "Parent: Child" use a full-width colon (：).

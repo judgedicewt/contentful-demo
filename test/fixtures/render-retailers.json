@@ -13,7 +13,7 @@
         }
       },
       "fields": {
-        "name": "McLaren Paris",
+        "name": "Strada Nova Paris",
         "city": "Paris",
         "country": "France",
         "address": "1 Rue de Rivoli\n75001 Paris",
@@ -38,7 +38,7 @@
         }
       },
       "fields": {
-        "name": "McLaren London",
+        "name": "Strada Nova London",
         "city": "London",
         "country": "United Kingdom",
         "address": "14 Hanover Mews\nMayfair\nLondon W1S 1AA",
@@ -63,7 +63,7 @@
         }
       },
       "fields": {
-        "name": "McLaren Manchester",
+        "name": "Strada Nova Manchester",
         "city": "Manchester",
         "country": "United Kingdom",
         "address": "2 Deansgate\nManchester",

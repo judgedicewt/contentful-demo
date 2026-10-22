@@ -4,7 +4,7 @@ const entries = [
     id: 'site',
     contentType: 'siteSettings',
     fields: {
-      siteName: 'McLaren Automotive demo',
+      siteName: 'Strada Nova',
       locale: 'gl_en',
       newsletterText: 'Subscribe for new models, stories and events. Placeholder form: no data is collected.',
     },

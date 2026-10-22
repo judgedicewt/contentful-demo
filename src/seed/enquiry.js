@@ -5,11 +5,11 @@ const entries = [
     contentType: 'enquiryForm',
     fields: {
       title: 'Enquire',
-      intro: 'Tell us which model you are interested in and a McLaren retailer will be in touch.',
+      intro: 'Tell us which model you are interested in and a Strada Nova retailer will be in touch.',
       endpoint: 'https://hook.fusion.adobe.com/7hpg8v3lxbu7msjazssngoim6ea9bkhp',
       submitLabel: 'Send enquiry',
       consentText:
-        'I agree to McLaren Automotive contacting me about this enquiry. This is a demo: submissions create a request in a test Workfront queue.',
+        'I agree to Strada Nova Automobili contacting me about this enquiry. This is a demo: submissions create a request in a test Workfront queue.',
       successTitle: 'Thank you',
       successBody: 'Your enquiry has been received and a request has been raised with our team.',
       errorBody: 'We could not send your enquiry. Please try again in a moment.',

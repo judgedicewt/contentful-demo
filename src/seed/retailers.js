@@ -18,7 +18,7 @@ const retailer = (id, { name, city, country, address, phone, lat, lon }) => ({
 
 const entries = [
   retailer('retailer-london', {
-    name: 'McLaren London',
+    name: 'Strada Nova London',
     city: 'London',
     country: 'United Kingdom',
     address: '14 Hanover Mews\nMayfair\nLondon W1S 1AA',
@@ -27,7 +27,7 @@ const entries = [
     lon: -0.1276,
   }),
   retailer('retailer-manchester', {
-    name: 'McLaren Manchester',
+    name: 'Strada Nova Manchester',
     city: 'Manchester',
     country: 'United Kingdom',
     address: '220 Deansgate\nManchester M3 4BG',
@@ -36,7 +36,7 @@ const entries = [
     lon: -2.2426,
   }),
   retailer('retailer-munich', {
-    name: 'McLaren München',
+    name: 'Strada Nova München',
     city: 'Munich',
     country: 'Germany',
     address: 'Maximilianstrasse 31\n80539 München',
@@ -45,7 +45,7 @@ const entries = [
     lon: 11.582,
   }),
   retailer('retailer-miami', {
-    name: 'McLaren Miami',
+    name: 'Strada Nova Miami',
     city: 'Miami',
     country: 'United States',
     address: '3801 NE 2nd Avenue\nMiami, FL 33137',
@@ -54,7 +54,7 @@ const entries = [
     lon: -80.1918,
   }),
   retailer('retailer-los-angeles', {
-    name: 'McLaren Los Angeles',
+    name: 'Strada Nova Los Angeles',
     city: 'Los Angeles',
     country: 'United States',
     address: '8800 Sunset Boulevard\nWest Hollywood, CA 90069',
@@ -63,7 +63,7 @@ const entries = [
     lon: -118.2437,
   }),
   retailer('retailer-dubai', {
-    name: 'McLaren Dubai',
+    name: 'Strada Nova Dubai',
     city: 'Dubai',
     country: 'United Arab Emirates',
     address: 'Sheikh Zayed Road\nAl Quoz, Dubai',

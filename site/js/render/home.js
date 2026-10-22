@@ -3,6 +3,7 @@
  * hero comes from the page's `heroBanner` when set (personalized per audience),
  * otherwise it is titled with the site name.
  */
+import { brandMark, BRAND_NAME } from '../brand.js';
 import { html } from '../dom.js';
 import { clip, contentTypeOf, imageTag, isEntry, linkButton, present } from './common.js';
 import { renderPersonalized } from './personalized.js';
@@ -27,6 +28,7 @@ function bannerHero(banner, ctx) {
     <section class="hero hero--full hero--home theme-carbon" aria-labelledby="page-title" data-hero>
       ${isEntry(f.image) ? html`<div class="hero__media">${imageTag(ctx, f.image, { w: 1920, className: 'hero__image', eager: true })}</div>` : ''}
       <div class="hero__content container">
+        ${brandMark({ className: 'brand-mark hero__mark' })}
         ${f.eyebrow ? html`<span class="eyebrow">${f.eyebrow}</span>` : ''}
         <h1 id="page-title" class="hero__title">${f.heading}</h1>
         ${f.body ? html`<p class="hero__strapline">${f.body}</p>` : ''}
@@ -101,7 +103,7 @@ function showcase(ctx, vehicles) {
 
 export function render(data, ctx) {
   const entry = data.entry;
-  const siteName = ctx.siteSettings?.fields?.siteName || 'McLaren';
+  const siteName = ctx.siteSettings?.fields?.siteName || BRAND_NAME;
   ctx.setHead({ title: siteName, description: entry.fields.seo?.fields?.description || clip(entry.fields.title) });
   return html`
     ${heroFromBanner(ctx, entry) || hero(ctx, entry, siteName)}

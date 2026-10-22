@@ -30,7 +30,7 @@ const FAQS = {
     ['What makes the GTS a grand tourer?', 'The chassis is tuned for ride comfort at pace. The seats, the cabin acoustics and the stowage suit long distances without taking away the driver involvement.'],
   ],
   w1: [
-    ['What does the W1 add to the McLaren ultimate lineage?', 'It follows the F1 and the P1 as the most advanced road car McLaren builds. Active aerodynamics, a hybrid V8 and a one-piece carbon structure are designed as one system.'],
+    ['What does the W1 add to the Strada Nova ultimate lineage?', 'It follows the F1 and the P1 as the most advanced road car Strada Nova builds. Active aerodynamics, a hybrid V8 and a one-piece carbon structure are designed as one system.'],
     ['Is the W1 available to order?', 'Production is limited. Use the enquiry link to contact a retailer, who will confirm availability and specification options.'],
   ],
 };

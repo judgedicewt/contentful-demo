@@ -34,7 +34,7 @@ export const CATEGORY_SEEDS = [
     fields: {
       name: 'Hypercars',
       slug: 'ultimate',
-      intro: 'The most advanced road cars McLaren builds. Production is limited, the engineering is uncompromised and each model sets the direction for those that follow.',
+      intro: 'The most advanced road cars Strada Nova builds. Production is limited, the engineering is uncompromised and each model sets the direction for those that follow.',
       order: 3,
     },
     assets: { heroImage: 'img-cat-ultimate' },

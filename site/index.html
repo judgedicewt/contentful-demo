@@ -3,16 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="McLaren-style demo site modelled in Contentful and rendered in the browser.">
+  <meta name="description" content="Strada Nova, a supercar demo site modelled in Contentful and rendered in the browser.">
   <meta name="color-scheme" content="dark">
   <meta name="theme-color" content="#111214">
-  <title>McLaren</title>
-  <link rel="icon" href="data:,">
+  <title>Strada Nova</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://cdn.contentful.com" crossorigin>
   <link rel="preconnect" href="https://images.ctfassets.net">
   <link rel="modulepreload" href="app.js">
   <link rel="modulepreload" href="js/audience.js">
+  <link rel="modulepreload" href="js/brand.js">
   <link rel="modulepreload" href="js/cda.js">
   <link rel="modulepreload" href="js/dom.js">
   <link rel="modulepreload" href="js/enquiry.js">
@@ -52,7 +53,7 @@
 
   <main id="main" class="site-main" tabindex="-1">
     <div class="status status--loading" role="status" aria-live="polite">
-      <span class="spinner" aria-hidden="true"></span>
+      <img class="status__mark" src="brand/strada-nova-mark.svg" width="48" height="48" alt="">
       <span>Loading…</span>
     </div>
   </main>

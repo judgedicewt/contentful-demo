@@ -31,6 +31,7 @@ import {
   renderError,
   renderNotFound,
 } from './js/shell.js';
+import { BRAND_NAME } from './js/brand.js';
 import { html, raw, escapeHtml } from './js/dom.js';
 import { registry } from './js/render/index.js';
 import { initMotion } from './js/motion.js';
@@ -76,7 +77,7 @@ const state = {
 
 function setHead({ title, description } = {}) {
   state.headSet = true;
-  const siteName = state.siteSettings?.fields?.siteName || 'McLaren';
+  const siteName = state.siteSettings?.fields?.siteName || BRAND_NAME;
   if (title !== undefined) {
     document.title = title && title !== siteName ? `${title} | ${siteName}` : siteName;
   }

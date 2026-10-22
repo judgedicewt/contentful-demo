@@ -535,6 +535,111 @@ blockquote {
   text-decoration: none;
 }
 
+/* Brand ------------------------------------------------------------------
+   The Strada Nova mark (site/js/brand.js): two curves with a subtle papaya
+   gradient. */
+
+.brand-mark {
+  display: block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.brand-lockup .brand-mark {
+  width: 1.9em;
+  height: 1.9em;
+}
+
+.brand-mark {
+  transition: transform 0.4s ease;
+}
+
+.wordmark:hover .brand-mark,
+.footer__brand:hover .brand-mark {
+  transform: translateX(3px);
+}
+
+.footer__brand {
+  display: inline-block;
+  margin-bottom: var(--space-6);
+  color: var(--paper);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+}
+
+.footer__brand:hover {
+  text-decoration: none;
+}
+
+.status__mark {
+  width: 48px;
+  height: 48px;
+  animation: brand-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes brand-pulse {
+  50% {
+    opacity: 0.35;
+    transform: translateY(-4px);
+  }
+}
+
+.hero__mark {
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--space-5);
+}
+
+.not-found__mark {
+  width: 6rem;
+  height: 6rem;
+  margin-bottom: var(--space-6);
+}
+
+/* A short brand-gradient line leads every eyebrow. */
+.eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 1.6em;
+  height: 2px;
+  margin-right: 0.75em;
+  vertical-align: 0.3em;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #ff7a00, #ffa64d);
+}
+
+/* The mark watermarks each "Continue your journey" group. */
+.cta-group {
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-group::after {
+  content: "";
+  position: absolute;
+  right: -2rem;
+  bottom: -3rem;
+  width: 16rem;
+  height: 16rem;
+  background: url("brand/strada-nova-mark.svg") center / contain no-repeat;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.cta-group > * {
+  position: relative;
+  z-index: 1;
+}
+
 .nav-toggle {
   display: inline-flex;
   align-items: center;
@@ -1059,6 +1164,10 @@ body.nav-open .site-nav {
   .spinner {
     animation: none;
     border-top-color: var(--line);
+  }
+
+  .brand-mark {
+    transition: none;
   }
 }
 

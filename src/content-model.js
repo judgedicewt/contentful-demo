@@ -381,7 +381,7 @@ export const CONTENT_TYPES = [
       { id: 'performanceBody', name: 'Performance body', type: 'Text', localized: true },
       { id: 'lineageIntro', name: 'Lineage intro', type: 'Text', localized: true },
       entryLinks('lineage', 'Lineage', ['lineageEntry']),
-      entryLink('msoBanner', 'MSO banner', ['bannerButton', 'personalizedContent']),
+      entryLink('msoBanner', 'Su Misura banner', ['bannerButton', 'personalizedContent']),
       entryLinks('relatedStories', 'Related stories', ['story']),
       entryLinks('faqs', 'FAQs', ['faqItem']),
       {

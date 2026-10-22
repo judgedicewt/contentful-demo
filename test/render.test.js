@@ -96,7 +96,7 @@ test('vehicle: hero, sub-nav, statement and head', () => {
   assert.match(out, /remove everything the car does not need/);
   assert.match(out, /Watch the film/);
   assert.match(out, /href="https:\/\/example.com\/films\/750s"/);
-  assert.deepEqual(heads, [{ title: '750S | McLaren supercar', description: 'The McLaren 750S.' }]);
+  assert.deepEqual(heads, [{ title: '750S | Strada Nova supercar', description: 'The Strada Nova 750S.' }]);
 });
 
 test('vehicle: hero image offers a srcset of HERO_WIDTHS at 100vw', () => {
@@ -271,10 +271,10 @@ test('vehicle: featured specs become tiles in array order and the table is group
   assert.match(out, /Revised turbochargers/);
 });
 
-test('vehicle: MSO banner, lineage, related stories and FAQs', () => {
+test('vehicle: Su Misura banner, lineage, related stories and FAQs', () => {
   const { out } = renderView('vehicle', { entry: vehicles.full, variants: [] });
   assert.match(out, /Make it yours/);
-  assert.match(out, /href="https:\/\/example.com\/mso"[^>]*>Customise with MSO</);
+  assert.match(out, /href="https:\/\/example.com\/mso"[^>]*>Customise with Su Misura</);
   const timeline = out.match(/<ol class="timeline">[\s\S]*?<\/ol>/)[0];
   assert.equal((timeline.match(/class="timeline__item"/g) || []).length, 3);
   assert.match(timeline, /timeline__year">2020</);
@@ -330,9 +330,9 @@ test('category: tabs, header, product cards, banner and journey group', () => {
   assert.match(out, /href="#\/enquire\/artura"[^>]*>Enquire</);
   assert.match(out, /href="#\/configure\/750s"[^>]*>Configure</);
   assert.match(out, /A lightweight V8 supercar\./);
-  assert.match(out, /McL 6GT/);
+  assert.match(out, /Nova 6GT/);
   assert.match(out, /Continue your journey/);
-  assert.match(out, /href="#\/mso"/);
+  assert.match(out, /href="#\/su-misura"/);
   assert.match(out, /href="#\/retailers"/);
   assert.match(out, /href="#\/post\/artura-spider-performance"/, 'first related story is linked');
   assert.match(out, /<a href="#\/current-models\/supercars">Current models<\/a>/);
@@ -356,7 +356,7 @@ test('category: omits the story link when no vehicle has stories and handles no 
 test('page: full hero, kicker, breadcrumbs from the parent chain and head', () => {
   const { out, heads } = renderView('page', pageData);
   assert.match(out, /class="hero hero--full hero--page/);
-  assert.match(out, /<span class="eyebrow">McLaren ownership<\/span>/);
+  assert.match(out, /<span class="eyebrow">Strada Nova ownership<\/span>/);
   assert.match(out, /<h1[^>]*>Ownership: roadside assistance<\/h1>/);
   assert.match(out, /<a href="#\/ownership">Ownership<\/a>/);
   assert.match(out, /aria-current="page">Ownership: roadside assistance<\/li>/);
@@ -427,7 +427,7 @@ test('sections: text blocks, image blocks and banners carry their content', () =
   assert.match(out, /alt="Inline two"/, 'alt falls back to the asset title');
   assert.match(out, /theme-carbon[^>]*>\s*<div class="banner__media">/);
   assert.match(out, /href="https:\/\/example.com\/mso"[^>]*target="_blank"[^>]*>Learn more</);
-  assert.match(out, /<span class="eyebrow">MSO<\/span>/);
+  assert.match(out, /<span class="eyebrow">Su Misura<\/span>/);
 });
 
 test('sections: a text block with an empty body omits the richtext wrapper', () => {
@@ -479,9 +479,9 @@ test('sections: section renderers can be called directly with a ctx extra', () =
 test('home: no breadcrumbs, site name in hero and head', () => {
   const { out, heads } = renderView('home', homeData);
   assert.doesNotMatch(out, /breadcrumbs/);
-  assert.match(out, /<h1[^>]*>McLaren<\/h1>/);
+  assert.match(out, /<h1[^>]*>Strada Nova<\/h1>/);
   assert.match(out, /Engineered around the driver/);
-  assert.deepEqual(heads, [{ title: 'McLaren', description: 'Supercars engineered around the driver.' }]);
+  assert.deepEqual(heads, [{ title: 'Strada Nova', description: 'Supercars engineered around the driver.' }]);
 });
 
 test('home renders the showcase strip', () => {
@@ -511,7 +511,7 @@ test('home hero uses the taller variant', () => {
   const { out } = renderView('home', homeData);
   assert.match(out, /class="hero hero--full hero--home theme-carbon"/);
   assert.match(out, /data-hero/);
-  assert.match(out, /<h1[^>]*>McLaren<\/h1>/);
+  assert.match(out, /<h1[^>]*>Strada Nova<\/h1>/);
   assert.doesNotMatch(out, /hero__strapline/, 'the first text block heading is not repeated in the hero');
 });
 
@@ -589,8 +589,8 @@ test('retailers: grouped by country with address, phone, website and map link', 
     out,
     /href="https:\/\/www.openstreetmap.org\/\?mlat=51.5072&amp;mlon=-0.1276#map=14\/51.5072\/-0.1276"[^>]*>View on map</,
   );
-  assert.match(out, /<h3 class="retailer__name">McLaren Paris<\/h3>/);
-  assert.deepEqual(heads, [{ title: 'Find a retailer', description: 'Find a McLaren retailer near you.' }]);
+  assert.match(out, /<h3 class="retailer__name">Strada Nova Paris<\/h3>/);
+  assert.deepEqual(heads, [{ title: 'Find a retailer', description: 'Find a Strada Nova retailer near you.' }]);
 });
 
 test('retailers: skips the map link without a location', () => {
@@ -631,11 +631,11 @@ test('placeholder: titles per kind, with and without a vehicle', () => {
   assert.equal(titleOf({ kind: 'configure', slug: null, path: 'configure' }), 'Configurator');
   assert.equal(titleOf({ kind: 'enquire', slug: '750s', path: 'enquire/750s' }, vehicles.full), 'Enquire about 750S');
   assert.equal(titleOf({ kind: 'enquire', slug: null, path: 'enquire' }), 'Enquire');
-  assert.equal(titleOf({ kind: 'contact', slug: null, path: 'contact' }), 'Contact McLaren');
+  assert.equal(titleOf({ kind: 'contact', slug: null, path: 'contact' }), 'Contact Strada Nova');
   assert.equal(titleOf({ kind: 'legal', slug: 'privacy', path: 'legal/privacy' }), 'Legal: privacy');
   assert.equal(titleOf({ kind: 'legal', slug: null, path: 'legal' }), 'Legal');
   assert.equal(titleOf({ kind: 'placeholder', slug: 'careers', path: 'placeholder/careers' }), 'Coming soon');
-  assert.equal(titleOf({ kind: 'mcl-6gt', slug: null, path: 'mcl-6gt' }), 'Coming soon');
+  assert.equal(titleOf({ kind: 'nova-6gt', slug: null, path: 'nova-6gt' }), 'Coming soon');
   const { out } = renderView('placeholder', { route: { name: 'placeholder', params: { kind: 'contact', slug: null, path: 'contact' } }, vehicle: null });
   assert.doesNotMatch(out, /Back to /, 'no vehicle, no back-to-vehicle button');
 });
@@ -1033,7 +1033,7 @@ test('renderSections resolves a personalizedContent section from ctx.audiences',
   assert.equal(joined([wrapperOf('pc-link', linkOf('L', '#/x', 'l'))], makeCtx().ctx), '', 'a link has no section renderer');
 });
 
-test('vehicle: a personalized MSO banner resolves per audience', () => {
+test('vehicle: a personalized Su Misura banner resolves per audience', () => {
   const entry = clone(vehicles.full);
   entry.fields.msoBanner = wrapperOf('pc-mso', entry.fields.msoBanner, [variantOf('returning', bannerOf('Welcome back'))]);
   const returning = renderView('vehicle', { entry, variants: [] }, { audiences: new Set(['returning']) }).out;
@@ -1072,7 +1072,7 @@ test('home: a personalized heroBanner replaces the site-name hero per audience',
   assert.match(track, /<h1 id="page-title" class="hero__title">Track hero<\/h1>/);
   assert.match(track, /<p class="hero__strapline">On the circuit.<\/p>/);
   assert.match(track, /class="btn-group hero__actions"><a [^>]*href="#\/enquire">Register</);
-  assert.doesNotMatch(track, /<h1[^>]*>McLaren<\/h1>/);
+  assert.doesNotMatch(track, /<h1[^>]*>Strada Nova<\/h1>/);
   const base = renderView('home', withHero(slot), { audiences: new Set() }).out;
   assert.match(base, /data-variant="default"/);
   assert.match(base, /<h1[^>]*>Default hero<\/h1>/);
@@ -1080,5 +1080,5 @@ test('home: a personalized heroBanner replaces the site-name hero per audience',
   assert.match(direct, /<h1[^>]*>Plain hero<\/h1>/);
   assert.doesNotMatch(direct, /data-personalized/);
   const broken = renderView('home', withHero(wrapperOf('pc-none', null)), { warn: () => {} }).out;
-  assert.match(broken, /<h1[^>]*>McLaren<\/h1>/, 'an empty slot falls back to the site-name hero');
+  assert.match(broken, /<h1[^>]*>Strada Nova<\/h1>/, 'an empty slot falls back to the site-name hero');
 });

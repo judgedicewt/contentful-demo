@@ -74,12 +74,12 @@ const entries = [
   header(
     'text-home-intro',
     'Engineered around the driver',
-    'Every McLaren starts with a carbon fibre tub and a single question. What does the driver need? The answer is lighter, quicker and more direct.',
+    'Every Strada Nova starts with a carbon fibre tub and a single question. What does the driver need? The answer is lighter, quicker and more direct.',
   ),
   header(
     'text-legacy-intro',
     'Past models',
-    'Each McLaren road car is a step in one continuous line. Start with the cars that set the standard, then follow the decades.',
+    'Each Strada Nova road car is a step in one continuous line. Start with the cars that set the standard, then follow the decades.',
   ),
   header(
     'text-legacy-2010s-intro',
@@ -94,12 +94,12 @@ const entries = [
   header(
     'text-ownership-intro',
     'Ownership',
-    'Your McLaren is built to be driven. Service, support and the road beyond are designed with the same care.',
+    'Your Strada Nova is built to be driven. Service, support and the road beyond are designed with the same care.',
   ),
   header(
     'text-roadside-intro',
     'Roadside assistance',
-    'If something goes wrong, help is one call away. Cover is available in every market where McLaren is sold.',
+    'If something goes wrong, help is one call away. Cover is available in every market where Strada Nova is sold.',
   ),
   text(
     'text-roadside-contacts',
@@ -118,8 +118,8 @@ const entries = [
   ),
   header(
     'text-mso-intro',
-    'McLaren Special Operations',
-    'MSO builds the McLaren that only you will own. Choose the materials, the finish and the detail. The engineers do the rest.',
+    'Strada Nova Su Misura',
+    'Su Misura builds the Strada Nova that only you will own. Choose the materials, the finish and the detail. The engineers do the rest.',
   ),
 
   // Images
@@ -129,14 +129,14 @@ const entries = [
   banner('banner-mso-generic', {
     eyebrow: 'Customise',
     heading: 'Make it yours',
-    body: 'McLaren Special Operations turns a specification into a signature. Colour, carbon and craft, built to your brief.',
+    body: 'Strada Nova Su Misura turns a specification into a signature. Colour, carbon and craft, built to your brief.',
     image: 'img-mso-banner',
     cta: 'link-cta-customise',
     theme: 'colnbrook',
   }),
   banner('banner-mcl-6gt', {
     eyebrow: 'Legend-Inspired',
-    heading: 'The McL 6GT concept',
+    heading: 'The Nova 6GT concept',
     body: 'A long-tail grand tourer that borrows the proportions of a Le Mans legend. One concept, drawn for the road.',
     image: 'img-mcl-6gt-banner',
     cta: 'link-cta-explore-mcl-6gt',
@@ -153,14 +153,14 @@ const entries = [
   banner('banner-trackday', {
     eyebrow: 'Experiences',
     heading: 'Take it to the circuit',
-    body: 'Spend a day on a circuit with McLaren engineers and professional drivers. Places are limited, so register your interest early.',
+    body: 'Spend a day on a circuit with Strada Nova engineers and professional drivers. Places are limited, so register your interest early.',
     image: 'img-experience-track-day',
     cta: 'link-cta-register-track-day',
     theme: 'carbon',
   }),
   banner('banner-mso-returning', {
     eyebrow: 'Customise',
-    heading: 'Welcome back to MSO',
+    heading: 'Welcome back to Su Misura',
     body: 'Pick up where you left off. Revisit your favourite materials and finishes, then build a new specification with our specialists.',
     image: 'img-mso-banner',
     cta: 'link-cta-customise',
@@ -169,7 +169,7 @@ const entries = [
 
   // Home hero banners: the default and one per audience (see pc-home-hero)
   banner('banner-hero-home', {
-    heading: 'McLaren Automotive demo',
+    heading: 'Strada Nova',
     image: 'img-home-hero',
     theme: 'carbon',
   }),
@@ -184,7 +184,7 @@ const entries = [
   banner('banner-hero-trackday', {
     eyebrow: 'Track day',
     heading: 'Your day on the circuit starts here',
-    body: 'Choose your date, pick your car and spend the day on track with McLaren instructors.',
+    body: 'Choose your date, pick your car and spend the day on track with Strada Nova instructors.',
     image: 'img-artura-gt4-hero',
     cta: 'link-cta-register-track-day',
     theme: 'carbon',
@@ -199,8 +199,8 @@ const entries = [
   }),
   banner('banner-hero-uk', {
     eyebrow: 'United Kingdom',
-    heading: 'McLaren, close to home',
-    body: 'Book a test drive at a McLaren retailer near you.',
+    heading: 'Strada Nova, close to home',
+    body: 'Book a test drive at a Strada Nova retailer near you.',
     image: 'img-gts-hero',
     cta: 'link-cta-uk-retailer',
     theme: 'carbon',
@@ -217,7 +217,7 @@ const entries = [
   // Experience cards and grid
   card('card-winter-ball', {
     title: 'Winter Ball',
-    body: 'An evening of McLaren design and engineering, set in the depth of winter. Invitation only.',
+    body: 'An evening of Strada Nova design and engineering, set in the depth of winter. Invitation only.',
     image: 'img-experience-winter-ball',
     cta: 'link-cta-discover-winter-ball',
   }),
@@ -229,7 +229,7 @@ const entries = [
   }),
   card('card-track-day', {
     title: 'Track Day',
-    body: 'A full day on a circuit with McLaren engineers and professional drivers. Your car, or ours.',
+    body: 'A full day on a circuit with Strada Nova engineers and professional drivers. Your car, or ours.',
     image: 'img-experience-track-day',
     cta: 'link-cta-register-track-day',
   }),
@@ -247,7 +247,7 @@ const entries = [
 
   // Story grids
   storyGrid('stories-latest', 'Latest stories'),
-  storyGrid('stories-mso', 'MSO stories', ['story-mso-project-placeholder']),
+  storyGrid('stories-mso', 'Su Misura stories', ['story-mso-project-placeholder']),
 
   // "Continue your journey" groups
   ctaGroup('cta-home', ['link-cta-explore-supercars', 'link-cta-customise', 'link-cta-stories', 'link-cta-find-retailer']),

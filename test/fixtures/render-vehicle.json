@@ -600,7 +600,7 @@
           }
         },
         "fields": {
-          "eyebrow": "McLaren Special Operations",
+          "eyebrow": "Strada Nova Su Misura",
           "heading": "Make it yours",
           "body": "Bespoke colour, materials and detail.",
           "image": {
@@ -609,8 +609,8 @@
               "type": "Asset"
             },
             "fields": {
-              "title": "MSO banner",
-              "description": "MSO banner artwork",
+              "title": "Su Misura banner",
+              "description": "Su Misura banner artwork",
               "file": {
                 "url": "https://images.ctfassets.net/demo/img-mso/img-mso.jpg",
                 "contentType": "image/jpeg",
@@ -637,7 +637,7 @@
               }
             },
             "fields": {
-              "label": "Customise with MSO",
+              "label": "Customise with Su Misura",
               "externalUrl": "https://example.com/mso",
               "style": "primary"
             }
@@ -722,7 +722,7 @@
           "fields": {
             "title": "W1: designed by air",
             "slug": "w1-designed-by-air",
-            "kicker": "MSO",
+            "kicker": "Su Misura",
             "publishDate": "2026-05-01",
             "standfirst": "Standfirst for W1: designed by air.",
             "heroImage": {
@@ -835,8 +835,8 @@
           }
         },
         "fields": {
-          "title": "750S | McLaren supercar",
-          "description": "The McLaren 750S."
+          "title": "750S | Strada Nova supercar",
+          "description": "The Strada Nova 750S."
         }
       }
     }

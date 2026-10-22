@@ -29,7 +29,7 @@ const CURRENT = [
     year: 2021,
     tagline: 'Hybrid by design',
     statement:
-      'The Artura is the first McLaren built around a high-performance hybrid powertrain. A new carbon architecture, a lighter V6 and an electric motor produce 680 PS and answer every input at once.',
+      'The Artura is the first Strada Nova built around a high-performance hybrid powertrain. A new carbon architecture, a lighter V6 and an electric motor produce 680 PS and answer every input at once.',
     shortDescription:
       'A high-performance hybrid supercar. A twin-turbo V6, an electric motor and a new carbon architecture combine for 680 PS.',
     performanceHeading: 'One system, instant response',
@@ -54,7 +54,7 @@ const CURRENT = [
     performanceHeading: 'Coupé output, open cabin',
     performanceBody:
       'The Spider keeps the coupé powertrain and the coupé chassis. The roof mechanism adds a little mass, and the engineering team offsets it elsewhere.',
-    lineageIntro: 'Open-top McLarens have always shared the structure of their coupé siblings.',
+    lineageIntro: 'Open-top Strada Novas have always shared the structure of their coupé siblings.',
     stories: ['story-artura-spider-performance'],
   },
   {
@@ -110,7 +110,7 @@ const CURRENT = [
     performanceHeading: 'Pace that lasts',
     performanceBody:
       'The V8 delivers 635 PS and 630 Nm across a wide band. The chassis settles at motorway speed and sharpens as the road tightens.',
-    lineageIntro: 'The GTS is the latest car in a line of McLaren grand tourers.',
+    lineageIntro: 'The GTS is the latest car in a line of Strada Nova grand tourers.',
     stories: ['story-mso-project-placeholder'],
   },
   {
@@ -129,7 +129,7 @@ const CURRENT = [
     performanceHeading: '1,275 PS, 350 km/h',
     performanceBody:
       'The hybrid V8 and the electric motor produce a combined 1,275 PS. Active aerodynamics adjust continuously to hold the car on the road at speed.',
-    lineageIntro: 'The W1 is the third McLaren to carry the ultimate badge, after the F1 and the P1.',
+    lineageIntro: 'The W1 is the third Strada Nova to carry the ultimate badge, after the F1 and the P1.',
     stories: ['story-w1-designed-by-air', 'story-mso-project-placeholder'],
   },
 ].map((vehicle) => ({ ...vehicle, status: 'current' }));

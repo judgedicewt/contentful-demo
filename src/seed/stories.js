@@ -19,7 +19,7 @@ const STORIES = [
     inline: 'img-story-750s-facts-inline',
     caption: 'The 750S carries its weight low and close to the driver.',
     first: doc(
-      p('The 750S is a lighter, sharper development of the McLaren supercar. Five facts show where the gains came from.'),
+      p('The 750S is a lighter, sharper development of the Strada Nova supercar. Five facts show where the gains came from.'),
       ul(
         'Power: 750 PS from a 4.0 litre twin-turbocharged V8.',
         'Weight: around 30 kg less than the car it replaces.',
@@ -35,7 +35,7 @@ const STORIES = [
     ),
     cta: 'link-cta-vehicle-750s',
     related: ['vehicle-750s', 'vehicle-750s-spider'],
-    seoDescription: 'Five engineering facts that explain the McLaren 750S.',
+    seoDescription: 'Five engineering facts that explain the Strada Nova 750S.',
   },
   {
     id: 'story-artura-spider-performance',
@@ -59,7 +59,7 @@ const STORIES = [
     ),
     cta: 'link-cta-vehicle-artura-spider',
     related: ['vehicle-artura-spider', 'vehicle-artura'],
-    seoDescription: 'How the McLaren Artura Spider delivers performance with the roof down.',
+    seoDescription: 'How the Strada Nova Artura Spider delivers performance with the roof down.',
   },
   {
     id: 'story-w1-designed-by-air',
@@ -83,21 +83,21 @@ const STORIES = [
     ),
     cta: 'link-cta-vehicle-w1',
     related: ['vehicle-w1'],
-    seoDescription: 'How airflow shaped the design of the McLaren W1.',
+    seoDescription: 'How airflow shaped the design of the Strada Nova W1.',
   },
   {
     id: 'story-mso-project-placeholder',
     short: 'mso',
-    slug: 'mso-project-placeholder',
-    title: 'MSO project: one commission, built to brief',
-    kicker: 'MSO',
+    slug: 'su-misura-project',
+    title: 'Su Misura project: one commission, built to brief',
+    kicker: 'Su Misura',
     publishDate: '2026-09-03',
-    standfirst: 'How a bespoke McLaren moves from first conversation to the final stitch.',
+    standfirst: 'How a bespoke Strada Nova moves from first conversation to the final stitch.',
     hero: 'img-story-mso-hero',
     inline: 'img-story-mso-inline',
     caption: 'Samples are tested against the car before a finish is approved.',
     first: doc(
-      p('Every MSO commission begins with a conversation. The client describes a feeling, a place or a memory.'),
+      p('Every Su Misura commission begins with a conversation. The client describes a feeling, a place or a memory.'),
       p('The team turns that into colour, materials and detail. Placeholder story: replace with a real project.'),
     ),
     second: doc(
@@ -107,7 +107,7 @@ const STORIES = [
     ),
     cta: 'link-cta-customise',
     related: ['vehicle-750s', 'vehicle-gts'],
-    seoDescription: 'A placeholder MSO project story.',
+    seoDescription: 'A placeholder Su Misura project story.',
   },
 ];
 
@@ -130,7 +130,7 @@ for (const s of STORIES) {
   seos.push({
     id: `seo-story-${s.short}`,
     contentType: 'seoMetadata',
-    fields: { title: `${s.title} | McLaren Automotive demo`, description: s.seoDescription, noIndex: false },
+    fields: { title: `${s.title} | Strada Nova`, description: s.seoDescription, noIndex: false },
     assets: { ogImage: s.hero },
   });
   stories.push({

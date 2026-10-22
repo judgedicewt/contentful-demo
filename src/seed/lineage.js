@@ -22,15 +22,15 @@ const LINEAGE = {
   '750s-spider': [
     [2020, '765LT', 'The Longtail benchmark for mass and aerodynamic efficiency in the Super Series.', 'img-lineage-765lt', 'vehicle-765lt'],
     [2017, '720S', 'The first Super Series car with the 4.0L V8 and a tub that carried the structure alone.', 'img-lineage-720s', 'vehicle-720s'],
-    [1992, 'F1', 'A road car engineered without compromise. Its carbon monocoque set the direction for every McLaren after it.', 'img-lineage-f1', 'vehicle-f1'],
+    [1992, 'F1', 'A road car engineered without compromise. Its carbon monocoque set the direction for every Strada Nova after it.', 'img-lineage-f1', 'vehicle-f1'],
   ],
   gts: [
-    [2019, 'GT', 'The first McLaren grand tourer. A carbon tub, a V8 and luggage space for two.', null, null],
-    [2015, '570GT', 'A Sports Series coupé with a glass tailgate and extra stowage. The start of the long-distance McLaren.', null, null],
+    [2019, 'GT', 'The first Strada Nova grand tourer. A carbon tub, a V8 and luggage space for two.', null, null],
+    [2015, '570GT', 'A Sports Series coupé with a glass tailgate and extra stowage. The start of the long-distance Strada Nova.', null, null],
   ],
   w1: [
     [2013, 'P1', 'A hybrid hypercar with active aerodynamics. The W1 develops the same ideas with ten more years of data.', 'img-lineage-p1', 'vehicle-p1'],
-    [1992, 'F1', 'The original ultimate McLaren. One driver at the centre, no compromise in the structure.', 'img-lineage-f1', 'vehicle-f1'],
+    [1992, 'F1', 'The original ultimate Strada Nova. One driver at the centre, no compromise in the structure.', 'img-lineage-f1', 'vehicle-f1'],
   ],
 };
 

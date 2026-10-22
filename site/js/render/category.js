@@ -30,7 +30,7 @@ function journey(ctx, vehicles) {
       <div class="container">
         <h2 class="cta-group__title" data-reveal>${ctx.t('continue_your_journey')}</h2>
         <div class="btn-group">
-          ${anchor(ctx.href('#/mso'), 'btn btn-secondary', ctx.t('personalise_with_mso'))}
+          ${anchor(ctx.href('#/su-misura'), 'btn btn-secondary', ctx.t('personalise_with_mso'))}
           ${story ? anchor(ctx.routeFor(story), 'btn btn-secondary', ctx.t('read_latest_story')) : ''}
           ${anchor(ctx.href('#/retailers'), 'btn btn-secondary', ctx.t('find_a_retailer'))}
         </div>
