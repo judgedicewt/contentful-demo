@@ -432,6 +432,7 @@ export const CONTENT_TYPES = [
       { id: 'kicker', name: 'Kicker', type: 'Symbol', localized: true },
       imageAsset('heroImage', 'Hero image'),
       symbolIn('heroStyle', 'Hero style', ['full', 'compact'], defaultValue('compact')),
+      entryLink('heroBanner', 'Hero banner', ['bannerButton', 'personalizedContent']),
       entryLink('parent', 'Parent', ['page']),
       { id: 'order', name: 'Order', type: 'Integer' },
       entryLinks('sections', 'Sections', [...SECTION_TYPES, 'personalizedContent']),

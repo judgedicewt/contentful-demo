@@ -5,7 +5,7 @@
  * ID conventions:
  *   text-<page>-<n|intro>   text blocks (variant header for intros)
  *   imgblock-<name>         image blocks
- *   banner-*                banners (banner-mso-generic, banner-mcl-6gt)
+ *   banner-*                banners (banner-mso-generic, banner-mcl-6gt, banner-hero-*)
  *   card-*, grid-*          cards, cardGrid and vehicleGrid
  *   stories-*               story grids
  *   cta-*                   "Continue your journey" groups
@@ -165,6 +165,53 @@ const entries = [
     image: 'img-mso-banner',
     cta: 'link-cta-customise',
     theme: 'colnbrook',
+  }),
+
+  // Home hero banners: the default and one per audience (see pc-home-hero)
+  banner('banner-hero-home', {
+    heading: 'McLaren Automotive demo',
+    image: 'img-home-hero',
+    theme: 'carbon',
+  }),
+  banner('banner-hero-vip', {
+    eyebrow: 'Private preview',
+    heading: 'The W1, reserved for you',
+    body: 'As a VIP guest, you are invited to a private viewing of the W1 before it goes on public display.',
+    image: 'img-w1-hero',
+    cta: 'link-cta-vehicle-w1',
+    theme: 'carbon',
+  }),
+  banner('banner-hero-trackday', {
+    eyebrow: 'Track day',
+    heading: 'Your day on the circuit starts here',
+    body: 'Choose your date, pick your car and spend the day on track with McLaren instructors.',
+    image: 'img-artura-gt4-hero',
+    cta: 'link-cta-register-track-day',
+    theme: 'carbon',
+  }),
+  banner('banner-hero-supercar-fans', {
+    eyebrow: 'Picked for you',
+    heading: 'More supercars to explore',
+    body: 'You have been looking at our supercars. Compare the Artura, the 750S and their Spider versions.',
+    image: 'img-750s-spider-hero',
+    cta: 'link-cta-explore-supercars',
+    theme: 'carbon',
+  }),
+  banner('banner-hero-uk', {
+    eyebrow: 'United Kingdom',
+    heading: 'McLaren, close to home',
+    body: 'Book a test drive at a McLaren retailer near you.',
+    image: 'img-gts-hero',
+    cta: 'link-cta-uk-retailer',
+    theme: 'carbon',
+  }),
+  banner('banner-hero-returning', {
+    eyebrow: 'Welcome back',
+    heading: 'Pick up where you left off',
+    body: 'Good to see you again. Explore the latest models, or register your interest when you are ready.',
+    image: 'img-artura-hero',
+    cta: 'link-cta-register-interest',
+    theme: 'carbon',
   }),
 
   // Experience cards and grid

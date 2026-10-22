@@ -71,6 +71,34 @@ export default {
     heading: 'McL 6GTコンセプト',
     body: 'ル・マンの伝説のプロポーションを受け継ぐ、ロングテールのグランドツアラーです。一つのコンセプトを、公道のために描きました。',
   },
+  'banner-hero-home': {
+    heading: 'マクラーレン・オートモーティブ デモ',
+  },
+  'banner-hero-vip': {
+    eyebrow: 'プライベート・プレビュー',
+    heading: 'W1を、あなたのために',
+    body: 'VIPゲストの皆様を、一般公開に先駆けたW1のプライベート・ビューイングにご招待します。',
+  },
+  'banner-hero-trackday': {
+    eyebrow: 'トラックデイ',
+    heading: 'サーキットでの一日は、ここから',
+    body: '日程とお車を選び、マクラーレンのインストラクターと共にサーキットで一日をお過ごしください。',
+  },
+  'banner-hero-supercar-fans': {
+    eyebrow: 'あなたへのおすすめ',
+    heading: 'さらにスーパーカーを探す',
+    body: 'スーパーカーをご覧いただきありがとうございます。アルトゥーラ、750S、そしてそれぞれのスパイダーを比べてみてください。',
+  },
+  'banner-hero-uk': {
+    eyebrow: 'イギリス',
+    heading: 'マクラーレンを、もっと身近に',
+    body: 'お近くのマクラーレン販売店で試乗をご予約ください。',
+  },
+  'banner-hero-returning': {
+    eyebrow: 'おかえりなさい',
+    heading: '前回の続きから',
+    body: '再びのご来訪ありがとうございます。最新モデルをご覧いただくか、準備ができたら関心を登録してください。',
+  },
   'banner-supercar-fans': {
     eyebrow: 'スーパーカー',
     heading: 'あなたを待つ、次のスーパーカー',

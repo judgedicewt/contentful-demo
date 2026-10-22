@@ -1244,6 +1244,10 @@ body.is-loading .site-header::after {
   color: var(--paper);
 }
 
+.hero--home .hero__actions {
+  margin: var(--space-5) 0 0;
+}
+
 .showcase__track.carousel__track {
   gap: var(--space-4);
   padding-bottom: var(--space-4);

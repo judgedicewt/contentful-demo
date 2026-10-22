@@ -7,6 +7,7 @@ const PAGES = [
     slug: 'home',
     heroStyle: 'full',
     hero: 'img-home-hero',
+    heroBanner: 'pc-home-hero',
     sections: ['text-home-intro', 'pc-home-banner', 'stories-latest', 'cta-home'],
     description: 'Supercars, Grand Tourers and Hypercars engineered around the driver.',
   },
@@ -102,7 +103,12 @@ for (const page of PAGES) {
       heroStyle: page.heroStyle ?? 'compact',
       ...(page.order ? { order: page.order } : {}),
     },
-    links: { ...(page.parent ? { parent: page.parent } : {}), sections: page.sections, seo: seoId },
+    links: {
+      ...(page.parent ? { parent: page.parent } : {}),
+      ...(page.heroBanner ? { heroBanner: page.heroBanner } : {}),
+      sections: page.sections,
+      seo: seoId,
+    },
     assets: { heroImage: page.hero },
   });
 }

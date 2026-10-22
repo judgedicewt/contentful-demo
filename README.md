@@ -221,7 +221,7 @@ management or preview token here.
 Editors define audiences in Contentful and attach alternate content to them.
 The site works out which audiences a visitor belongs to from signals collected
 in the browser, then renders the matching variant. Editors can personalize
-sections on pages and stories, the vehicle MSO banner, and the vehicle enquire
+the home page hero, sections on pages and stories, the vehicle MSO banner, and the vehicle enquire
 call to action. The
 [audience personalization design](docs/superpowers/specs/2026-10-21-audience-personalization-design.md)
 records the reasoning behind the feature.
@@ -235,9 +235,16 @@ records the reasoning behind the feature.
 3. Create a `contentVariant` that pairs the audience with that entry.
 4. Create a `personalizedContent` entry with the original section as `default`
    and the variants in `variants`. Place it in the page's `sections` list where
-   the original was, or in the vehicle's `msoBanner` or `enquiryCta` field. The
-   variants of an `msoBanner` must be `bannerButton` entries, and the variants
-   of an `enquiryCta` must be `link` entries.
+   the original was, in the home page's `heroBanner` field, or in the vehicle's
+   `msoBanner` or `enquiryCta` field. The variants of a `heroBanner` or an
+   `msoBanner` must be `bannerButton` entries, and the variants of an
+   `enquiryCta` must be `link` entries.
+
+The home page hero comes from `heroBanner` when that field is set. The chosen
+banner fills the full-height hero with its image, eyebrow, heading, body, and
+call to action. Without `heroBanner`, the hero shows the page's hero image and
+the site name. The seeded `pc-home-hero` slot has a variant for every audience,
+so each audience changes the first screen of the site.
 
 Nesting is not supported. A variant or default that is itself a
 `personalizedContent` entry is not rendered, and the console logs a warning.

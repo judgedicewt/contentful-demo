@@ -45,8 +45,20 @@ const entries = [
   variant('variant-home-banner-trackday', 'Home banner for track day prospects', 'trackday', 'banner-trackday'),
   variant('variant-750s-mso-returning', '750S MSO banner for returning visitors', 'returning', 'banner-mso-returning'),
   variant('variant-750s-enquiry-uk', '750S enquiry CTA for UK visitors', 'uk', 'link-cta-uk-retailer'),
+  variant('variant-home-hero-vip', 'Home hero for VIP guests', 'vip', 'banner-hero-vip'),
+  variant('variant-home-hero-trackday', 'Home hero for track day prospects', 'trackday', 'banner-hero-trackday'),
+  variant('variant-home-hero-supercar-fans', 'Home hero for supercar fans', 'supercar-fans', 'banner-hero-supercar-fans'),
+  variant('variant-home-hero-uk', 'Home hero for UK visitors', 'uk', 'banner-hero-uk'),
+  variant('variant-home-hero-returning', 'Home hero for returning visitors', 'returning', 'banner-hero-returning'),
 
   // Personalized content slots
+  personalized('pc-home-hero', 'Home hero', 'banner-hero-home', [
+    'variant-home-hero-vip',
+    'variant-home-hero-trackday',
+    'variant-home-hero-supercar-fans',
+    'variant-home-hero-uk',
+    'variant-home-hero-returning',
+  ]),
   personalized('pc-home-banner', 'Home banner', 'banner-mcl-6gt', [
     'variant-home-banner-supercar-fans',
     'variant-home-banner-trackday',

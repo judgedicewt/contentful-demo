@@ -1,6 +1,11 @@
-/** Home: full-height hero titled with the site name, model showcase strip, then the page sections. */
+/**
+ * Home: full-height hero, model showcase strip, then the page sections. The
+ * hero comes from the page's `heroBanner` when set (personalized per audience),
+ * otherwise it is titled with the site name.
+ */
 import { html } from '../dom.js';
-import { clip, imageTag, isEntry, present } from './common.js';
+import { clip, contentTypeOf, imageTag, isEntry, linkButton, present } from './common.js';
+import { renderPersonalized } from './personalized.js';
 import { renderSections } from './sections.js';
 
 function hero(ctx, entry, siteName) {
@@ -13,6 +18,31 @@ function hero(ctx, entry, siteName) {
         <h1 id="page-title" class="hero__title">${siteName}</h1>
       </div>
     </section>`;
+}
+
+/** A bannerButton rendered as the home hero: its image, eyebrow, heading, body and CTA. */
+function bannerHero(banner, ctx) {
+  const f = banner.fields;
+  return html`
+    <section class="hero hero--full hero--home theme-carbon" aria-labelledby="page-title" data-hero>
+      ${isEntry(f.image) ? html`<div class="hero__media">${imageTag(ctx, f.image, { w: 1920, className: 'hero__image', eager: true })}</div>` : ''}
+      <div class="hero__content container">
+        ${f.eyebrow ? html`<span class="eyebrow">${f.eyebrow}</span>` : ''}
+        <h1 id="page-title" class="hero__title">${f.heading}</h1>
+        ${f.body ? html`<p class="hero__strapline">${f.body}</p>` : ''}
+        ${isEntry(f.cta) ? html`<div class="btn-group hero__actions">${linkButton(ctx, f.cta, 'primary')}</div>` : ''}
+      </div>
+    </section>`;
+}
+
+/** The hero from `heroBanner`, or '' when it is unset or resolves to nothing. */
+function heroFromBanner(ctx, entry) {
+  const banner = entry.fields.heroBanner;
+  if (!isEntry(banner)) return '';
+  if (contentTypeOf(banner) === 'personalizedContent') {
+    return renderPersonalized(banner, ctx, (content) => (contentTypeOf(content) === 'bannerButton' ? bannerHero(content, ctx) : ''));
+  }
+  return contentTypeOf(banner) === 'bannerButton' ? bannerHero(banner, ctx) : '';
 }
 
 function showcaseCard(ctx, vehicle) {
@@ -74,7 +104,7 @@ export function render(data, ctx) {
   const siteName = ctx.siteSettings?.fields?.siteName || 'McLaren';
   ctx.setHead({ title: siteName, description: entry.fields.seo?.fields?.description || clip(entry.fields.title) });
   return html`
-    ${hero(ctx, entry, siteName)}
+    ${heroFromBanner(ctx, entry) || hero(ctx, entry, siteName)}
     ${showcase(ctx, data.showcase)}
     ${renderSections(entry.fields.sections, ctx, { latestStories: data.latestStories })}`;
 }

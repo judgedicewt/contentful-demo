@@ -1060,3 +1060,25 @@ test('vehicle: enquiryCta replaces the Enquire button and enquiryUrl is the fall
   const unresolved = renderView('vehicle', { entry: withCta(wrapperOf('pc-none', null)), variants: [] }, quiet).out;
   assert.match(unresolved, /href="#\/enquire\/750s"[^>]*>Enquire</, 'an empty slot falls back to enquiryUrl');
 });
+
+test('home: a personalized heroBanner replaces the site-name hero per audience', () => {
+  const withHero = (heroBanner) => ({ ...homeData, entry: { ...homeData.entry, fields: { ...homeData.entry.fields, heroBanner } } });
+  const hero = (heading, extra = {}) => typed('bannerButton', { heading, theme: 'carbon', ...extra }, `banner-${heading}`);
+  const slot = wrapperOf('pc-home-hero', hero('Default hero'), [
+    variantOf('trackday', hero('Track hero', { eyebrow: 'Track day', body: 'On the circuit.', cta: linkOf('Register', '#/enquire', 'l-reg') })),
+  ]);
+  const track = renderView('home', withHero(slot), { audiences: new Set(['trackday']) }).out;
+  assert.match(track, /<section data-personalized="pc-home-hero" data-variant="trackday"[^>]*class="hero hero--full hero--home theme-carbon"/);
+  assert.match(track, /<h1 id="page-title" class="hero__title">Track hero<\/h1>/);
+  assert.match(track, /<p class="hero__strapline">On the circuit.<\/p>/);
+  assert.match(track, /class="btn-group hero__actions"><a [^>]*href="#\/enquire">Register</);
+  assert.doesNotMatch(track, /<h1[^>]*>McLaren<\/h1>/);
+  const base = renderView('home', withHero(slot), { audiences: new Set() }).out;
+  assert.match(base, /data-variant="default"/);
+  assert.match(base, /<h1[^>]*>Default hero<\/h1>/);
+  const direct = renderView('home', withHero(hero('Plain hero'))).out;
+  assert.match(direct, /<h1[^>]*>Plain hero<\/h1>/);
+  assert.doesNotMatch(direct, /data-personalized/);
+  const broken = renderView('home', withHero(wrapperOf('pc-none', null)), { warn: () => {} }).out;
+  assert.match(broken, /<h1[^>]*>McLaren<\/h1>/, 'an empty slot falls back to the site-name hero');
+});

@@ -500,13 +500,17 @@ test('audience seeds: five audiences with the pinned keys and rules', () => {
   for (const rule of ['campaigns', 'regions', 'minVisits', 'visitorType']) assert.equal(byKey.vip.fields[rule], undefined);
 });
 
-test('personalized seeds wrap the home banner, the 750S MSO banner and the 750S enquiry CTA', () => {
+test('personalized seeds wrap the home hero, the home banner, the 750S MSO banner and the 750S enquiry CTA', () => {
   const byId = new Map(allSeeds().map((e) => [e.id, e]));
   const keysOf = (id) => byId.get(id).links.variants.map((v) => byId.get(byId.get(v).links.audience).fields.key);
   const contentOf = (id) => byId.get(id).links.variants.map((v) => byId.get(v).links.content);
   assert.deepEqual(byId.get('page-home').links.sections, ['text-home-intro', 'pc-home-banner', 'stories-latest', 'cta-home']);
   assert.equal(byId.get('pc-home-banner').links.default, 'banner-mcl-6gt');
   assert.deepEqual(keysOf('pc-home-banner'), ['supercar-fans', 'trackday']);
+  assert.equal(byId.get('page-home').links.heroBanner, 'pc-home-hero');
+  assert.equal(byId.get('pc-home-hero').links.default, 'banner-hero-home');
+  assert.deepEqual(keysOf('pc-home-hero'), ['vip', 'trackday', 'supercar-fans', 'uk', 'returning']);
+  assert.ok(contentOf('pc-home-hero').every((id) => byId.get(id).contentType === 'bannerButton'), 'every hero variant is a banner');
   const coupe = byId.get('vehicle-750s');
   assert.equal(coupe.links.msoBanner, 'pc-750s-mso-banner');
   assert.equal(coupe.links.enquiryCta, 'pc-750s-enquiry-cta');
