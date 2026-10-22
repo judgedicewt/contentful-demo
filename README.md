@@ -199,7 +199,7 @@ such as a stacked lockup or one-color versions, use the optional prompt and
 replacement steps in
 [`docs/brand/figma-logo-prompt.md`](docs/brand/figma-logo-prompt.md).
 
-`site/js/brand.js` renders the mark inline, and the header, footer, home hero,
+`site/js/brand.js` renders the mark inline, and the header, footer,
 loading state, and 404 page use it. `site/favicon.svg` is a heavier version
 for small sizes, and `site/brand/strada-nova-mark.svg` is the file that the
 first loading screen and the "Continue your journey" watermark use. Every

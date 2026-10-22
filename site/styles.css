@@ -593,12 +593,6 @@ blockquote {
   }
 }
 
-.hero__mark {
-  width: 3.5rem;
-  height: 3.5rem;
-  margin-bottom: var(--space-5);
-}
-
 .not-found__mark {
   width: 6rem;
   height: 6rem;
