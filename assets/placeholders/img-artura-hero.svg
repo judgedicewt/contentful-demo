@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="Artura hero placeholder">
-<title>Artura hero (placeholder)</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-label="Gavia hero placeholder">
+<title>Gavia hero (placeholder)</title>
 <defs>
 <linearGradient id="g-img-artura-hero" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141414"/><stop offset="1" stop-color="#222222"/></linearGradient>
 <pattern id="t-img-artura-hero" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#ffffff" stroke-width="1" stroke-opacity="0.05"/></pattern>
@@ -11,7 +11,7 @@
 <g font-family="system-ui, sans-serif" fill="#f4f4f4">
 <rect x="173" y="844" width="50" height="4" fill="#ff8000"/>
 <text x="173" y="884" font-size="21" letter-spacing="4.6" fill="#9c9c9c">HERO · 1920 × 1080</text>
-<text x="173" y="959" font-size="56" font-weight="600" letter-spacing="5.6">ARTURA HERO</text>
+<text x="173" y="959" font-size="56" font-weight="600" letter-spacing="5.6">GAVIA HERO</text>
 <rect x="1529" y="121" width="218" height="46" rx="23" fill="none" stroke="#9c9c9c" stroke-width="1.5"/>
 <text x="1638" y="151" font-size="21" letter-spacing="3.8" text-anchor="middle" fill="#9c9c9c">PLACEHOLDER</text>
 </g>

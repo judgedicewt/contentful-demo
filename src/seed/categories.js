@@ -10,7 +10,7 @@ export const CATEGORY_SEEDS = [
     fields: {
       name: 'Supercars',
       slug: 'supercars',
-      intro: 'Carbon structure. Twin-turbo power. Models built to be driven, on road and on track. The Supercar range covers the hybrid Artura and the V8 750S, each as a coupé or a Spider.',
+      intro: 'Carbon structure. Twin-turbo power. Models built to be driven, on road and on track. The Supercar range covers the hybrid Gavia and the V8 Pordoi, each as a coupé or a Spider.',
       order: 1,
     },
     links: { featuredBanner: 'banner-mcl-6gt' },

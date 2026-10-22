@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="765LT lineage placeholder">
-<title>765LT lineage (placeholder)</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Falzarego Corsa lineage placeholder">
+<title>Falzarego Corsa lineage (placeholder)</title>
 <defs>
 <linearGradient id="g-img-lineage-765lt" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#141414"/><stop offset="1" stop-color="#222222"/></linearGradient>
 <pattern id="t-img-lineage-765lt" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#ffffff" stroke-width="1" stroke-opacity="0.05"/></pattern>
@@ -11,7 +11,7 @@
 <g font-family="system-ui, sans-serif" fill="#f4f4f4">
 <rect x="81" y="1046" width="42" height="3" fill="#ff8000"/>
 <text x="81" y="1080" font-size="18" letter-spacing="4" fill="#9c9c9c">PORTRAIT · 900 × 1200</text>
-<text x="81" y="1143" font-size="47" font-weight="600" letter-spacing="4.7">765LT LINEAGE</text>
+<text x="81" y="1143" font-size="47" font-weight="600" letter-spacing="4.7">FALZAREGO CORSA LINEAGE</text>
 <rect x="633" y="57" width="186" height="40" rx="20" fill="none" stroke="#9c9c9c" stroke-width="1.5"/>
 <text x="726" y="83" font-size="18" letter-spacing="3.2" text-anchor="middle" fill="#9c9c9c">PLACEHOLDER</text>
 </g>

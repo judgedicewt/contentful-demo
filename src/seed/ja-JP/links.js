@@ -45,9 +45,9 @@ export default {
   'link-cta-experiences': { label: 'エクスペリエンス' },
   'link-cta-legacy': { label: 'レガシーモデル' },
   'link-cta-mso': { label: 'ストラーダ・ノヴァ スー・ミズーラ' },
-  'link-cta-vehicle-750s': { label: '750Sを探索' },
-  'link-cta-vehicle-artura-spider': { label: 'Artura Spiderを探索' },
-  'link-cta-vehicle-w1': { label: 'W1を探索' },
+  'link-cta-vehicle-750s': { label: 'Pordoiを探索' },
+  'link-cta-vehicle-artura-spider': { label: 'Gavia Spiderを探索' },
+  'link-cta-vehicle-w1': { label: 'Mortiroloを探索' },
   'link-cta-enquire-750s': { label: 'お問い合わせ' },
   'link-cta-uk-retailer': { label: 'イギリスの販売店を探す' },
 };

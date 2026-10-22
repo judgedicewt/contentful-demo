@@ -93,10 +93,10 @@ const entries = [
   link('link-cta-experiences', 'Experiences', { target: 'page-experiences', style: 'text' }),
   link('link-cta-legacy', 'Legacy models', { target: 'page-legacy', style: 'text' }),
   link('link-cta-mso', 'Strada Nova Su Misura', { target: 'page-mso', style: 'text' }),
-  link('link-cta-vehicle-750s', 'Explore the 750S', { target: 'vehicle-750s', style: 'primary' }),
-  link('link-cta-vehicle-artura-spider', 'Explore the Artura Spider', { target: 'vehicle-artura-spider', style: 'primary' }),
-  link('link-cta-vehicle-w1', 'Explore the W1', { target: 'vehicle-w1', style: 'primary' }),
-  link('link-cta-enquire-750s', 'Enquire', { url: '#/enquire/750s', style: 'secondary' }),
+  link('link-cta-vehicle-750s', 'Explore the Pordoi', { target: 'vehicle-750s', style: 'primary' }),
+  link('link-cta-vehicle-artura-spider', 'Explore the Gavia Spider', { target: 'vehicle-artura-spider', style: 'primary' }),
+  link('link-cta-vehicle-w1', 'Explore the Mortirolo', { target: 'vehicle-w1', style: 'primary' }),
+  link('link-cta-enquire-750s', 'Enquire', { url: '#/enquire/pordoi', style: 'secondary' }),
   link('link-cta-uk-retailer', 'Visit a UK retailer', { url: '#/retailers', style: 'secondary' }),
 
 ];

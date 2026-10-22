@@ -36,8 +36,10 @@ const PAINT = {
 
 const LEGACY_GRADE = 'Warm archival colour grade with subtle film grain';
 
+// Shots follow the stable key in the entry ID (`vehicle-750s` -> `750s`), not the
+// public URL slug, so renaming a model does not orphan its photos.
 const vehicles = VEHICLE_SEED_GROUPS.find((group) => group.name === 'vehicles').entries.map(
-  (entry) => entry.fields,
+  (entry) => ({ ...entry.fields, slug: entry.id.replace(/^vehicle-/, '') }),
 );
 
 function vehiclePrompt(vehicle, angle) {

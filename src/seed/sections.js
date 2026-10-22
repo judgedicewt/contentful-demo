@@ -84,12 +84,12 @@ const entries = [
   header(
     'text-legacy-2010s-intro',
     'The 2010s',
-    'Carbon fibre became standard. Hybrid power arrived. The 720S, 765LT and P1 defined the decade.',
+    'Carbon fibre became standard. Hybrid power arrived. The Falzarego, Falzarego Corsa and Fedaia defined the decade.',
   ),
   header(
     'text-legacy-1990s-intro',
     'The 1990s',
-    'One car, one idea. The F1 put the driver in the centre and held the speed record for more than a decade.',
+    'One car, one idea. The Gardena put the driver in the centre and held the speed record for more than a decade.',
   ),
   header(
     'text-ownership-intro',
@@ -145,7 +145,7 @@ const entries = [
   banner('banner-supercar-fans', {
     eyebrow: 'Supercars',
     heading: 'Your next supercar is waiting',
-    body: 'The 750S is drawn for the driver. Explore the performance, the design and the detail that set it apart.',
+    body: 'The Pordoi is drawn for the driver. Explore the performance, the design and the detail that set it apart.',
     image: 'img-750s-hero',
     cta: 'link-cta-vehicle-750s',
     theme: 'carbon',
@@ -175,8 +175,8 @@ const entries = [
   }),
   banner('banner-hero-vip', {
     eyebrow: 'Private preview',
-    heading: 'The W1, reserved for you',
-    body: 'As a VIP guest, you are invited to a private viewing of the W1 before it goes on public display.',
+    heading: 'The Mortirolo, reserved for you',
+    body: 'As a VIP guest, you are invited to a private viewing of the Mortirolo before it goes on public display.',
     image: 'img-w1-hero',
     cta: 'link-cta-vehicle-w1',
     theme: 'carbon',
@@ -192,7 +192,7 @@ const entries = [
   banner('banner-hero-supercar-fans', {
     eyebrow: 'Picked for you',
     heading: 'More supercars to explore',
-    body: 'You have been looking at our supercars. Compare the Artura, the 750S and their Spider versions.',
+    body: 'You have been looking at our supercars. Compare the Gavia, the Pordoi and their Spider versions.',
     image: 'img-750s-spider-hero',
     cta: 'link-cta-explore-supercars',
     theme: 'carbon',

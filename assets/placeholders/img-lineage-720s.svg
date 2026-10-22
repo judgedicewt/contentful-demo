@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="720S lineage placeholder">
-<title>720S lineage (placeholder)</title>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1200" viewBox="0 0 900 1200" role="img" aria-label="Falzarego lineage placeholder">
+<title>Falzarego lineage (placeholder)</title>
 <defs>
 <linearGradient id="g-img-lineage-720s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1626"/><stop offset="1" stop-color="#17243a"/></linearGradient>
 <pattern id="t-img-lineage-720s" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="28" stroke="#ffffff" stroke-width="1" stroke-opacity="0.05"/></pattern>
@@ -11,7 +11,7 @@
 <g font-family="system-ui, sans-serif" fill="#f1f4f8">
 <rect x="81" y="1046" width="42" height="3" fill="#ff8000"/>
 <text x="81" y="1080" font-size="18" letter-spacing="4" fill="#8d9db3">PORTRAIT · 900 × 1200</text>
-<text x="81" y="1143" font-size="47" font-weight="600" letter-spacing="4.7">720S LINEAGE</text>
+<text x="81" y="1143" font-size="47" font-weight="600" letter-spacing="4.7">FALZAREGO LINEAGE</text>
 <rect x="633" y="57" width="186" height="40" rx="20" fill="none" stroke="#8d9db3" stroke-width="1.5"/>
 <text x="726" y="83" font-size="18" letter-spacing="3.2" text-anchor="middle" fill="#8d9db3">PLACEHOLDER</text>
 </g>

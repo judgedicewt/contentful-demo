@@ -91,12 +91,12 @@ Example body:
   "email": "alex@example.com",
   "phone": "+44 7700 900123",
   "country": "United Kingdom",
-  "model": "750S",
-  "modelSlug": "750s",
+  "model": "Pordoi",
+  "modelSlug": "pordoi",
   "message": "Please send me the available specifications.",
   "consent": true,
   "source": "contentful-demo",
-  "pageUrl": "https://judgedicewt.github.io/contentful-demo/#/enquire/750s",
+  "pageUrl": "https://judgedicewt.github.io/contentful-demo/#/enquire/pordoi",
   "submittedAt": "2026-10-21T09:30:00.000Z",
   "locale": "en-US"
 }

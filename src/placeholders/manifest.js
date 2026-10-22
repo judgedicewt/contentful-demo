@@ -21,20 +21,20 @@ export const PALETTE_NAMES = ['carbon', 'midnight', 'mist', 'white', 'papaya'];
 export const SILHOUETTES = ['coupe', 'spider', 'none'];
 
 const CURRENT_VEHICLES = [
-  { slug: 'artura', name: 'Artura', silhouette: 'coupe' },
-  { slug: 'artura-spider', name: 'Artura Spider', silhouette: 'spider' },
-  { slug: '750s', name: '750S', silhouette: 'coupe' },
-  { slug: '750s-spider', name: '750S Spider', silhouette: 'spider' },
-  { slug: 'gts', name: 'GTS', silhouette: 'coupe' },
-  { slug: 'w1', name: 'W1', silhouette: 'coupe' },
-  { slug: 'artura-gt4', name: 'Artura GT4', silhouette: 'coupe' },
+  { slug: 'artura', name: 'Gavia', silhouette: 'coupe' },
+  { slug: 'artura-spider', name: 'Gavia Spider', silhouette: 'spider' },
+  { slug: '750s', name: 'Pordoi', silhouette: 'coupe' },
+  { slug: '750s-spider', name: 'Pordoi Spider', silhouette: 'spider' },
+  { slug: 'gts', name: 'Sella', silhouette: 'coupe' },
+  { slug: 'w1', name: 'Mortirolo', silhouette: 'coupe' },
+  { slug: 'artura-gt4', name: 'Gavia GT4', silhouette: 'coupe' },
 ];
 
 const LEGACY_VEHICLES = [
-  { slug: '720s', name: '720S', silhouette: 'coupe' },
-  { slug: '765lt', name: '765LT', silhouette: 'coupe' },
-  { slug: 'p1', name: 'P1', silhouette: 'coupe' },
-  { slug: 'f1', name: 'F1', silhouette: 'coupe' },
+  { slug: '720s', name: 'Falzarego', silhouette: 'coupe' },
+  { slug: '765lt', name: 'Falzarego Corsa', silhouette: 'coupe' },
+  { slug: 'p1', name: 'Fedaia', silhouette: 'coupe' },
+  { slug: 'f1', name: 'Gardena', silhouette: 'coupe' },
 ];
 
 // Purpose → { suffix, kind, palette }. Palettes alternate so a vehicle page
@@ -67,10 +67,10 @@ function vehicleEntries(vehicles, purposes) {
 }
 
 const LINEAGE = [
-  { slug: '765lt', name: '765LT', palette: 'carbon' },
-  { slug: '720s', name: '720S', palette: 'midnight' },
-  { slug: 'f1', name: 'F1', palette: 'mist' },
-  { slug: 'p1', name: 'P1', palette: 'white' },
+  { slug: '765lt', name: 'Falzarego Corsa', palette: 'carbon' },
+  { slug: '720s', name: 'Falzarego', palette: 'midnight' },
+  { slug: 'f1', name: 'Gardena', palette: 'mist' },
+  { slug: 'p1', name: 'Fedaia', palette: 'white' },
 ].map(({ slug, name, palette }) => ({
   id: `img-lineage-${slug}`,
   label: `${name} lineage`,
@@ -115,9 +115,9 @@ const PAGES = [
 ];
 
 const STORIES = [
-  { slug: '750s-facts', name: '750S five key facts', silhouette: 'coupe', hero: 'carbon', inline: 'mist' },
-  { slug: 'artura-spider', name: 'Artura Spider performance', silhouette: 'spider', hero: 'midnight', inline: 'white' },
-  { slug: 'w1', name: 'W1 designed by air', silhouette: 'coupe', hero: 'mist', inline: 'carbon' },
+  { slug: '750s-facts', name: 'Pordoi five key facts', silhouette: 'coupe', hero: 'carbon', inline: 'mist' },
+  { slug: 'artura-spider', name: 'Gavia Spider performance', silhouette: 'spider', hero: 'midnight', inline: 'white' },
+  { slug: 'w1', name: 'Mortirolo designed by air', silhouette: 'coupe', hero: 'mist', inline: 'carbon' },
   { slug: 'mso', name: 'MSO project', silhouette: 'coupe', hero: 'papaya', inline: 'midnight' },
 ].flatMap(({ slug, name, silhouette, hero, inline }) => [
   { id: `img-story-${slug}-hero`, label: `${name} story hero`, kind: 'hero', palette: hero, silhouette },

@@ -2,7 +2,7 @@
  * Creates or updates assets with fixed IDs from local files.
  *
  * Asset seed shape:
- *   { id: 'img-750s-hero', title: '750S hero', description: '...',
+ *   { id: 'img-750s-hero', title: 'Pordoi hero', description: '...',
  *     file: 'assets/placeholders/img-750s-hero.svg', contentType: 'image/svg+xml' }
  *
  * Flow per asset: upload the bytes (`createUpload`), create or update the

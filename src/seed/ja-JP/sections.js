@@ -17,13 +17,13 @@ export default {
   'text-legacy-2010s-intro': {
     heading: '2010年代',
     body: doc(
-      p('カーボンファイバーが標準になりました。ハイブリッドパワーが登場しました。720S、765LT、P1がこの10年を象徴しました。'),
+      p('カーボンファイバーが標準になりました。ハイブリッドパワーが登場しました。Falzarego、Falzarego Corsa、Fedaiaがこの10年を象徴しました。'),
     ),
   },
   'text-legacy-1990s-intro': {
     heading: '1990年代',
     body: doc(
-      p('一台の車、一つのアイデア。F1はドライバーを中央に据え、10年以上にわたって速度記録を保持しました。'),
+      p('一台の車、一つのアイデア。Gardenaはドライバーを中央に据え、10年以上にわたって速度記録を保持しました。'),
     ),
   },
   'text-ownership-intro': {
@@ -76,8 +76,8 @@ export default {
   },
   'banner-hero-vip': {
     eyebrow: 'プライベート・プレビュー',
-    heading: 'W1を、あなたのために',
-    body: 'VIPゲストの皆様を、一般公開に先駆けたW1のプライベート・ビューイングにご招待します。',
+    heading: 'Mortiroloを、あなたのために',
+    body: 'VIPゲストの皆様を、一般公開に先駆けたMortiroloのプライベート・ビューイングにご招待します。',
   },
   'banner-hero-trackday': {
     eyebrow: 'トラックデイ',
@@ -87,7 +87,7 @@ export default {
   'banner-hero-supercar-fans': {
     eyebrow: 'あなたへのおすすめ',
     heading: 'さらにスーパーカーを探す',
-    body: 'スーパーカーをご覧いただきありがとうございます。アルトゥーラ、750S、そしてそれぞれのスパイダーを比べてみてください。',
+    body: 'スーパーカーをご覧いただきありがとうございます。アルトゥーラ、Pordoi、そしてそれぞれのスパイダーを比べてみてください。',
   },
   'banner-hero-uk': {
     eyebrow: 'イギリス',
@@ -122,7 +122,7 @@ export default {
   'banner-supercar-fans': {
     eyebrow: 'スーパーカー',
     heading: 'あなたを待つ、次のスーパーカー',
-    body: '750Sは、ドライバーのために描かれました。パフォーマンス、デザイン、そして他と一線を画すディテールをご覧ください。',
+    body: 'Pordoiは、ドライバーのために描かれました。パフォーマンス、デザイン、そして他と一線を画すディテールをご覧ください。',
   },
   'banner-trackday': {
     eyebrow: 'エクスペリエンス',

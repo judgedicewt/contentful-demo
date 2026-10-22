@@ -18,11 +18,11 @@ export default {
   },
   'seo-page-legacy-2010s': {
     title: 'レガシー：2010年代 | ストラーダ・ノヴァ',
-    description: '2010年代のストラーダ・ノヴァのモデル：720S、765LT、P1をご紹介します。',
+    description: '2010年代のストラーダ・ノヴァのモデル：Falzarego、Falzarego Corsa、Fedaiaをご紹介します。',
   },
   'seo-page-legacy-1990s': {
     title: 'レガシー：1990年代 | ストラーダ・ノヴァ',
-    description: '1990年代のストラーダ・ノヴァのモデル：F1をご紹介します。',
+    description: '1990年代のストラーダ・ノヴァのモデル：Gardenaをご紹介します。',
   },
   'seo-page-ownership': {
     title: 'オーナーシップ | ストラーダ・ノヴァ',

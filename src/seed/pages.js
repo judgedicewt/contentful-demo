@@ -29,7 +29,7 @@ const PAGES = [
     order: 1,
     hero: 'img-legacy-2010s-hero',
     sections: ['text-legacy-2010s-intro', 'grid-legacy-2010s'],
-    description: 'Strada Nova models of the 2010s: 720S, 765LT and P1.',
+    description: 'Strada Nova models of the 2010s: Falzarego, Falzarego Corsa and Fedaia.',
   },
   {
     id: 'page-legacy-1990s',
@@ -40,7 +40,7 @@ const PAGES = [
     order: 2,
     hero: 'img-legacy-1990s-hero',
     sections: ['text-legacy-1990s-intro', 'grid-legacy-1990s'],
-    description: 'Strada Nova models of the 1990s: the F1.',
+    description: 'Strada Nova models of the 1990s: the Gardena.',
   },
   {
     id: 'page-ownership',

@@ -4,8 +4,8 @@
 
 Use ストラーダ・ノヴァ for Strada Nova, ストラーダ・ノヴァ・アウトモビリ for
 Strada Nova Automobili, and スー・ミズーラ for Su Misura, the bespoke division.
-Keep model names, GTS, W1, Artura, Senna,
-Speedtail, GT4, F1, P1, LT, Spider, and Coupé in Latin script. Use these terms:
+Keep model names (Gavia, Pordoi, Sella, Mortirolo, Falzarego, Fedaia,
+Gardena, Corsa), GT4, Spider, and Coupé in Latin script. Use these terms:
 スーパーカー, グランドツアラー, アルティメット (Ultimate Series),
 モータースポーツ, レガシー, オーナーシップ, and エクスペリエンス.
 
@@ -21,7 +21,7 @@ object. Keys are entry ids and values map localized field ids to Japanese values
 
 ```js
 export default {
-  'vehicle-750s': { name: '750S', tagline: '...', shortDescription: '...' },
+  'vehicle-750s': { name: 'Pordoi', tagline: '...', shortDescription: '...' },
   'faq-750s-1': { question: '...', answer: doc(p('...')) },
 };
 ```
@@ -42,7 +42,7 @@ One term per concept across every overlay:
 - Enquire: お問い合わせ (links, enquiry form, vehicle CTAs). Contact and Contact us: 連絡先.
 - Register interest: 関心を登録. Discover: 詳しく見る. Continue your journey: 旅を続ける.
 - Carbon tub: カーボンモノコック. Folding hard top: 折りたたみ式ハードトップ.
-- Car model lines stay in Latin script: Super Series, Sports Series, Longtail, Coupé, Spider.
+- Car model lines stay in Latin script: Super Series, Sports Series, Coupé, Spider.
 - Site name and every SEO title suffix: ストラーダ・ノヴァ.
 - Write Latin names and numbers directly against Japanese text, with no spaces.
 - Page titles of the form "Parent: Child" use a full-width colon (：).

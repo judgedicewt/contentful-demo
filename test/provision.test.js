@@ -502,7 +502,7 @@ test('audience seeds: nine audiences with the pinned keys and rules', () => {
   for (const rule of ['campaigns', 'regions', 'minVisits', 'visitorType']) assert.equal(byKey.vip.fields[rule], undefined);
 });
 
-test('personalized seeds wrap the home hero, the home banner, the 750S Su Misura banner and the 750S enquiry CTA', () => {
+test('personalized seeds wrap the home hero, the home banner, the Pordoi Su Misura banner and the Pordoi enquiry CTA', () => {
   const byId = new Map(allSeeds().map((e) => [e.id, e]));
   const keysOf = (id) => byId.get(id).links.variants.map((v) => byId.get(byId.get(v).links.audience).fields.key);
   const contentOf = (id) => byId.get(id).links.variants.map((v) => byId.get(v).links.content);
@@ -520,7 +520,7 @@ test('personalized seeds wrap the home hero, the home banner, the 750S Su Misura
   const coupe = byId.get('vehicle-750s');
   assert.equal(coupe.links.msoBanner, 'pc-750s-mso-banner');
   assert.equal(coupe.links.enquiryCta, 'pc-750s-enquiry-cta');
-  assert.equal(coupe.fields.enquiryUrl, '#/enquire/750s', 'the fallback stays');
+  assert.equal(coupe.fields.enquiryUrl, '#/enquire/pordoi', 'the fallback stays');
   assert.equal(byId.get('pc-750s-mso-banner').links.default, 'banner-mso-generic');
   assert.deepEqual(keysOf('pc-750s-mso-banner'), ['returning']);
   assert.equal(byId.get('pc-750s-enquiry-cta').links.default, 'link-cta-enquire-750s');

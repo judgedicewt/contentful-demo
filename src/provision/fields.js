@@ -5,7 +5,7 @@
  *   {
  *     id: 'vehicle-750s',
  *     contentType: 'vehicle',
- *     fields: { name: '750S', order: 1, location: { lat, lon }, answer: richTextDocument },
+ *     fields: { name: 'Pordoi', order: 1, location: { lat, lon }, answer: richTextDocument },
  *     links:  { category: 'cat-supercars', relatedStories: ['story-a', 'story-b'] },
  *     assets: { heroImage: 'img-750s-hero', downloads: ['img-a', 'img-b'] },
  *   }

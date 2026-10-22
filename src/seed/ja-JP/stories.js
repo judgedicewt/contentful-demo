@@ -3,19 +3,19 @@ import { doc, h2, p, ul } from '../richtext-helpers.js';
 
 export default {
   'story-750s-five-key-facts': {
-    title: '750S：知っておきたい5つの事実',
+    title: 'Pordoi：知っておきたい5つの事実',
     kicker: 'エンジニアリング',
-    standfirst: '750Sがこのような走りを実現した理由を説明する、5つの数値と設計上の決断をご紹介します。',
+    standfirst: 'Pordoiがこのような走りを実現した理由を説明する、5つの数値と設計上の決断をご紹介します。',
   },
   'story-artura-spider-performance': {
-    title: 'Artura Spider：ルーフを開けて味わうパフォーマンス',
+    title: 'Gavia Spider：ルーフを開けて味わうパフォーマンス',
     kicker: 'パフォーマンス',
     standfirst: 'V6ハイブリッド、折りたたみ式ハードトップ、そして走りに妥協のない仕上がり。',
   },
   'story-w1-designed-by-air': {
-    title: 'W1：空気が形作ったデザイン',
+    title: 'Mortirolo：空気が形作ったデザイン',
     kicker: 'デザイン',
-    standfirst: 'W1のすべての面は、空気がその後どう動くかによって形作られています。',
+    standfirst: 'Mortiroloのすべての面は、空気がその後どう動くかによって形作られています。',
   },
   'story-mso-project-placeholder': {
     title: 'スー・ミズーラプロジェクト：特注の一台',
@@ -24,7 +24,7 @@ export default {
   },
   'text-story-750s-1': {
     body: doc(
-      p('750Sは、ストラーダ・ノヴァのスーパーカーをさらに軽く、鋭く進化させたモデルです。5つの事実から、その進化の源をご覧いただけます。'),
+      p('Pordoiは、ストラーダ・ノヴァのスーパーカーをさらに軽く、鋭く進化させたモデルです。5つの事実から、その進化の源をご覧いただけます。'),
       ul(
         '出力：4.0LツインターボV8から750 PS。',
         '重量：先代より約30 kg軽量。',
@@ -35,7 +35,7 @@ export default {
     ),
   },
   'imgblock-story-750s': {
-    caption: '750Sは、重量を低く抑え、ドライバーの近くに配置しています。',
+    caption: 'Pordoiは、重量を低く抑え、ドライバーの近くに配置しています。',
   },
   'text-story-750s-2': {
     body: doc(
@@ -49,7 +49,7 @@ export default {
   },
   'text-story-artura-spider-1': {
     body: doc(
-      p('Artura Spiderは、ツインターボV6と電動モーターを組み合わせています。モーターが隙間を埋めるため、アクセルを踏んだ瞬間にパワーが立ち上がります。'),
+      p('Gavia Spiderは、ツインターボV6と電動モーターを組み合わせています。モーターが隙間を埋めるため、アクセルを踏んだ瞬間にパワーが立ち上がります。'),
       p('ハードトップの重量増はわずかです。オープンでの走行を前提に、構造が最初から設計されました。'),
     ),
   },
@@ -68,8 +68,8 @@ export default {
   },
   'text-story-w1-1': {
     body: doc(
-      p('W1は、空気の流れから始まります。デザイナーと空力エンジニアは、一つのチーム、一つのモデル、一つの目標のもとで取り組みました。'),
-      p('通常の車が機構を隠すのに対し、W1は空気がどのように制御されているかを見せます。'),
+      p('Mortiroloは、空気の流れから始まります。デザイナーと空力エンジニアは、一つのチーム、一つのモデル、一つの目標のもとで取り組みました。'),
+      p('通常の車が機構を隠すのに対し、Mortiroloは空気がどのように制御されているかを見せます。'),
     ),
   },
   'imgblock-story-w1': {
@@ -105,16 +105,16 @@ export default {
     heading: '旅を続ける',
   },
   'seo-story-750s': {
-    title: '750S：知っておきたい5つの事実 | ストラーダ・ノヴァ',
-    description: '750Sの走りを支える5つのエンジニアリングの事実。',
+    title: 'Pordoi：知っておきたい5つの事実 | ストラーダ・ノヴァ',
+    description: 'Pordoiの走りを支える5つのエンジニアリングの事実。',
   },
   'seo-story-artura-spider': {
-    title: 'Artura Spider：ルーフを開けて味わうパフォーマンス | ストラーダ・ノヴァ',
-    description: 'ストラーダ・ノヴァArtura Spiderが、ルーフを開けても高いパフォーマンスを発揮する仕組み。',
+    title: 'Gavia Spider：ルーフを開けて味わうパフォーマンス | ストラーダ・ノヴァ',
+    description: 'ストラーダ・ノヴァGavia Spiderが、ルーフを開けても高いパフォーマンスを発揮する仕組み。',
   },
   'seo-story-w1': {
-    title: 'W1：空気が形作ったデザイン | ストラーダ・ノヴァ',
-    description: '気流がストラーダ・ノヴァW1のデザインをどう形作ったか。',
+    title: 'Mortirolo：空気が形作ったデザイン | ストラーダ・ノヴァ',
+    description: '気流がストラーダ・ノヴァMortiroloのデザインをどう形作ったか。',
   },
   'seo-story-mso': {
     title: 'スー・ミズーラプロジェクト：特注の一台 | ストラーダ・ノヴァ',
