@@ -87,6 +87,24 @@ const pageShots = Object.entries(PAGE_SCENES).map(([pageSlug, scene]) => ({
   pageSlug,
 }));
 
+// The home hero with a national flag as the sheet, one per region audience.
+export const FLAG_DRAPES = [
+  { region: 'gb', flag: 'Union Jack flag of the United Kingdom' },
+  { region: 'us', flag: 'Stars and Stripes flag of the United States' },
+  { region: 'jp', flag: 'flag of Japan, a single crimson circle on white' },
+  { region: 'fr', flag: 'French tricolour flag' },
+  { region: 'it', flag: 'Italian tricolore flag' },
+];
+
+const flagShots = FLAG_DRAPES.map(({ region, flag }) => ({
+  id: `shot-home-hero-${region}`,
+  ...HERO,
+  prompt: pagePrompt(
+    `${PAGE_SCENES.home}, seen from the front three-quarter angle; the sheet is the ${flag}, muted and dimmed by the low light so it is subtle but recognizable`,
+  ),
+  pageSlug: 'home',
+}));
+
 const vehicleBySlug = new Map(vehicles.map((v) => [v.slug, v]));
 
 // Story key -> related vehicle slug; the mso story reuses the mso page scene.
@@ -104,7 +122,7 @@ const storyShots = STORIES.map(({ key, vehicle, scene }) => ({
   pageSlug: `story-${key}`,
 }));
 
-export const PHOTO_SHOTS = [...vehicleShots, ...pageShots, ...storyShots].map((shot) => ({
+export const PHOTO_SHOTS = [...vehicleShots, ...pageShots, ...flagShots, ...storyShots].map((shot) => ({
   ...shot,
   file: `assets/photos/${shot.id}.webp`,
 }));

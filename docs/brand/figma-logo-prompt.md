@@ -1,10 +1,11 @@
 # Strada Nova logo: Figma prompt
 
-Paste the prompt below into Figma AI (Figma Make, or **Actions > Make an
-image** for a raster draft). The site ships with a hand-drawn SVG stand-in
-of the same concept in `site/brand/`, `site/favicon.svg`, and
-`site/js/brand.js`. To swap in the Figma result, see
-[Replace the stand-in](#replace-the-stand-in).
+The site's logo is hand-drawn SVG in `site/brand/`, `site/favicon.svg`, and
+`site/js/brand.js`, and it needs no further design work. This prompt is
+optional. Use it if you want Figma AI (Figma Make, or **Actions > Make an
+image** for a raster draft) to produce extra variants of the same concept,
+such as a stacked lockup or one-color versions. To swap a Figma export into
+the site, see [Replace the SVG](#replace-the-svg).
 
 ## Prompt
 
@@ -44,7 +45,7 @@ enough to draw from memory and legible at 16 px. Outline all text.
 Export every frame as SVG with the background removed.
 ```
 
-## Replace the stand-in
+## Replace the SVG
 
 1. Export the mark from Figma as SVG.
 2. Replace `site/brand/strada-nova-mark.svg` with the gradient mark. The

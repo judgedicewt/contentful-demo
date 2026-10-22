@@ -94,6 +94,13 @@ const CATEGORIES = [
 
 const PAGES = [
   { id: 'img-home-hero', label: 'Home hero', kind: 'hero', palette: 'carbon', silhouette: 'spider' },
+  ...['GB', 'US', 'JP', 'FR', 'IT'].map((region) => ({
+    id: `img-home-hero-${region.toLowerCase()}`,
+    label: `Home hero (${region})`,
+    kind: 'hero',
+    palette: 'carbon',
+    silhouette: 'spider',
+  })),
   { id: 'img-legacy-hero', label: 'Legacy hero', kind: 'hero', palette: 'midnight', silhouette: 'coupe' },
   { id: 'img-legacy-2010s-hero', label: 'Legacy 2010s hero', kind: 'hero', palette: 'carbon', silhouette: 'coupe' },
   { id: 'img-legacy-1990s-hero', label: 'Legacy 1990s hero', kind: 'hero', palette: 'mist', silhouette: 'coupe' },

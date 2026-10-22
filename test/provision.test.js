@@ -486,15 +486,17 @@ test('the repository seeds, overlays and model validate together', () => {
 
 const allSeeds = () => SEED_GROUPS.flatMap((group) => group.entries);
 
-test('audience seeds: five audiences with the pinned keys and rules', () => {
+test('audience seeds: nine audiences with the pinned keys and rules', () => {
   const group = SEED_GROUPS.find((g) => g.name === 'audiences');
   const audiences = group.entries.filter((e) => e.contentType === 'audience');
-  assert.deepEqual(audiences.map((e) => e.fields.key), ['supercar-fans', 'returning', 'trackday', 'uk', 'vip']);
+  assert.deepEqual(audiences.map((e) => e.fields.key), ['supercar-fans', 'returning', 'trackday', 'uk', 'us', 'jp', 'fr', 'it', 'vip']);
   const byKey = Object.fromEntries(audiences.map((e) => [e.fields.key, e]));
   assert.deepEqual(byKey['supercar-fans'].links.interestCategories, ['cat-supercars']);
   assert.equal(byKey.returning.fields.visitorType, 'returning');
   assert.deepEqual(byKey.trackday.fields.campaigns, ['trackday']);
-  assert.deepEqual(byKey.uk.fields.regions, ['GB']);
+  for (const [key, region] of [['uk', 'GB'], ['us', 'US'], ['jp', 'JP'], ['fr', 'FR'], ['it', 'IT']]) {
+    assert.deepEqual(byKey[key].fields.regions, [region], key);
+  }
   assert.equal(byKey.vip.fields.source, 'external');
   assert.equal(byKey.vip.links, undefined);
   for (const rule of ['campaigns', 'regions', 'minVisits', 'visitorType']) assert.equal(byKey.vip.fields[rule], undefined);
@@ -509,8 +511,12 @@ test('personalized seeds wrap the home hero, the home banner, the 750S Su Misura
   assert.deepEqual(keysOf('pc-home-banner'), ['supercar-fans', 'trackday']);
   assert.equal(byId.get('page-home').links.heroBanner, 'pc-home-hero');
   assert.equal(byId.get('pc-home-hero').links.default, 'banner-hero-home');
-  assert.deepEqual(keysOf('pc-home-hero'), ['vip', 'trackday', 'supercar-fans', 'uk', 'returning']);
+  assert.deepEqual(keysOf('pc-home-hero'), ['vip', 'trackday', 'supercar-fans', 'uk', 'us', 'jp', 'fr', 'it', 'returning']);
   assert.ok(contentOf('pc-home-hero').every((id) => byId.get(id).contentType === 'bannerButton'), 'every hero variant is a banner');
+  for (const region of ['uk', 'us', 'jp', 'fr', 'it']) {
+    const image = byId.get(`banner-hero-${region}`).assets.image;
+    assert.equal(image, `img-home-hero-${region === 'uk' ? 'gb' : region}`, `${region} hero shows its flag drape`);
+  }
   const coupe = byId.get('vehicle-750s');
   assert.equal(coupe.links.msoBanner, 'pc-750s-mso-banner');
   assert.equal(coupe.links.enquiryCta, 'pc-750s-enquiry-cta');

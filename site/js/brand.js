@@ -1,8 +1,7 @@
 /**
  * Strada Nova logo: two smooth curves, a road sweeping away, stroked with a
  * subtle papaya gradient. The paths here and in site/brand/strada-nova-mark.svg
- * and site/favicon.svg are the same drawing; replace all of them together
- * when the final logo arrives.
+ * and site/favicon.svg are the same drawing; change all of them together.
  */
 import { escapeHtml, html, raw } from './dom.js';
 

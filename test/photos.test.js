@@ -6,11 +6,11 @@ import { MANIFEST } from '../src/placeholders/manifest.js';
 import { buildAssetSeeds, ASSET_SEEDS, ASSET_GROUP, assetId } from '../src/seed/assets.js';
 import { planPhotos, convertPhoto, parseArgs, unknownForceIds, processShots } from '../scripts/generate-photos.js';
 
-test('PHOTO_SHOTS has 30 shots with unique ids and files under assets/photos/', () => {
-  assert.equal(PHOTO_SHOTS.length, 30);
-  assert.equal(new Set(PHOTO_SHOTS.map((s) => s.id)).size, 30);
-  assert.equal(new Set(PHOTO_SHOTS.map((s) => s.file)).size, 30);
-  assert.equal(SHOT_BY_ID.size, 30);
+test('PHOTO_SHOTS has 35 shots with unique ids and files under assets/photos/', () => {
+  assert.equal(PHOTO_SHOTS.length, 35);
+  assert.equal(new Set(PHOTO_SHOTS.map((s) => s.id)).size, 35);
+  assert.equal(new Set(PHOTO_SHOTS.map((s) => s.file)).size, 35);
+  assert.equal(SHOT_BY_ID.size, 35);
   for (const shot of PHOTO_SHOTS) {
     assert.equal(shot.file, `assets/photos/${shot.id}.webp`);
     assert.ok(shot.file.startsWith('assets/photos/'));
@@ -112,7 +112,7 @@ test('asset seed exports keep working', () => {
 test('planPhotos skips existing files unless forced', () => {
   const fileExists = (p) => p.endsWith('shot-750s-hero.webp');
   const plan = planPhotos({ shots: PHOTO_SHOTS, fileExists, force: [] });
-  assert.equal(plan.length, 30);
+  assert.equal(plan.length, 35);
   for (const { shot, status } of plan) {
     assert.equal(status, shot.id === 'shot-750s-hero' ? 'kept' : 'missing', shot.id);
   }
